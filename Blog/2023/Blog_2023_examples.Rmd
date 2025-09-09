@@ -14,11 +14,9 @@ This post is to give you an example on how to create your own polygon using goog
 For this exercise we used the release candidate of QGIS, but every version has the option to create new layers, so no worries in which version you are using. 
 
 ```{r, fig.height=1,echo=FALSE, fig.align='center'}
-library(here)
-Imagen1<-paste0(here(),"/_posts/2023-01-27-qgispolygon/image1.png")
+Imagen1<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/image1.png?raw=true"
 knitr::include_graphics(Imagen1)
 ```
-
 
 
 If you still dont have it, here is the link for download [QGIS](https://www.qgis.org/en/site/forusers/download.html)
@@ -33,23 +31,21 @@ Now to add a **google satellite** map in your QGIS you could do the following:
 1. Go to View > Panels > Activate Browser Panel
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen9<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis1.png")
+Imagen9<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis1.png?raw=true"
 knitr::include_graphics(Imagen9)
 ```
 
 2. Now go to XYZ > a new connection
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen10<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis2.png")
+Imagen10<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis2.png?raw=true"
 knitr::include_graphics(Imagen10)
 ```
-
-
 
 3. A new window will appear 
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen11<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis3.png")
+Imagen11<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis3.png?raw=true"
 knitr::include_graphics(Imagen11)
 ```
 
@@ -62,7 +58,7 @@ There are many options of maps, you can look at some here: [Google URLs](https:/
 We will use Open Street Map: https://tile.openstreetmap.org/{z}/{x}/{y}.png for the example.
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen12<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis4.png")
+Imagen12<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis4.png?raw=true"
 knitr::include_graphics(Imagen12)
 ```
 
@@ -70,14 +66,14 @@ Once you have create the connection, double click on the name and the map should
 
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen14<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis6.png")
+Imagen14<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis6.png?raw=true"
 knitr::include_graphics(Imagen14)
 ```
 
 Ready to Use!
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen13<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis5.png")
+Imagen13<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis5.png?raw=true"
 knitr::include_graphics(Imagen13)
 ```
 
@@ -87,7 +83,7 @@ knitr::include_graphics(Imagen13)
 1. Select New Shapefile Layer
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen15<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis7.png")
+Imagen15<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis7.png?raw=true"
 knitr::include_graphics(Imagen15)
 ```
 
@@ -98,7 +94,7 @@ I recommend to click on the three dots to select also the directory
 In the exercise, we will create a polygon, therefore, select **Polygon** in Geometry type
 
 ```{r, fig.height=10, echo=FALSE, out.width="150%"}
-Imagen16<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis8.png")
+Imagen16<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis8.png?raw=true"
 knitr::include_graphics(Imagen16)
 ```
 
@@ -106,7 +102,7 @@ knitr::include_graphics(Imagen16)
 3. Select Layer > Toggle editing, or just click on the icon with the yellow pencil
 
 ```{r, fig.height=10, echo=FALSE, out.width="150%"}
-Imagen17<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis9.png")
+Imagen17<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis9.png?raw=true"
 knitr::include_graphics(Imagen17)
 ```
 
@@ -114,7 +110,7 @@ knitr::include_graphics(Imagen17)
 4. Now add polygon feature by clicking on the green polygon icon
 
 ```{r, fig.height=10, echo=FALSE, out.width="150%"}
-Imagen18<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis10.png")
+Imagen18<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis10.png?raw=true"
 knitr::include_graphics(Imagen18)
 ```
 
@@ -127,7 +123,7 @@ Keep clicking until you have a more or less the polygon you want
 When you finish you should add an id, here I used the number 1 for an example
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen20<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis11.png")
+Imagen20<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis11.png?raw=true"
 knitr::include_graphics(Imagen20)
 ```
 
@@ -136,7 +132,7 @@ Now you should have a polygon!
 7. To edit the shapes you can use the vertex tool
 
 ```{r, fig.height=10, echo=FALSE, out.width="150%"}
-Imagen21<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis12.png")
+Imagen21<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis12.png?raw=true"
 knitr::include_graphics(Imagen21)
 ```
 
@@ -144,7 +140,7 @@ knitr::include_graphics(Imagen21)
 8. The corners can be moved/dragged when the icon has been selected
 
 ```{r, fig.height=10, echo=FALSE, out.width="200%"}
-Imagen22<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis14.png")
+Imagen22<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis14.png?raw=true"
 knitr::include_graphics(Imagen22)
 ```
 
@@ -152,21 +148,21 @@ knitr::include_graphics(Imagen22)
 9. New points can be created using the cross
 
 ```{r, fig.height=10, echo=FALSE, out.width="150%"}
-Imagen23<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis15.png")
+Imagen23<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis15.png?raw=true"
 knitr::include_graphics(Imagen23)
 ```
 
 10. When you are editing your layer you will have a red pencil icon, click on the yellow pencil for **finish editing**
 
 ```{r, fig.height=10, echo=FALSE, out.width="150%"}
-Imagen24<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis16.png")
+Imagen24<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis16.png?raw=true"
 knitr::include_graphics(Imagen24)
 ```
 
 11. Do not forget to save the changes!
 
 ```{r, fig.height=10, echo=FALSE, out.width="100%"}
-Imagen25<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis18.png")
+Imagen25<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/qgis18.png?raw=true"
 knitr::include_graphics(Imagen25)
 ```
 
@@ -210,13 +206,13 @@ library(here)
 ```
 
 ```{r, echo=FALSE}
-My_directory<-here('_posts/2023-02-04-subset-shapefile')
+My_directory<-here()
 ```
 
 Load your shapefile, be careful with your directory
 
 ```{r}
-Old_shapefile<- read_sf(paste0(My_directory,'/original_shapefile.shp'))
+Old_shapefile<- read_sf(paste0(My_directory,'/Blog/2023/original_shapefile.shp'))
 ```
 
 Check the class, theoretically it would show sf
@@ -227,21 +223,21 @@ class(Old_shapefile)
 
 Explore the contents
 
-```{r, eval=FALSE}
+```{r}
 str(Old_shapefile)
 ```
 
 Check the values in the column that you are interested to subset, to show unique values use the argument **unique** and to show them in alphabetic order use **sort**
 
-```{r, eval = FALSE}
-sort(unique(Old_shapefile$comuna))
+```{r}
+head(sort(unique(Old_shapefile$comuna)))
 ```
 
 # 2. Filter
 
 Load the package **tidyverse**
 
-```{r, message = FALSE, echo=TRUE}
+```{r, message = FALSE, echo=TRUE, warning=FALSE}
 library(tidyverse)
 ```
 
@@ -271,6 +267,8 @@ st_write(New_shapefile, paste0(My_directory,'/New_shapefile.shp'))
 # Read more
 
 - [Geocomputation with R](https://geocompr.robinlovelace.net/attr.html)
+
+
 # ~~~~~~~~~~~~~
 # 3.March: mapping in R
 
@@ -299,14 +297,13 @@ library(sf)
 Use your directory name, and give the name of your shapefile
 
 ```{r, echo=FALSE}
-Directory<-here('_posts/2023-03-04-mapping-in-r')
+Directory<-here('Blog/2023')
 MyShapefileName<-"/country.shp"
 ```
 
 ```{r}
 Europe<-st_read(paste0(Directory,MyShapefileName))
 ```
-
 
 ## 3. Create a basic map
 
@@ -433,8 +430,35 @@ ggplot()+
 
 Thats it for now!
 
+# Export
 
-
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(ggplot()+  
+  geom_sf(data = Europe, 
+          colour = "#edf2f4", 
+          fill = "#2b2d42",
+          size=0.5)+
+  theme(
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = '#edf2f4'),
+        legend.background = element_rect(fill = '#edf2f4'))+
+  
+  coord_sf(xlim = c(9, 31),ylim = c(53, 65))+
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N")) +
+  
+   annotation_scale(location = "br",bar_cols = c("#ef233c", "#d90429"),text_col = '#ef233c')+
+  
+  annotation_north_arrow(location = "tl", style = north_arrow_minimal(text_col = '#ffd60a',line_col = '#ffd60a',fill = '#ffd60a')),
+       filename = paste0(here(),"/map_export.jpg"),
+       width = 6, 
+       height = 7, 
+       units = "in",
+       dpi = 300)
+```
 
 # ~~~~~~~~~~~~~
 # 4.April: grid raster
@@ -565,7 +589,7 @@ ggplot()+
 ```
 
 
-# 3. Surveyed 👩🏾‍💻
+# 3. Surveyed
 
 To keep only the grid cells that were surveyed, the grid cells that have 0 recording can be removed 
 
@@ -583,7 +607,7 @@ ggplot()+
 ```
 
 
-# 4. Mean values 👩🏾‍🔧
+# 4. Mean values 
 
 To calculate the mean values per grid, functions from the package **tidyverse** can be used
 
@@ -662,7 +686,7 @@ ggplot()+
 ```
 
 
-# 5. Customize  👩🏾‍🎨
+# 5. Customize  
 
 The function **geom_sf** allows to plot a raster
 
@@ -727,13 +751,53 @@ ggplot()+
 
 
 
-# Further reads 👩🏾‍🏫
+# Further reads 
 
 - [Create a grid by Urban data palette](https://urbandatapalette.com/post/2021-08-tessellation-sf/)<br>
 - [Thematic mapping in Mapping in R](https://map-rfun.library.duke.edu/032_thematic_mapping_geom_sf.html)<br>
 - [Mapping in R workshop](https://geanders.github.io/navy_public_health/index.html#prerequisites) <br>
 - [ggplot2 color scales](https://ggplot2-book.org/scale-colour.html)<br>
 - [ggplot2 legend keys](https://www.rusersplace.com/2022/08/21/index.zh-cn/images/FabxzmnX0AEwau0.jpg)<br>
+
+
+# Export
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(ggplot()+
+  geom_sf(data = grid_dens,aes(fill = dens_mean),color='transparent')+
+    
+  scale_fill_gradientn(name='Density',
+    colours = dens_colors,
+    breaks = dens_breaks, 
+    labels = dens_labels,
+    limits=c(0,1))+
+  
+  
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))+
+  
+  theme_bw()+
+  
+  theme(panel.background = element_rect(fill = '#3668b4'),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())+
+  
+  
+  theme(
+    legend.key = element_rect(color = "black",size=5),
+    legend.key.width = unit(1, "cm"),
+    legend.key.height = unit(1, "cm")) +
+  
+  guides(fill = guide_colorbar(ticks.colour = "transparent")),
+       filename = paste0(here(),"/grid_export.jpg"),
+       width = 6, 
+       height = 7, 
+       units = "in",
+       dpi = 300)
+```
+
 
 # ~~~~~~~~~~~~~
 # 5.May: githubpage
@@ -758,16 +822,16 @@ In the right side of the screen select **pages**
 
 ```{r, fig.height=12,echo=FALSE, fig.align='left'}
 library(here)
-File<-paste0(here(),"/_posts/2023-05-05-github-page/")
-Imagen2<-paste0(File,"02settings.png")
+Imagen2<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/02settings.png?raw=true"
 knitr::include_graphics(Imagen2)
 ```
+
 ## Github actions
 
 Look for build and deployment and in source, move from GitHub Actions to **Deploy from branch**
 
 ```{r, fig.height=10,echo=FALSE, fig.align='left'}
-Imagen3<-paste0(File,"03BuildDeployment.png")
+Imagen3<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/03BuildDeployment.png?raw=true"
 knitr::include_graphics(Imagen3)
 ```
 
@@ -776,15 +840,14 @@ knitr::include_graphics(Imagen3)
 The branch depends where the **html** file is, here I have it in the **master** branch
 
 ```{r, fig.height=10,echo=FALSE, fig.align='left'}
-Imagen4<-paste0(File,"04Master.png")
+Imagen4<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/04Master.png?raw=true"
 knitr::include_graphics(Imagen4)
 ```
-
 
 This would depend where you have your **html** file, but here I have it in the **master**
 
 ```{r, fig.height=10,echo=FALSE, fig.align='left'}
-Imagen4<-paste0(File,"04Master.png")
+Imagen4<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/04Master.png?raw=true"
 knitr::include_graphics(Imagen4)
 ```
 
@@ -793,7 +856,7 @@ knitr::include_graphics(Imagen4)
 If everything went well **Your site is alive at** will appear
 
 ```{r, fig.height=10,echo=FALSE, fig.align='left'}
-Imagen5<-paste0(File,"05SiteIsAlive.png")
+Imagen5<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/05SiteIsAlive.png?raw=true"
 knitr::include_graphics(Imagen5)
 ```
 
@@ -814,7 +877,7 @@ The slides can also be converted to pdf
 
 Install package using **install.packages("renderthis")**
 
-```{r}
+```{r, eval=FALSE}
 library(renderthis)
 ```
 
@@ -855,7 +918,6 @@ library(sula)
 Example<-GPS_01
 ```
 
-
 ## 3. Mark beggining
 
 Mark a day zero to begging the animation, and the sequence to use
@@ -892,7 +954,7 @@ Now load your data, here I am giving my directory, you should use the one on you
 To dowload the shapefile from Chile you can use this [this link](https://github.com/MiriamLL/miriamlerma_/blob/main/_posts/2023-06-01-gganimate/CHL_adm1.shp), this shapefile comes from the [DIVA-GIS](https://www.diva-gis.org/datadown)
 
 ```{r echo=FALSE,warning=FALSE}
-Directory<-here('_posts/2023-06-01-gganimate')
+Directory<-here('Blog/2023')
 MyShapefileName<-"/CHL_adm1.shp"
 ```
 
@@ -938,8 +1000,6 @@ My_map<-My_map+
     scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))
 My_map
 ```
-
-
 
 ## 7. Animate
 
@@ -992,7 +1052,7 @@ My_animation
 ```
 
 ```{r, echo=FALSE, out.height=350}
-knitr::include_graphics('https://raw.githubusercontent.com/MiriamLL/miriamlerma_/refs/heads/main/_posts/2023-06-01-gganimate/animation.gif')
+knitr::include_graphics('https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/animation.gif?raw=true')
 ```
 
 Other arguments are:  
@@ -1028,8 +1088,6 @@ library(av)
 # beep(sound=1,expr=NULL)
 ```
 
-
-
 # Further reading
 
 - [A Grammar of Animated Graphics](https://gganimate.com/)
@@ -1037,10 +1095,8 @@ library(av)
 - [Step by step with Ander Fernandez](https://anderfernandez.com/en/blog/how-to-create-animations-in-r-with-gganimate/)  
 - [Migration animated](https://www.climatecentral.org/news/map-animal-migration-climate-change-20646)
 
-
-
 # ~~~~~~~~~~~~~
-# 7.July: custom points
+# XX 7.July: custom points
 
 # Intro
 
@@ -1058,7 +1114,6 @@ devtools::install_github("MiriamLL/seamonas")
 library(seamonas)
 ```
 
-
 Load data
 
 The package contains data from a random generated density data frame.
@@ -1066,7 +1121,6 @@ The package contains data from a random generated density data frame.
 ```{r, eval=FALSE}
 density_df<-density_df
 ```
-
 
 The data frame contains latitude, longitude and density estimations. 
 
@@ -1078,10 +1132,9 @@ First call the library.
 library(ggplot2)
 ```
 
-
 Then check the data contained on the data frame. 
 
-```{r}
+```{r, eval=FALSE}
 ggplot()+
   geom_point(data=density_df,
           aes(x = longitude,
@@ -1090,7 +1143,7 @@ ggplot()+
 
 Each of the dots contains density data, to check the values you can use the function **range** for the minimal and maximal values. 
 
-```{r}
+```{r, eval=FALSE}
 range(density_df$densities)
 ```
 
@@ -1099,7 +1152,7 @@ range(density_df$densities)
 
 Based on the range of the densities, define how many classes you want to use and where the cuts will be made.
 
-```{r}
+```{r, eval=FALSE}
 class0<-0
 class1<-1
 class2<-2.5
@@ -1109,11 +1162,11 @@ class3<-5
 Using the function **mutate** from the package **tidyverse** add a new column with a classification.  
 Note that using alphanumerical order is important for the order in the legend. 
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, eval=FALSE}
 library(tidyverse)
 ```
 
-```{r}
+```{r, eval=FALSE}
 density_df<-density_df %>% 
     mutate(density_class = case_when(
       densities ==  class0 ~ as.character("group0"),
@@ -1126,7 +1179,7 @@ density_df<-density_df %>%
 
 Check number of observations to make sure your classification was working and that you have at least one value per group.
 
-```{r}
+```{r, eval=FALSE}
 density_df %>%
   group_by(density_class)%>%
   tally()
@@ -1136,24 +1189,24 @@ density_df %>%
 
 To define the sizes, numbers can be used. 
 
-```{r}
+```{r, eval=FALSE}
 density_sizes<-c("group0"=0.5, "group1"=1,"group2"=2, "group3"=3, "group4"=5)
 ```
 
 
 To define the text on the labels, characters can be used.
 
-```{r}
+```{r, eval=FALSE}
 density_labels<-c('0','> 0-1','> 1-2.5','> 2.5-5','> 5')
 ```
 
-```{r}
+```{r, eval=FALSE}
 class(density_labels)
 ```
 
 To define shapes, R uses numbers. Here, each group is assigned a different shape. 
 
-```{r}
+```{r, eval=FALSE}
 density_shapes<-c("group0"=3, "group1"=21,"group2"=21, "group3"=21, "group4"=21)
 ```
 
@@ -1169,7 +1222,7 @@ To visualize your data, create a base plot with defined shape, size and labels.
 To define the shape and size, the argument was added inside the **aes**.  
 To assign the values and labels, fill the arguments **scale_shape_manual** and **scale_size_manual**.  
 
-```{r, fig.height=5}
+```{r, fig.height=5, eval=FALSE}
 ggplot()+
   geom_point(data=density_df,
           aes(x = longitude,
@@ -1181,7 +1234,6 @@ ggplot()+
   scale_shape_manual(values = density_shapes,labels=density_labels)+
   scale_size_manual(values =  density_sizes,labels=density_labels)
 ```
-
 
 
 ## Add map
@@ -1223,13 +1275,11 @@ base_plot<-ggplot2::ggplot()+
 base_plot
 ```
 
-
-
 ## Add dots
 
 Now add the density data on top of the base map.
 
-```{r, fig.height=5}
+```{r, fig.height=5, eval=FALSE}
 density_wmap<-base_plot+
   geom_point(data=density_df,
           aes(x = longitude,
@@ -1253,10 +1303,8 @@ These figures are based on the SAS monitoring program, but note that data was ra
 See the real maps [here](https://www.researchgate.net/publication/366325582_Monitoring_von_Seevogeln_in_der_deutschen_Nord-_und_Ostsee_2021).
 
 
-
-
 # ~~~~~~~~~~~~~
-# 8.August: custom legend
+# XX 8.August: custom legend
 
 # Intro
 
@@ -1285,7 +1333,7 @@ If you want to create this map from scratch visit: [create a map with custom poi
 density_wmap<-density_wmap
 ```
 
-```{r, fig.height=4}
+```{r, fig.height=4, eval=FALSE}
 density_wmap
 ```
 
@@ -1295,7 +1343,7 @@ I create this function to include the legend inside the plot, the function is av
 
 The function removes the background of the legend making it transparent, and includes the legend inside the plot based on the coordinates provided. 
 
-```{r}
+```{r, eval=FALSE}
 add_legend<-function(plot_wbreaks=plot_wbreaks,
                      legxy=legxy){
   plot_wlegend<-plot_wbreaks+
@@ -1317,7 +1365,7 @@ add_legend<-function(plot_wbreaks=plot_wbreaks,
 Here, the arguments inside legxy are referring to where the legend will appear.
 
 
-```{r, fig.height=4}
+```{r, fig.height=4, eval=FALSE}
 density_wlegend<-add_legend(
   plot_wbreaks=density_wmap,
   legxy=c(0.11, 0.21))
@@ -1327,7 +1375,7 @@ density_wlegend
 
 To add the title of the legend, I used the function annotate and a specific expression since I am using superscript.
 
-```{r, fig.height=4, warning=FALSE, message=FALSE}
+```{r, fig.height=4, warning=FALSE, message=FALSE, eval=FALSE}
 density_wlegend<-density_wlegend+
   ggplot2::theme(legend.key.size = ggplot2::unit(0.4, "cm"))+
   ggplot2::annotate(geom="text",
@@ -1344,7 +1392,7 @@ density_wlegend
 This function changes the x and y axis legends to Capitalized words and includes the symbol of degree on the plot.
 Removes the gray background and adds a white line on the panel border. It is also available in the package **seamonas**, but I am including it here in case you want to customize it.
 
-```{r}
+```{r, eval=FALSE}
 add_theme<-function(plot_wlegend=plot_wlegend){
 
   plot_wtheme<-plot_wlegend+
@@ -1363,7 +1411,7 @@ add_theme<-function(plot_wlegend=plot_wlegend){
 
 To run the function just add your plot.
 
-```{r}
+```{r, eval=FALSE}
 density_wtheme<-add_theme(plot_wlegend = density_wlegend)
 density_wtheme
 ```
@@ -1393,8 +1441,7 @@ my_data<-(sula::GPS_preparado)
 ## Grid
 
 The steps on this parts are on "how to create [grid](https://www.miriam-lerma.com/posts/2023-04-06-gridraster/)"
-  
-  
+
 Packages to use:
 
 ```{r, warning=FALSE}
@@ -1616,6 +1663,23 @@ Although you have the option of plot_layout(guides = "collect") in the package *
 [Patchwork](https://patchwork.data-imaginist.com/)
 
 
+# Export
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave((GPS01_plot+plot_spacer()+
+   GPS02_plot+plot_tracks_legend)+
+  plot_layout(ncol = 2,
+              widths = c(5,1), 
+              heights=c(1,1)),
+       filename = paste0(here(),"/multiple_export.jpg"),
+       width = 6, 
+       height = 7, 
+       units = "in",
+       dpi = 300)
+```
+
 # ~~~~~~~~~~~~~
 # 10.October: inside legend
 
@@ -1729,6 +1793,24 @@ You can of course use the legend, but this option is for me more easy to custom 
 
 [Create an annotation layer](https://ggplot2.tidyverse.org/reference/annotate.html)
 
+# Export
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(my_plot_wtext +
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.09, ymax = legy-0.12,color = color1,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.14, ymax = legy-0.17,color = color2,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.19, ymax = legy-0.22,color = color3,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.24, ymax = legy-0.27,color = color4,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.29, ymax = legy-0.32,color = color5,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.34, ymax = legy-0.37,color = color6,linewidth=1, fill="transparent"),
+       filename = paste0(here(),"/insidelegend_export.jpg"),
+       width = 4, 
+       height = 5, 
+       units = "in",
+       dpi = 300)
+```
 
 # ~~~~~~~~~~~~~
 # 11.Novemeber: secondary axis title
@@ -1829,13 +1911,30 @@ plot_c+
 
 That was it, I hope it helps :)
 
+# Export
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(plot_c+
+  annotate(geom = "text",x = 1.5,y = -5, label = "Group 1",size = 4)+
+  annotate("segment",y = 0, yend = 0,x = 1, xend = 2,colour = "black")+
+  
+  annotate(geom = "text",x = 3.5,y = -5, label = "Group 2",size = 4)+
+  annotate("segment",y = 0, yend = 0,x = 3, xend = 4,colour = "black"),
+       filename = paste0(here(),"/secondary_export.jpg"),
+       width = 6, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
 # ~~~~~~~~~~~~~
-# 12.December: arrows
+# XX 12.December: arrows 
 
 This post is to create a plot that has arrows indicating the direction
 
 In the example, we use sample data, but if you know where you event starts and ends you can skip these steps and go directly to the final section.
-
 
 # Data
 
@@ -1847,7 +1946,7 @@ library(seamonas)
 
 This data is from a simulated survey
 
-```{r}
+```{r,eval=FALSE}
 survey_data<-survey_4326
 ```
 
@@ -1858,19 +1957,19 @@ Using the information from time, we will check when there were gaps and based on
 
 Load tidyverse package to use some functions
 
-```{r}
+```{r,eval=FALSE}
 library(tidyverse)
 ```
 
 Check that your time data is in the correct format
 
-```{r}
+```{r,eval=FALSE}
 survey_data$dt <- as.POSIXct(strptime(survey_data$timestamps, "%Y-%m-%d %H:%M:%S"))
 ```
 
 This function uses the times to identify where there was a gap, assuming that the data is sorted
 
-```{r}
+```{r,eval=FALSE}
 calculate_gaps<-function(my_data=my_data){
   time1<-my_data$dt
   time2<-lag(time1)
@@ -1882,13 +1981,13 @@ calculate_gaps<-function(my_data=my_data){
 
 After running the function, a new data frame will be created which includes a column named **time_dif**
 
-```{r}
+```{r,eval=FALSE}
 survey_data_gaps<-calculate_gaps(survey_data)
 ```
 
 Here we will define, how many minutes should be considered a gap
 
-```{r}
+```{r,eval=FALSE}
 survey_data_gaps<-survey_data_gaps %>%
   mutate(gap_event = case_when(is.na(time_dif) ~ 'N',
                                 time_dif >= 2 ~ 'Y',
@@ -1900,7 +1999,7 @@ survey_data_gaps<-survey_data_gaps %>%
 
 To add a number to each event in order to be able to identify them separately, we use the following function
 
-```{r}
+```{r,eval=FALSE}
 identify_events<-function(my_data=my_data){
   num_seq<-nrow(my_data)
   num_seq<-as.numeric(num_seq)
@@ -1919,7 +2018,7 @@ return(my_data_events)
 
 The function will return a data frame with a new column called **event_number**
 
-```{r}
+```{r,eval=FALSE}
 survey_data_events<-identify_events(my_data=survey_data_gaps)
 ```
 
@@ -1927,7 +2026,7 @@ survey_data_events<-identify_events(my_data=survey_data_gaps)
 
 Using the classification of the events, we will extract the first and the last location per event, which would become the start and end of the arrow on the plot
 
-```{r}
+```{r,eval=FALSE}
 survey_time_events<-survey_data_events %>%
   group_by(event_number)%>%
   summarise(first_lat=first(latitude),
@@ -1941,7 +2040,7 @@ survey_time_events<-survey_data_events %>%
 
 To plot we use the function **geom_segment** and the additional argument **arrow**
 
-```{r}
+```{r,eval=FALSE}
 ggplot(survey_time_events,
        aes(x = first_lon, y = first_lat)) +
   geom_segment(aes(xend = last_lon, yend = last_lat), arrow = arrow())
@@ -1954,7 +2053,7 @@ If you were need more frequent arrows, you can re-scale the events
 
 Here I create a for loop to re-scale separately per event
 
-```{r}
+```{r,eval=FALSE}
 rescale_events<-function(my_data=my_data,each_num=each_num){
   events_list<-split(my_data,my_data$event_number)
   new_events_list<-list()
@@ -1973,7 +2072,7 @@ return(new_events_df)
 
 We define how often do we want the arrow to occur, here I selected 40, which represents the number of locations
 
-```{r}
+```{r,eval=FALSE}
 survey_rescale<-rescale_events(my_data=survey_data_events,each_num=40)
 ```
 
@@ -1981,7 +2080,7 @@ survey_rescale<-rescale_events(my_data=survey_data_events,each_num=40)
 
 Use the function **group_by** and **summarise** to identify the start and end of the events, now with the rescaling there would be more events
 
-```{r}
+```{r,eval=FALSE}
 survey_rescale_arrows<-survey_rescale %>%
   group_by(event_number2)%>%
   summarise(first_lat=first(latitude),
@@ -1993,7 +2092,7 @@ survey_rescale_arrows<-survey_rescale %>%
 
 Similarly to above we use the function geom_segment and the argument arrow
 
-```{r}
+```{r,eval=FALSE}
 ggplot(survey_rescale_arrows,
        aes(x = first_lon, y = first_lat)) +
   geom_segment(aes(xend = last_lon, yend = last_lat), 
@@ -2022,7 +2121,7 @@ German_coast<-st_transform(GermanNorthSea::German_coast, 4326)
 
 Add the corresponding arguments and voilà
 
-```{r}
+```{r,eval=FALSE}
 ggplot() + 
   geom_sf(data = German_EEZ, colour = 'black')+
   geom_sf(data = German_land, colour = 'black', fill = 'grey')+ 
