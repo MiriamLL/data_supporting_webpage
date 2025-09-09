@@ -1104,14 +1104,14 @@ Customize your plot using different sizes, shapes and colors in the points of yo
 
 # Data
 
-Load or install the package **seamonas** 
+Load or install the package **SeaDens** 
 
 ```{r, eval=FALSE}
-devtools::install_github("MiriamLL/seamonas")
+devtools::install_github("MiriamLL/SeaDens")
 ```
 
 ```{r, message=FALSE, warning=FALSE}
-library(seamonas)
+library(SeaDens)
 ```
 
 Load data
@@ -1146,7 +1146,6 @@ Each of the dots contains density data, to check the values you can use the func
 ```{r, eval=FALSE}
 range(density_df$densities)
 ```
-
 
 ## Classify
 
@@ -1192,7 +1191,6 @@ To define the sizes, numbers can be used.
 ```{r, eval=FALSE}
 density_sizes<-c("group0"=0.5, "group1"=1,"group2"=2, "group3"=3, "group4"=5)
 ```
-
 
 To define the text on the labels, characters can be used.
 
@@ -1302,6 +1300,15 @@ These figures are based on the SAS monitoring program, but note that data was ra
 
 See the real maps [here](https://www.researchgate.net/publication/366325582_Monitoring_von_Seevogeln_in_der_deutschen_Nord-_und_Ostsee_2021).
 
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+ggsave(density_wmap,
+       filename = paste0(here(),"/Blog/2023/custompoints_export.jpg"),
+       width = 6, 
+       height = 7, 
+       units = "in",
+       dpi = 300)
+```
 
 # ~~~~~~~~~~~~~
 # XX 8.August: custom legend
