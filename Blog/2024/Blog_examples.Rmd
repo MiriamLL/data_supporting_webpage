@@ -1,0 +1,2643 @@
+---
+title: "Blog"
+output: html_document
+date: "2025-09-09"
+---
+
+# 1. January
+
+# Calendar
+
+This post is to create a calendar to check when some events were more likely to occur.
+
+# Packages
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+# Data
+
+Create a data frame with a sequence of days
+
+```{r}
+firstday<- as.Date("2020-05-01")
+lastday <- as.Date("2020-08-31")
+days_seq <- seq(firstday, lastday, by = "day")
+days_df<-as.data.frame(days_seq)
+```
+
+Separate months and days
+
+```{r}
+days_df$month<-substr(days_df$days, start = 6, stop = 7)
+days_df$day<-substr(days_df$days, start = 9, stop = 10)
+```
+
+Add values
+
+```{r}
+my_values<-sample(1:7, 123, replace=TRUE)
+days_df$events<-as.factor(my_values[1:123])
+```
+
+Separate months
+
+```{r}
+may<-days_df %>%
+  filter(month=='05')
+```
+
+Create x and y axis
+
+```{r}
+calen_xs<-rep(c(1:7), times = 5)
+calen_ys<-rep(c(5:1), each = 7)
+```
+
+```{r}
+may$calen_xs<-calen_xs[1:31]
+may$calen_ys<-calen_ys[1:31]
+```
+
+Select color palette
+
+```{r}
+my_palette <- c("1" = '#577590', 
+                "2" = '#43aa8b', 
+                "3" = '#90be6d', 
+                "4" = "#f9c74f", 
+                "5" = "#f8961e", 
+                "6" = "#f3722c", 
+                "7" = "#f94144") 
+```
+
+# Plot
+
+```{r, fig.height=4.8, fig.width=6.1}
+ggplot(may,aes(x=calen_xs,y=calen_ys,color=events))+
+  geom_point(size=25,shape=15)+
+
+  scale_x_continuous(limits=c(0.5,7.5))+
+  scale_y_continuous(limits=c(0.5,5.5))+
+  
+  # remove background colors
+  theme_void()+
+  
+  # adds texts
+  geom_text(aes(label=day),color='white') +
+  
+  # sets the legend below
+  theme(legend.position = 'top')+
+   
+  # lines the legend
+  guides(colour = guide_legend(override.aes = list(size=6),nrow = 1))+
+  
+  # uses palette
+  scale_color_manual(name = "May no. events",values = my_palette)
+```
+
+# Thats it!
+
+# ~~~~~~~~~~~~~
+# 2. February
+# Environmental variables
+
+# Intro
+
+This post is to create a map with environmental variables.
+
+1.  Identify the data you want to download
+2.  Download data from the server
+3.  Create a basic map with the values
+
+# Define
+
+Define the area you want to download the data from.
+
+```{r}
+xlim1<--125.
+xlim2<--88.
+ylim1<-14.
+ylim2<-35.
+```
+
+Define also the time frame you are interested in.
+
+```{r}
+time1<-'2017-03-01T00:00:00Z'
+time2<-'2017-03-30T00:00:00Z'
+```
+
+# Load data
+
+Load the package *rerddap*
+
+```{r}
+library("rerddap")
+```
+
+Check the list of available servers.
+
+For the example, we are interested in the Pacific Ocean, therefore I would use NOAA.
+
+```{r, eval=FALSE}
+servers()
+```
+
+I want to download sea surface temperature (SST) data, therefore I will use *erdMH1sstdmday*
+
+```{r}
+sstInfo <- info('erdMH1sstdmday')
+```
+
+To check the specifications use *browse*
+
+```{r, eval=FALSE}
+browse('erdMH1sstdmday') 
+```
+
+It takes some time to download.
+
+```{r}
+SST03.2017<-griddap(sstInfo, latitude = c(ylim1, ylim2), longitude = c(xlim1, xlim2), time = c(time1,time2), fields = 'sst')
+```
+
+To use ggplot, the format in dataframe works better.
+
+```{r}
+SST03.2017dt<-SST03.2017$data
+```
+
+Clear NaNs
+
+```{r, warning=FALSE}
+library(tidyverse)
+```
+
+```{r}
+SST03.2017dt_clean<-SST03.2017dt %>%
+  filter(sst!='NaN')
+```
+
+Create plot
+
+```{r}
+ggplot(SST03.2017dt_clean) +
+ geom_raster(aes(x=longitude, y=latitude, fill = sst))+ 
+  scale_fill_viridis_c(option = "H")
+```
+
+# Add land for reference
+
+Load the package *rworldmap* this includes shapefiles of countries
+
+```{r}
+library(rworldmap)
+```
+
+The function *getMap()* loads the map in your environment
+
+```{r}
+worldMap <- getMap()
+```
+
+Load the package tidyverse
+
+Use the function *fortify* to be able to plot the map using ggplot
+
+```{r}
+world.points <- fortify(worldMap)
+```
+
+To plot using ggplot a data frame is recommended
+
+```{r}
+world.points$region <- world.points$id
+world.df <- world.points[,c("long","lat","group", "region")]
+```
+
+Create plot using ggplot
+
+```{r}
+ggplot(SST03.2017dt) +
+  geom_raster(aes(x=longitude, y=latitude, fill = sst))+
+  geom_polygon(data = world.df, aes(x = long, y = lat, group = group), colour = '#403d39', fill = "#e5e5e5") +
+  theme(
+    axis.title = element_blank(),
+    panel.border = element_rect(colour = "#495057", fill=NA, size=1),
+    panel.grid = element_blank(), 
+    panel.spacing = unit(0, "lines"), 
+    plot.background = element_blank())+
+    coord_sf(xlim = c(xlim1+2,xlim2-2), 
+             ylim = c(ylim1+2,ylim2-2))+ 
+  scale_fill_viridis_c(option = "H")
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(ggplot(SST03.2017dt) +
+  geom_raster(aes(x=longitude, y=latitude, fill = sst))+
+  geom_polygon(data = world.df, aes(x = long, y = lat, group = group), colour = '#403d39', fill = "#e5e5e5") +
+  theme(
+    axis.title = element_blank(),
+    panel.border = element_rect(colour = "#495057", fill=NA, size=1),
+    panel.grid = element_blank(), 
+    panel.spacing = unit(0, "lines"), 
+    plot.background = element_blank())+
+    coord_sf(xlim = c(xlim1+2,xlim2-2), 
+             ylim = c(ylim1+2,ylim2-2))+ 
+  scale_fill_viridis_c(option = "H"), 
+       filename = paste0(here::here(),"/blog/2024-02-06-environmentalvariables/environmental_export.jpg"),
+       width = 8, 
+       height = 8, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "40%"}
+paste0(here::here(),"/blog/2024-02-06/environmental_export.jpg")
+knitr::include_graphics(paste0(here::here(),"/blog/2024-02-06-environmentalvariables/environmental_export.jpg"))
+```
+
+# ~~~~~~~~~~~~~
+# 3. March
+# Double axis
+
+# Intro
+
+This post is to create a plot with environmental variables, in one axis the sea surface temperature and in the other axis the chlorophyll-a concentration.
+
+1.  Download data from the server
+2.  Calculate average values
+3.  Create a secondary-axis plot with the values
+
+# Load data
+
+Load the package **rerddap**
+
+```{r}
+library("rerddap")
+```
+
+**SST: sea surface temperature**
+
+For obtaining data, download sea surface temperature (SST) from **erdMWsstd1day_LonPM180** ([link here](https://upwell.pfeg.noaa.gov/erddap/griddap/erdMWsstd1day_LonPM180.graph?sst%5B(2024-03-10T12:00:00Z)%5D%5B(0.0)%5D%5B(23):(27)%5D%5B(-111):(-109)%5D&.draw=surface&.vars=longitude%7Clatitude%7Csst&.colorBar=%7C%7C%7C%7C%7C&.bgColor=0xffccccff)).
+
+Another option is **erdMW1sstd1day** ([link here](https://upwell.pfeg.noaa.gov/erddap/griddap/erdMWsstd1day.graph?sst%5B(2024-02-17T12:00:00Z)%5D%5B(0.0)%5D%5B(22.0):(51.0)%5D%5B(205.0):(255.0)%5D&.draw=surface&.vars=longitude%7Clatitude%7Csst&.colorBar=%7C%7C%7C%7C%7C&.bgColor=0xffccccff&.click=?302,181)).
+
+To search other options [here](https://upwell.pfeg.noaa.gov/erddap/index.html).
+
+```{r}
+sstInfo <- info('erdMWsstd1day_LonPM180')
+```
+
+To subset the data select the coordinates of a smaller area.
+
+```{r}
+lonmin<--111
+lonmax<--109
+latmin<-23
+latmax<-27
+```
+
+To download, provide the parameters such as the server, the coordinates and the time frame. It takes some time to download.
+
+```{r}
+SST03.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-03-01T00:00:00Z','2023-03-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST04.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-04-01T00:00:00Z','2023-04-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST05.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-05-01T00:00:00Z','2023-05-30T00:00:00Z'),
+                    fields = 'sst')
+
+SST06.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-06-01T00:00:00Z','2023-06-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST07.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-07-01T00:00:00Z','2023-07-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST08.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-08-01T00:00:00Z','2023-08-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST09.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-09-01T00:00:00Z','2023-09-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST10.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-10-01T00:00:00Z','2023-10-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST11.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-11-01T00:00:00Z','2023-11-30T00:00:00Z'), 
+                    fields = 'sst')
+
+SST12.2023<-griddap(sstInfo, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-12-01T00:00:00Z','2023-12-30T00:00:00Z'), 
+                    fields = 'sst')
+```
+
+**CHL: chlorophyll-a concentration**
+
+To download chlorophyll concentration (CHL) data, connect to **erdMWchlamday_LonPM180** (here the [link](https://upwell.pfeg.noaa.gov/erddap/griddap/erdMWchlamday_LonPM180.html).
+
+Another option is **erdMW1CHLd1day** (here the [link](https://upwell.pfeg.noaa.gov/erddap/griddap/erdMWcflh3day.graph))
+
+```{r}
+CHLInfo <- info('erdMWchlamday_LonPM180')
+```
+
+To subset the data select the coordinates of a smaller area.
+
+To download, provide the parameters such as the server, the coordinates and the time frame. It takes some time to download.
+
+```{r}
+CHL03.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-03-01T00:00:00Z','2023-03-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+
+CHL04.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-04-01T00:00:00Z','2023-04-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+
+CHL05.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-05-01T00:00:00Z','2023-05-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+CHL06.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-06-01T00:00:00Z','2023-06-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+
+CHL07.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-07-01T00:00:00Z','2023-07-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+
+CHL08.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-08-01T00:00:00Z','2023-08-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+
+CHL09.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-09-01T00:00:00Z','2023-09-30T00:00:00Z'), 
+                    fields ='chlorophyll')
+
+CHL10.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-10-01T00:00:00Z','2023-10-30T00:00:00Z'), 
+                    fields ='chlorophyll')
+
+CHL11.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-11-01T00:00:00Z','2023-11-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+
+CHL12.2023<-griddap(CHLInfo, 
+                    latitude = c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-12-01T00:00:00Z','2023-12-30T00:00:00Z'), 
+                    fields = 'chlorophyll')
+```
+
+# Average values
+
+Load the package **tidyverse**.
+
+```{r}
+library(tidyverse)
+```
+
+**SST: sea surface temperature**
+
+To calculate average values the best is to transform the data into a data frame.
+
+```{r}
+SST03.2023dt<-SST03.2023$data
+SST04.2023dt<-SST04.2023$data
+SST05.2023dt<-SST05.2023$data
+SST06.2023dt<-SST06.2023$data
+SST07.2023dt<-SST07.2023$data
+SST08.2023dt<-SST08.2023$data
+SST09.2023dt<-SST09.2023$data
+SST10.2023dt<-SST10.2023$data
+SST11.2023dt<-SST11.2023$data
+SST12.2023dt<-SST12.2023$data
+```
+
+Functions from the package tidyverse can be used to calculate the **mean** values.\
+The xaxis would be in numeric value for the plot.
+
+```{r}
+SST03.2023dt_clean<-SST03.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='03/2023', xaxis=1)
+
+SST04.2023dt_clean<-SST04.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='04/2023', xaxis=2)
+
+SST05.2023dt_clean<-SST05.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='05/2023', xaxis=3)
+
+SST06.2023dt_clean<-SST06.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='06/2023', xaxis=4)
+
+SST07.2023dt_clean<-SST07.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='07/2023', xaxis=5)
+
+SST08.2023dt_clean<-SST08.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='08/2023', xaxis=6)
+
+SST09.2023dt_clean<-SST09.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='09/2023', xaxis=7)
+
+SST10.2023dt_clean<-SST10.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='10/2023', xaxis=8)
+
+SST11.2023dt_clean<-SST11.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='11/2023', xaxis=9)
+
+SST12.2023dt_clean<-SST12.2023dt %>%  drop_na(sst) %>% 
+  summarise(mean_sst=mean(sst),sd_sst=sd(sst))%>% 
+  mutate(month='12/2023', xaxis=10)
+```
+
+Now join into a single data frame.
+
+```{r}
+SST_months<-rbind(SST03.2023dt_clean,
+      SST04.2023dt_clean,
+      SST05.2023dt_clean,
+      SST06.2023dt_clean,
+      SST07.2023dt_clean,
+      SST08.2023dt_clean,
+      SST09.2023dt_clean,
+      SST10.2023dt_clean,
+      SST11.2023dt_clean,
+      SST12.2023dt_clean
+      )
+```
+
+**CHL: chlorophyll-a concentration**
+
+The same procedure used with SST, would be used with CHL.
+
+Convert to data frame.
+
+```{r}
+CHL03.2023dt<-CHL03.2023$data
+CHL04.2023dt<-CHL04.2023$data
+CHL05.2023dt<-CHL05.2023$data
+CHL06.2023dt<-CHL06.2023$data
+CHL07.2023dt<-CHL07.2023$data
+CHL08.2023dt<-CHL08.2023$data
+CHL09.2023dt<-CHL09.2023$data
+CHL10.2023dt<-CHL10.2023$data
+CHL11.2023dt<-CHL11.2023$data
+CHL12.2023dt<-CHL12.2023$data
+```
+
+Calculate the mean values. Include the xaxis.
+
+```{r}
+CHL03.2023dt_clean<-CHL03.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%  
+  mutate(month='03/2023', xaxis=1)
+
+CHL04.2023dt_clean<-CHL04.2023dt %>%  drop_na(chlorophyll) %>%
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='04/2023', xaxis=2)
+
+CHL05.2023dt_clean<-CHL05.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='05/2023', xaxis=3)
+
+CHL06.2023dt_clean<-CHL06.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='06/2023', xaxis=4)
+
+CHL07.2023dt_clean<-CHL07.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='07/2023', xaxis=5)
+
+CHL08.2023dt_clean<-CHL08.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='08/2023', xaxis=6)
+
+CHL09.2023dt_clean<-CHL09.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='09/2023', xaxis=7)
+
+CHL10.2023dt_clean<-CHL10.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='10/2023', xaxis=8)
+CHL11.2023dt_clean<-CHL11.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='11/2023', xaxis=9)
+
+CHL12.2023dt_clean<-CHL12.2023dt %>%  drop_na(chlorophyll) %>% 
+  summarise(mean_CHL=mean(chlorophyll),sd_CHL=sd(chlorophyll))%>%
+  mutate(month='12/2023', xaxis=10)
+```
+
+Create a data frame with all the values.
+
+```{r}
+CHL_months<-rbind(CHL03.2023dt_clean,
+      CHL04.2023dt_clean,
+      CHL05.2023dt_clean,
+      CHL06.2023dt_clean,
+      CHL07.2023dt_clean,
+      CHL08.2023dt_clean,
+      CHL09.2023dt_clean,
+      CHL10.2023dt_clean,
+      CHL11.2023dt_clean,
+      CHL12.2023dt_clean
+      )
+```
+
+# Two-axis plot
+
+```{r, eval=FALSE, echo=FALSE}
+ggplot(SST_months, aes(x=month, y=mean_sst)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin=mean_sst-sd_sst, ymax=mean_sst+sd_sst), width=.2,
+                 position=position_dodge(0.05))
+ggplot(CHL_months, aes(x=month, y=mean_CHL)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin=mean_CHL-sd_CHL, ymax=mean_CHL+sd_CHL), width=.2,
+                 position=position_dodge(0.05))
+```
+
+**SST: sea surface temperature**
+
+Create a plot using **geom_line** using functions from the package ggplot.
+
+```{r, fig.height=4, fig.width=6}
+plot_SST<-ggplot(SST_months) +
+  geom_line(aes(x = xaxis, y = mean_sst),color='red', size=1)+ 
+  scale_y_continuous(("Sea Surface Temperature (°C)"),limits=c(8.5,35.5),expand=c(0, 0))+
+    scale_x_continuous("Months",breaks=c(1,2,3,4,5,6,7,8,9,10),labels=c('Mar','Apr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dec'))+
+  theme_bw()+#dejar lineas de las orillas
+  theme(axis.title.x = element_text(size=13),
+        axis.text.x = element_text(size=10),
+        axis.title.y=element_text(size=13),
+        axis.text.y=element_text(size=10),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank())+
+  NULL
+plot_SST
+```
+
+**CHL: chlorophyll-a concentration**
+
+Create your second plot with functions from the package ggplot.
+
+For this plot, as it would be on top of the other, the panel background, border, and plot background should be transparent.
+
+```{r, fig.height=4, fig.width=6}
+plot_CHL<-ggplot(CHL_months) +
+  geom_line(aes(x = xaxis, y = mean_CHL),color='blue', size=1) +
+  scale_y_continuous(("Chlorophyll-a concentration (mg m-3 )"),limits=c(0.05,3.0),breaks=c(0.5,1,1.5,2,2.5),expand=c(0, 0),position = "right")+
+  scale_x_continuous("Months",breaks=c(1,2,3,4,5,6,7,8,9,10),labels=c('Mar','Apr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dec'))+
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.title.y = element_text(size = 13, vjust=6), 
+        axis.text.y = element_text(size = 10),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill='transparent'),
+        panel.border = element_rect(colour = "black", fill='transparent', size=1),
+        plot.background = element_rect(fill = 'transparent',colour = 'transparent',linewidth = 1))
+plot_CHL
+```
+
+# Add legend
+
+Using **annotate** the legend would be included inside the plot.
+
+```{r, fig.height=4, fig.width=6}
+plot_SST_wlegend<-plot_SST+
+  annotate("text", x = c(1.9), y = c(34), label = c("SST") , color="black", size=5)+ 
+  annotate("segment", x = 1.0, xend = 1.4, y = 34, yend = 34, colour = "red", size=1, alpha=1)+
+  
+  annotate("text", x = c(1.9), y = c(32), label = c("CHL") , color="black", size=5)+ 
+  annotate("segment", x = 1.0, xend = 1.4, y = 32, yend = 32, colour = "blue", size=1, alpha=1)+
+  NULL
+plot_SST_wlegend
+```
+
+# Join graphs
+
+Using functions from the package **patchwork** both plots would be merge into one.
+
+```{r}
+library(patchwork)
+```
+
+To further learn how to change the layout [click here](https://patchwork.data-imaginist.com/articles/guides/layout.html).
+
+```{r, fig.height=4, fig.width=6}
+plot_SST_wlegend + plot_CHL+
+  plot_layout(design = c(area(t = 1, l = 1, b = 5, r = 4),
+            area(t = 1, l = 1, b = 5, r = 4)))
+```
+
+# ~~~~~~~~~~~~~
+# 4. April
+# Buffer
+
+In this blog, a buffer subsetting environmental data would be created and the average values within the buffer calculated.
+
+# Download data
+
+Load the package **rerddap**
+
+```{r}
+library("rerddap")
+```
+
+```{r}
+SST_info <- info('erdMWsstd1day_LonPM180')
+```
+
+To subset the data select the coordinates of a smaller area.
+
+```{r}
+lonmin<--111
+lonmax<--109
+latmin<-23
+latmax<-27
+```
+
+To download, provide the parameters such as the server, the coordinates and the time frame. It takes some time to download.
+
+```{r}
+SST_values<-griddap(SST_info, 
+                    latitude= c(latmin, latmax), longitude = c(lonmin, lonmax), 
+                    time = c('2023-03-01T00:00:00Z','2023-03-30T00:00:00Z'), 
+                    fields = 'sst')
+```
+
+To access the data as data frame, extract the data.
+
+```{r}
+SST_df<-SST_values$data
+```
+
+Using functions from the package tidyverse, remove all NAs.
+
+```{r, warning=FALSE}
+library(tidyverse)
+```
+
+```{r}
+SST_dfclean<-SST_df %>%
+  filter(sst!='NaN')
+```
+
+# Map
+
+Check data downloaded using ggplot.
+
+```{r}
+library(ggplot2)
+```
+
+Download data from land from the package **rworldmap**.
+
+```{r}
+library(rworldmap)
+```
+
+The function *getMap()* loads the map in your environment.
+
+```{r}
+world_map <- getMap()
+```
+
+To plot using ggplot a data frame is recommended. Use the function *fortify* to be able to get the data in a data frame format.
+
+```{r, warning=FALSE}
+world_points <- fortify(world_map)
+world_points$region <- world_points$id
+world_df <-world_points[,c("long","lat","group", "region")]
+```
+
+```{r, fig.height=4}
+ggplot() +
+ geom_raster(data=SST_dfclean,aes(x=longitude, y=latitude, fill = sst))+ scale_fill_viridis_c(option = "H")+
+ geom_polygon(data = world_df, aes(x = long, y = lat, group = group), colour = '#403d39', fill = "#e5e5e5") +
+ coord_sf(xlim = c(-109.7,-109.1),ylim = c(24.6,25.2))
+```
+
+# Create buffer
+
+Load package **sp**.
+
+```{r}
+library(sp)
+```
+
+Give coordinates from the central point.
+
+```{r}
+This_point<-data.frame(Longitude=-109.37728617302638,Latitude=24.92572600240793)
+```
+
+Use this custom function to create a buffer. Note that it uses epsg 4236, adjust if necessary.
+
+```{r}
+create_buffer<-function(central_point=central_point, buffer_km=buffer_km){
+  central_spatial<- sp::SpatialPoints(cbind(central_point$Longitude,central_point$Latitude)) 
+  sp::proj4string(central_spatial)= sp::CRS("+init=epsg:4326") 
+  central_spatial <- sp::spTransform(central_spatial, sp::CRS("+init=epsg:4326"))
+  central_spatial<-sf::st_as_sf(central_spatial)
+  buffer_dist<-buffer_km*1000
+  central_buffer<-sf::st_buffer(central_spatial, buffer_dist)
+  return(central_buffer)
+  }
+```
+
+The central point and the kilometers are the arguments needed.
+
+```{r, warning=FALSE}
+This_buffer<-create_buffer(central_point=This_point,buffer_km=20)
+```
+
+Confirm that the buffer is not a SpatialPolygons.
+
+```{r}
+class(This_buffer)
+```
+
+# Map
+
+Use ggplot to create the map.\
+Use the functions **geom_raster** to plot the SST data.\
+The function **geom_polygon** to plot the base maps data.\
+The function **geom_polygon** to plot the buffer.\
+Adjust to your corresponding area on the **coord_sf**.
+
+```{r, fig.height=4, warning=FALSE}
+ggplot() +
+ geom_raster(data=SST_dfclean,aes(x=longitude, y=latitude, fill = sst))+ scale_fill_viridis_c(option = "H")+
+ geom_polygon(data = world_df, aes(x = long, y = lat, group = group), colour = '#403d39', fill = "#e5e5e5") +
+ geom_sf(data = This_buffer, 
+          color = "black", 
+          fill = NA,  # equivalent to 'transparent'
+          linetype = "dashed")+
+ geom_point(data=This_point, aes(x=Longitude, y=Latitude), colour = "black", size = 4)+
+ coord_sf(xlim = c(-109.7,-109.1),ylim = c(24.6,25.2))
+```
+
+# Extract information
+
+Convert the SST data into a SpatialPointsDataFrame.
+
+```{r}
+SST_sp <- SST_dfclean
+sp::coordinates(SST_sp) <- ~longitude + latitude
+sp::proj4string(SST_sp) = sp::CRS("+init=epsg:4326")
+```
+
+Use the function **over** from the package **sp** to extract the SST data using the buffer.
+
+```{r}
+SST_sp<-sf::st_as_sf(SST_sp)
+```
+
+```{r}
+#LALI01_1colony_over<- over(LALI01_1colony_points,Colony_buffer)
+SST_buffer<-sapply(sf::st_intersects(SST_sp,This_buffer), function(z) if (length(z)==0) NA_integer_ else z[1])
+```
+
+The SST values that fall inside the buffer are now added as a column named **sst_inside** in the data frame.
+
+```{r}
+SST_dfclean$sst_inside <- as.numeric(SST_buffer)
+```
+
+The values that fall inside the buffer are shown as **1**.\
+To keep only the data inside the buffer select only those rows with values inside the buffer using the function **filter**.
+
+```{r}
+SST_inside<-SST_dfclean %>%
+  filter(sst_inside==1)%>%
+  drop_na(sst)
+```
+
+# Subset
+
+To plot the SST data, select the information from the new data frame **SST_inside** and the function **geom_raster** to plot the information.
+
+```{r, fig.height=4}
+ggplot() +
+  geom_raster(data=SST_inside,aes(x=longitude, y=latitude, fill = sst))+ scale_fill_viridis_c(option = "H")+
+  geom_polygon(data = world_df, aes(x = long, y = lat, group = group), colour = '#403d39', fill = "#e5e5e5") +
+  
+  geom_sf(data = This_buffer, 
+          color = "black", 
+          fill = NA,  # equivalent to 'transparent'
+          linetype = "dashed")+
+  geom_point(data=This_point, aes(x=Longitude, y=Latitude), colour = "black", size = 4)+
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill='transparent'))+
+  coord_sf(xlim = c(-109.7,-109.1),ylim = c(24.6,25.2))+ 
+  NULL
+```
+
+Use the values inside the buffer to calculate the average SST
+
+```{r}
+mean(SST_inside$sst)
+sd(SST_inside$sst)
+```
+
+# Export
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(ggplot() +
+  geom_raster(data=SST_inside,aes(x=longitude, y=latitude, fill = sst))+ scale_fill_viridis_c(option = "H")+
+  geom_polygon(data = world_df, aes(x = long, y = lat, group = group), colour = '#403d39', fill = "#e5e5e5") +
+  
+  geom_sf(data = This_buffer, 
+          color = "black", 
+          fill = NA,  # equivalent to 'transparent'
+          linetype = "dashed")+
+  geom_point(data=This_point, aes(x=Longitude, y=Latitude), colour = "black", size = 4)+
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill='transparent'))+
+  coord_sf(xlim = c(-109.7,-109.1),ylim = c(24.6,25.2))+ 
+  NULL,
+       filename = paste0(here(),"/blog/2024-04-11-buffer/buffer_export.jpg"),
+       width = 6, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+# ~~~~~~~~~~~~~
+# 5. May
+# Magick
+
+# Intro
+
+This post is to read and edit images in R.
+
+Using R assures that your image would not be compress as happens when you open it with some other programs.
+
+The blog consist of two parts:\
+1. Add letter to a picture and export\
+2. Merge two pictures into one and export
+
+# Packages
+
+Use the package **magick** to process images in R.
+
+For more information: <https://docs.ropensci.org/magick/articles/intro.html#read-and-write>
+
+To install the package
+
+```{r, eval=FALSE}
+install.packages("magick")
+```
+
+To call the package
+
+```{r}
+library(magick)
+```
+
+# Data
+
+Select your directory. In the example, as **My_directory**.
+
+```{r, eval=FALSE}
+library(here)
+My_directory<-here()
+```
+
+```{r, echo=FALSE}
+My_directory<-('https://github.com/MiriamLL/quarto_webpage/blob/main/blog/2024-05-02-imagesforpublication')
+```
+
+Check if you gave the correct path by using the function **list.files**.\
+It should show the images you want to use.
+
+Read images using the function **image_read**.
+
+```{r, eval=FALSE}
+Fig1_original<- image_read(paste0(My_directory,'/MABO.JPG'))
+```
+
+```{r,echo=FALSE}
+Fig1_original<- image_read(paste0(My_directory,'/MABO.JPG?raw=TRUE'))
+```
+
+The function **image_draw** will show the picture in the Viewer.\
+Moreover, it gives information on the width and height of the picture.
+
+```{r}
+Fig1_draw<-image_draw(Fig1_original)
+Fig1_draw
+```
+
+# Add text
+
+To add text use the function **image_annotate**
+
+To add the text in the right bottom use the information from the dimensions above to define the xaxis and yaxis.
+
+```{r}
+Fig1_text<-image_annotate(Fig1_draw, "(a)",  location = "+1199+999", font = 'Arial', size = 100, color='white')
+```
+
+```{r, eval=TRUE, echo=FALSE}
+library(here)
+My_directory<-here()
+```
+
+```{r, eval=TRUE, echo=FALSE}
+image_write(Fig1_text, path = paste0(My_directory,"/Fig1_rb.png"), format = "png")
+```
+
+```{r, fig.height=4,echo=FALSE, fig.align='left'}
+#list.files(My_directory)
+Fig1A_rb<-paste0(My_directory,"/Fig1_rb.png")
+knitr::include_graphics(Fig1A_rb)
+```
+
+To add the text in the left top part you can use define the xaxis and yaxis as 100.
+
+```{r}
+Fig1_text<-image_annotate(Fig1_draw, "(a)",  location = "+50+50", font = 'Arial', size = 100, color='white')
+```
+
+```{r, eval=FALSE, echo=FALSE}
+image_write(Fig1_text, path = paste0(My_directory,"/Fig1_lt.png"), format = "png")
+```
+
+```{r, fig.height=4,echo=FALSE, fig.align='left'}
+#list.files(My_directory)
+Fig1A_lt<-paste0(My_directory,"/Fig1_lt.png")
+knitr::include_graphics(Fig1A_lt)
+```
+
+# Export
+
+Use the function **image_write** to export.
+
+```{r, eval=FALSE}
+image_write(Fig1_text, path = paste0(My_directory,"/Fig1_tl.png"), format = "png")
+```
+
+# Merge two pictures into one and export
+
+Follow the same steps as above, but with a second picture.
+
+```{r,eval=FALSE}
+Fig2_original<- image_read(paste0(My_directory,"\\RFBO.JPG"))
+```
+
+```{r,echo=FALSE}
+My_directory<-('https://github.com/MiriamLL/miriamlerma_/blob/main/_posts/2024-05-02-imagesforpublication')
+Fig2_original<- image_read(paste0(My_directory,'/RFBO.JPG?raw=TRUE'))
+```
+
+```{r}
+Fig2_draw<-image_draw(Fig2_original)
+Fig2_text<-image_annotate(Fig2_draw, "(b)",  location = "+50+50", font = 'Arial', size = 100, color='white')
+```
+
+# Add border
+
+Use the function **image_border** to add some space between the pictures.
+
+```{r}
+Fig1_border<-image_border(image_background(Fig1_text, "transparent"), "white", "40x10")
+Fig1_border
+```
+
+```{r}
+Fig2_border<-image_border(image_background(Fig2_text, "transparent"), "white", "40x10")
+Fig2_border
+```
+
+# Combine
+
+Use the function **image_append** to have both pictures side by side.
+
+```{r}
+image_append(c(Fig1_border,Fig2_border))
+```
+
+# Export
+
+Use the function **image_write** to export the picture.
+
+```{r, eval=TRUE, echo=FALSE}
+library(here)
+My_directory<-here()
+```
+
+```{r, eval=FALSE}
+image_write(image_append(c(Fig1_border,Fig2_border)), path = paste0(My_directory,"/Fig1_append.png"), format = "png")
+```
+
+# ~~~~~~~~~~~~~
+# 6. June
+# Intro
+
+This post is about how to calculate distance from a point
+
+# Data
+
+Identify your reference point
+
+```{r}
+reference<-data.frame(name="reference",lat=54.18,long=7.89)
+```
+
+Convert it to a spatial object
+
+```{r}
+reference_sp<-data.frame(lat=reference$lat,
+                         lon=reference$lon)
+sp::coordinates(reference_sp)<-~lon+lat
+```
+
+Then give the information of the other points to compare
+
+```{r}
+colonies_sub<-data.frame(name=c("Ailsa Craig","Barra Head","Bass Rock","Bempton Cliff","Bull Rock","Clare Island", "Fair Isle", "Flannan Isles","Foula","Grassholm Island","Great Saltee", "Helgoland" , "Hermaness", "Ireland’s Eye", "Lambay", "Les Etac/Alderrney","Little Skellig","Mykinesholmur","Noss" ,"Ortac","Rouzic Island","Scar Rocks","St. Kilda","Sula sgeir","Sule Skerry","Sule Stack","Troup Head","Westray"),
+colony_lat=c(55.25,56.78,56.08,54.15,51.59,53.80,59.54,58.29,60.13,51.73,52.12,54.18,60.71,53.40,53.49,49.70,51.78,62.10,60.14,49.72,48.90,54.67,57.81,59.10,59.08,59.02,57.69,59.29),
+colony_long=c(-5.12,-7.64,-2.64,-0.17,-10.27,-10.00,-1.63,-7.59,-2.07,-5.48,-6.62,7.89,-0.88,-6.06,-6.02,-2.24,-10.51,-7.68,-1.02,-2.29,-3.44,-4.70,-8.56,-6.16,-4.41,-4.51,-2.29,-2.98))
+```
+
+```{r}
+head(colonies_sub)
+```
+
+Convert this data frame into a spatial object
+
+```{r}
+colonies_sp<-data.frame(lat=colonies_sub$colony_lat,
+                        lon=colonies_sub$colony_long)
+sp::coordinates(colonies_sp)<-~lon+lat
+```
+
+Give both objects the same coordinate system to make sure they are comparable
+
+```{r}
+sp::proj4string(reference_sp)= sp::CRS("+init=epsg:4326")
+sp::proj4string(colonies_sp)= sp::CRS("+init=epsg:4326")
+```
+
+# Calculate
+
+Using the funcion **distm** from the package geosphere the distance can be calculated. Give the argument distHaversine. Read here what is [Haversine](https://en.wikipedia.org/wiki/Haversine_formula).
+
+```{r}
+maxdist_m<-(geosphere::distm(reference_sp,colonies_sp,fun = geosphere::distHaversine))
+maxdist_km<-round(maxdist_m/1000,digits=2)
+```
+
+Load the package **tidyverse** to make some data wrangling
+
+```{r}
+library(tidyverse)
+```
+
+Use the function **pivot_longer** to reorder the information
+
+```{r}
+distances<-as.data.frame(maxdist_km)%>%
+  pivot_longer(cols=c(V1:V28))
+```
+
+Assign to the data frame
+
+```{r}
+colonies_sub$distance<-distances$value
+```
+
+Here are the results from the distance between the point and the reference point
+
+```{r}
+head(colonies_sub)
+```
+
+# Plot
+
+Load the shapefiles from my package **GermanNorthSea**
+
+```{r}
+library(GermanNorthSea)
+```
+
+Transform them to the assigned CRS using the package **sf**
+
+```{r}
+library(sf)
+```
+
+Here I used 4326
+
+```{r}
+German_land<-st_transform(GermanNorthSea::German_land, 4326)
+German_EEZ<-st_transform(GermanNorthSea::German_EEZ, 4326)
+German_SCA<-st_transform(GermanNorthSea::German_natura, 4326)
+```
+
+Base plot
+
+To create a plot use **ggplot2**
+
+```{r}
+library(ggplot2)
+```
+
+First using a base plot of the North Sea, highlighting the economic exclusive zone of Germany
+
+```{r, fig.height= 7}
+base_plot<-ggplot()+
+  geom_sf(data = German_EEZ, colour = "black", fill= NA, lwd = 0.5,linetype="dashed")+
+  geom_sf(data = German_land, colour = '#edf2f4', fill = '#2b2d42')+
+  coord_sf(xlim = c(-12, 10),ylim = c(48, 63))+
+  scale_x_continuous(breaks = c(-10,-5,0,5,10,20,30),labels = function(x) paste0(x, '\u00B0')) +
+  scale_y_continuous(breaks = c(45,50,55,60,65,70,75),labels = function(x) paste0(x, '\u00B0'))  +
+  theme_bw()+
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+  panel.background = element_rect(fill = '#edf2f4'),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),legend.position='none',
+  panel.border = element_rect(colour = "black", fill=NA, size=1.5),
+  
+  legend.spacing.y = unit(0.05, 'cm'),
+  legend.text=element_text(size=10),
+  legend.background = element_rect(fill='transparent',colour ="transparent"),
+  legend.box.background = element_rect(fill='transparent',colour ="transparent"),
+  legend.key = element_rect(fill = "transparent", colour = "transparent"),
+
+  axis.text.x = element_text(size=10,vjust = 10,color='#3d5a80'),
+  axis.text.y = element_text(color='#3d5a80',size=10,margin = margin(0,-1.00,0,1, unit = 'cm')),
+  axis.title = element_blank(),
+  axis.ticks.length=unit(-0.20, "cm"),
+  )
+base_plot
+```
+
+# Plot with curves
+
+Add the reference point to be able to plot
+
+```{r}
+colonies_sub$reference_long<-reference$lon
+colonies_sub$reference_lat<-reference$lat
+```
+
+Use the function **geom_curve** to create lines between the reference point and the other points.
+
+```{r, fig.height= 7}
+curves_plot<-base_plot+
+  geom_curve(data= subset(colonies_sub,colonies_sub$name != 'Helgoland'),
+             aes(x = reference_long, y = reference_lat, 
+                 xend = colony_long, yend = colony_lat),  
+                 color = '#faa307',
+                 curvature = 0.05, alpha = 0.5)
+curves_plot
+```
+
+Add the other points using **geom_point**
+
+```{r, fig.height= 7}
+points_plot<-curves_plot+
+  geom_point(data=colonies_sub,
+             aes(x = colony_long,y= colony_lat), 
+             color='#faa307', fill='#ffba08',shape=16,size=2,stroke=1.5)+
+  
+    geom_point(data=reference,
+             aes(x = long,y= lat), 
+             color='#ff5400', fill='#ff5400',shape=16,size=4,stroke=1.5)
+points_plot
+```
+
+```{r, fig.height=7}
+letters_plot<-points_plot+
+  annotate("text", y = 54.15-0.21, x = -0.17+2.5, 
+           label = "Bempton Cliff \n (525 km)",
+           size=3.5,color='#0d3b66')+
+  annotate("text", y = 56.08-0.21, x = -2.64+2.5, 
+           label = "Bass Rock \n (701 km)",
+           size=3.5,color='#0d3b66')+
+  annotate("text", y = 57.69-0.21, x = -2.29+2.0, 
+           label = "Troup Head \n (523 km)",
+           size=3.5,color='#0d3b66')+
+  annotate("text", y = 54.18-0.21, x = 7.89-1.9, 
+           label = "Helgoland \n",
+           size=3.5,color='red')+
+NULL
+letters_plot
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(letters_plot,
+       filename = paste0(here(),"/_posts/2024-06-06-pointsdistance/blog34.jpg"),
+       width = 6, 
+       height = 7, 
+       units = "in",
+       dpi = 300)
+```
+
+# Resources
+
+Alternatively using the package [nngeo](https://cran.r-project.org/web/packages/nngeo/index.html)\
+Check my package [GermanNorthSea](https://www.miriam-lerma.com/posts/2023-06-02-germannorthsea/)\
+How to make maps in R [blogpost](https://www.miriam-lerma.com/posts/2023-03-04-mapping-in-r/)
+
+# ~~~~~~~~~~~~~
+# 7.July
+# Interpolate
+
+# Intro
+
+This post is about how to linear interpolate points from a trip
+
+# Data
+
+Download my package **sula** to have access to test data and the function **interpolate_trips**.
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+```
+
+Inside the package, there is data from a tracked individual from Rapa Nui, Chile
+
+```{r}
+ID01_track<-sula::GPS01_trips
+```
+
+The data contains Latitude, Longitude, Date, Time, ID and trip_number
+
+```{r}
+head(ID01_track)
+```
+
+Plot the data using **ggplot** to see whats inside.
+
+```{r}
+library(ggplot2)
+```
+
+Add the central location for reference.
+
+```{r}
+ID01_nest<-data.frame(Longitude=-109.4531,Latitude=-27.20097)
+```
+
+In the figure, the original points recorded are presented. Each color represents a different individual, the black dot is the colony.
+
+```{r, fig.width=4, fig.height=4}
+Original_track<-ggplot(ID01_track, aes(x=Longitude, y=Latitude, color=trip_number)) + 
+  geom_point()+
+  theme_bw()+
+  ggtitle('Original tracking data')+
+  theme_bw()+
+  theme(legend.position='none')+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+  )+
+  geom_point(data=ID01_nest,aes(x = Longitude,y= Latitude), 
+             color="black", fill="black",shape=16,size=5,stroke=1.5)
+Original_track
+```
+
+# Interpolations
+
+For the function, provide the following information:\
+1. trip_number, this would separate the trips and interpolate them using a loop. This is important to prevent that locations inside the nest are interpolated.\
+2. column_lat, and column_lon, need to be provided with the name of your columns. Here, Latitude and Longitude were the names of my columns. I am providing the Latitude and Longitude in degrees.\
+3. column_date, column_time and datetime_format should also be fitting your provided data.\
+4. interval, please give the interval in seconds. This interval would depend on the type of data you are providing. Because this is a linear interpolation, be careful to not have large gaps. If you do, I would suggest to remove trips with large gaps before doing the interpolation.
+
+## Interpolate to 1 minute
+
+```{r}
+ID01_interpolated1m<-interpolate_trips(GPS_data=ID01_track,
+                                     interval='60 sec',
+                                     column_date='DateGMT',
+                                     column_time='TimeGMT',
+                                     column_trip='trip_number',
+                                     column_lat='Latitude',
+                                     column_lon='Longitude',
+                                     datetime_format<-"%d/%m/%Y %H:%M:%S")
+```
+
+You can see that after the function you have more data points.\
+This is because the original data was collected every 5 minutes, and the interpolation added locations every one minute.
+
+```{r}
+nrow(ID01_track)
+nrow(ID01_interpolated1m)
+```
+
+Plot the interpolated data set to see the difference.
+
+```{r, fig.width=4, fig.height=4}
+Interpolated_1m<-ggplot(ID01_interpolated1m, aes(x=Longitude, y=Latitude, color=trip_number)) + 
+  geom_point()+
+  ggtitle('Interpolated to 1 min')+
+  theme_bw()+
+  theme(legend.position='none')+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+  )+
+  geom_point(data=ID01_nest,aes(x = Longitude,y= Latitude), 
+             color="black", fill="black",shape=16,size=5,stroke=1.5)
+Interpolated_1m
+```
+
+## Interpolate to 15 minutes
+
+To interpolate to 15 minutes, change the interval to 900 sec.
+
+```{r}
+ID01_interpolated15m<-interpolate_trips(GPS_data=ID01_track,
+                                     column_trip='trip_number',
+                                     column_lat='Latitude',
+                                     column_lon='Longitude',
+                                     column_date='DateGMT',
+                                     column_time='TimeGMT',
+                                     datetime_format<-"%d/%m/%Y %H:%M:%S",
+                                     interval='900 sec')
+```
+
+You can see that after the function you have less data points.\
+This is because the original data was collected every 5 minutes, and the interpolation added locations every 15 minutes.
+
+```{r}
+nrow(ID01_track)
+nrow(ID01_interpolated15m)
+```
+
+Plot to see the difference.
+
+```{r, fig.width=4, fig.height=4}
+Interpolated_15m<-ggplot(ID01_interpolated15m, aes(x=Longitude, y=Latitude, color=trip_number)) + 
+  geom_point()+
+  theme_bw()+
+  ggtitle('Interpolated to 15 mins')+
+  theme_bw()+
+  theme(legend.position='none')+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+  )+
+  geom_point(data=ID01_nest,aes(x = Longitude,y= Latitude), 
+             color="black", fill="black",shape=16,size=5,stroke=1.5)
+Interpolated_15m
+```
+
+# Compare
+
+Using the package **patchwork** we can see the difference side by side.
+
+```{r}
+library(patchwork)
+```
+
+```{r, fig.width=10, fig.height=4}
+Original_track+Interpolated_1m+Interpolated_15m
+```
+
+Select the interpolation interval that fits better your data.
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(Original_track+Interpolated_1m+Interpolated_15m,
+       filename = paste0(here(),"/_posts/2024-07-05-interpolate/blog35.jpg"),
+       width = 10, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "40%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2024-06-06-pointsdistance/points_export.jpg"))
+```
+
+# Further reading
+
+To follow instructions from raw data to interpolation [check this blogpost](https://www.miriam-lerma.com/posts/2022-03-22-interpolation/).\
+To access the function click [here](https://github.com/MiriamLL/sula/blob/main/R/interpolate_trips.R). You could copy and adjust the function to your data.
+
+If you want to give it a try, there are other packages to interpolate data:\
+- [crawl](https://cran.r-project.org/web/packages/crawl/crawl.pdf)\
+- [adehabitatLT](https://cran.r-project.org/web/packages/adehabitatLT/adehabitatLT.pdf)\
+- [trip](https://cran.r-project.org/web/packages/trip/trip.pdf)\
+- [pastecs](https://cran.r-project.org/web/packages/pastecs/index.html)
+
+
+# ~~~~~~~~~~~~~
+# 8.August
+# Remove
+
+# Intro
+
+When studying animals using GPSs, we often need to remove their central location. Here, I am sharing a function I created to eliminate all the locations within an area.
+
+# Data
+
+For the exercises, test data is from masked boobies. <br> To access the data you have to install the package **sula**: devtools::install_github("MiriamLL/sula")
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+```
+
+This data frame contains data from 10 individuals.
+
+```{r}
+unique(sula::GPS_raw$IDs)
+```
+
+To load it into the environment.
+
+```{r}
+GPS_ten<-GPS_raw
+```
+
+Plot your data
+
+```{r}
+library(tidyverse)
+```
+
+Here you can see all the recorded locations using the GPSs.
+
+```{r, fig.width=4, fig.height=4}
+Original_plot<-ggplot()+
+  geom_point(data = GPS_ten,
+            aes(x=Longitude,y = Latitude),color='red', size=0.5)+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+  )
+Original_plot
+```
+
+# Create a buffer
+
+Select a location
+
+```{r}
+This_point<-data.frame(Longitude=-109.5,Latitude=-27.2)
+```
+
+Create a buffer
+
+I created this function to create a buffer around a point
+
+```{r}
+create_buffer<-function(central_point=central_point, buffer_km=buffer_km){
+  central_spatial<- sp::SpatialPoints(cbind(central_point$Longitude,central_point$Latitude)) 
+  sp::proj4string(central_spatial)= sp::CRS("+init=epsg:4326") 
+  central_spatial <- sp::spTransform(central_spatial, sp::CRS("+init=epsg:4326"))
+  central_spatial<-sf::st_as_sf(central_spatial)
+  buffer_dist<-buffer_km*1000
+  central_buffer<-sf::st_buffer(central_spatial, buffer_dist)
+  return(central_buffer)
+  }
+```
+
+The parameters to give are the kilometers and the central point
+
+```{r, warning=FALSE}
+This_buffer<-create_buffer(central_point=This_point,buffer_km=20)
+```
+
+```{r}
+class(This_buffer)
+```
+
+Here you can see the buffer you created using the point (or central location)
+
+```{r, fig.width=4, fig.height=4}
+Buffer_plot<-ggplot()+
+  geom_point(data = GPS_ten,
+            aes(x=Longitude,y = Latitude),color='red',size=0.5)+
+  geom_point(data=This_point,
+             aes(x=Longitude,y=Latitude),color='blue')+
+  geom_sf(data=This_buffer,colour='blue', fill='transparent', linetype='dashed')+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+  )
+Buffer_plot
+```
+
+Using the function from the package **sp** you can create an spatial object using your GPS data
+
+```{r}
+GPS_sp <- GPS_ten
+sp::coordinates(GPS_sp) <- ~Longitude + Latitude
+sp::proj4string(GPS_sp) = sp::CRS("+init=epsg:4326")
+GPS_sp<-sf::st_as_sf(GPS_sp)
+```
+
+```{r}
+class(GPS_sp)
+class(This_buffer)
+```
+
+Here the function over identifies which location intersect with the buffer.
+
+```{r}
+GPS_over<-sapply(sf::st_intersects(GPS_sp,This_buffer), function(z) if (length(z)==0) NA_integer_ else z[1])
+```
+
+This information can be added as a column in the data frame.
+
+```{r}
+GPS_ten$In_or_out <- as.numeric(GPS_over)
+```
+
+To remove the locations that were within the buffer you can use the function **filter** and **is.na** from the package **tidyverse**
+
+```{r}
+GPS_without <- GPS_ten %>%
+  filter(is.na(In_or_out)==TRUE)
+```
+
+Here you can see that the locations inside the buffer were removed.
+
+```{r, fig.width=4, fig.height=4}
+Filtered_plot<-ggplot()+
+  geom_point(data = GPS_without,
+            aes(x=Longitude,y = Latitude),color='red',size=0.5)+
+  geom_point(data=This_point,
+             aes(x=Longitude,y=Latitude),color='blue')+
+  geom_sf(data=This_buffer,colour='blue', fill='transparent', linetype='dashed')+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+  )
+Filtered_plot
+```
+
+This function can be used to remove all the nest locations within a distance buffer. You could also replace the polygon (here the buffer) for some land shapefiles.
+
+# Compare
+
+Using the package **patchwork** we can see the difference side by side.
+
+```{r}
+library(patchwork)
+```
+
+```{r, fig.width=9, fig.height=4}
+Original_plot+Buffer_plot+Filtered_plot
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(Original_plot+Buffer_plot+Filtered_plot,
+       filename = paste0(here(),"/_posts/2024-08-01-removelocs/blog36.jpg"),
+       width = 9, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "40%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2024-06-06-pointsdistance/points_export.jpg"))
+```
+
+# Further reading
+
+Other functions that did the job:\
+gBuffer from rgeos [deprecated](https://cran.r-project.org/web/packages/rgeos/index.html)\
+Read more about [package sf](https://github.com/r-spatial/sf/wiki/migrating)
+
+```{r, echo=FALSE, eval=FALSE}
+create_buffer<-function(central_point=central_point, buffer_km=buffer_km){
+  central_spatial<- sp::SpatialPoints(cbind(central_point$Longitude,central_point$Latitude)) 
+  sp::proj4string(central_spatial)= sp::CRS("+init=epsg:4326") 
+  central_spatial <- sp::spTransform(central_spatial, sp::CRS("+init=epsg:4326"))
+  buffer_dist<-buffer_km/100
+  central_buffer<-rgeos::gBuffer(central_spatial, width=1*buffer_dist)
+  return(central_buffer)
+}
+GPS_ten$In_or_out <- as.numeric(sp::over(GPS_sp,This_buffer))
+```
+
+
+# ~~~~~~~~~~~~~
+# 9.September
+
+# Intro
+
+This post shows an option to assign a trip number to locations of animals.\
+This same method could be use to identify events on spatial data.
+
+# Data
+
+For the exercises, test data is from Masked boobies. <br>
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+```
+
+This data frame contains data from 10 individuals.
+
+```{r}
+unique(sula::GPS_raw$IDs)
+```
+
+Using functions from the package **tidyverse**, one of the individuals can be selected.
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+GPS_one<-GPS_raw %>% filter(IDs=='GPS08')
+```
+
+The original data can be checked using functions from the package **ggplot2**.
+
+```{r}
+library(ggplot2)
+```
+
+In the plot all locations are presented, but events can not be identify yet.
+
+```{r}
+Plot_original<-ggplot(GPS_one, aes(x=Longitude, y=Latitude)) + 
+  geom_point()+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  ggtitle('Tracking data')+xlab('Longitude')+ylab('Latitude')+
+  theme_bw()+
+  theme(
+    legend.position='none',
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5))
+Plot_original
+```
+
+# Remove central locations
+
+An event would be defined as each time the animal leaves its central location.
+
+The information about the central location is needed.
+
+```{r}
+Central_location<-data.frame(Longitude=-109.4531, Latitude=-27.20097)
+```
+
+The locations are to be transform into spatial data.
+
+```{r}
+GPS_spatial <- GPS_one
+sp::coordinates(GPS_spatial) <- ~Longitude + Latitude
+sp::proj4string(GPS_spatial) = sp::CRS("+init=epsg:4326")
+GPS_spatial<-sf::st_as_sf(GPS_spatial)
+```
+
+The buffer function is explained in the previous [post](https://www.miriam-lerma.com/posts/2024-08-01-removelocs/).\
+The function uses the central location to create a buffer.\
+A number "1" shows that the location is inside the 1 km buffer and an NA that is outside the buffer.\
+The information is added on a column in the data frame.
+
+```{r}
+create_buffer<-function(central_point=central_point, buffer_km=buffer_km){
+  central_spatial<- sp::SpatialPoints(cbind(central_point$Longitude,central_point$Latitude)) 
+  sp::proj4string(central_spatial)= sp::CRS("+init=epsg:4326") 
+  central_spatial <- sp::spTransform(central_spatial, sp::CRS("+init=epsg:4326"))
+  central_spatial<-sf::st_as_sf(central_spatial)
+  buffer_dist<-buffer_km*1000
+  central_buffer<-sf::st_buffer(central_spatial, buffer_dist)
+  return(central_buffer)
+  }
+This_buffer<-create_buffer(central_point=Central_location,buffer_km=1)
+GPS_over<-sapply(sf::st_intersects(GPS_spatial,This_buffer), function(z) if (length(z)==0) NA_integer_ else z[1])
+GPS_one$trip <- as.numeric(GPS_over)
+```
+
+The NAs (when the animal is outside the buffer) can be replaced for a 0.\
+This is not strictly necessary but facilitates the interpretation of the column.
+
+```{r}
+GPS_one$trip[is.na(GPS_one$trip)] <- 0
+```
+
+Alternatively, text can be added.
+
+```{r}
+GPS_one$trip <- gsub("1", "At_central_locations", GPS_one$trip)
+GPS_one$trip <- gsub("0", "At_trip", GPS_one$trip)
+```
+
+# Assign trip number
+
+To assign the trip number, the first step was adding a new column with a sequential number.
+
+```{r}
+GPS_one$sequential_number<-as.integer(paste(seq(1:as.numeric(nrow(GPS_one)))))
+```
+
+Afterwards, all the locations inside the central locations were removed.
+
+```{r}
+GPS_trips<-subset(GPS_one, GPS_one$trip == "At_trip")
+```
+
+By removing the locations inside the central locations, we end up with gaps in the sequence number.\
+Here, I added a number of event everytime that the sequence was broken.
+
+```{r}
+GPS_trips$trip_number <- (cumsum(c(1L, diff(GPS_trips$sequential_number)) != 1L))+ 1
+```
+
+In case there might be more than ten trips, adding more zeros using the function **str_pad** might be useful.
+
+```{r}
+GPS_trips$trip_number <- stringr::str_pad(GPS_trips$trip_number ,  2, pad = "0")
+```
+
+For easier interpretation, text can be added.
+
+```{r}
+GPS_trips$trip_number<-paste0("Trip_", GPS_trips$trip_number )
+```
+
+Using the function **unique** the number of events (or trips) can be checked.
+
+```{r}
+unique(GPS_trips$trip_number)
+```
+
+# Plot
+
+The different events can now be easily observed by adding the argument **color=trip_number** in the plot.
+
+```{r}
+Plot_trips<-ggplot(GPS_trips, aes(x=Longitude, y=Latitude, color=trip_number)) + 
+  geom_point()+
+  geom_point(data=Central_location,aes(x = Longitude,y= Latitude), 
+             color="black", fill="black",shape=16,size=5,stroke=1.5)+
+  theme_bw()+
+  scale_x_continuous(limits=c(-109.7,-108.9),labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  ggtitle('Trip number')+xlab('Longitude')+ylab('Latitude')+labs(color='')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5),
+    legend.background = element_rect(colour = "transparent", fill = "transparent"),
+    legend.position = c(0.12,0.75))
+Plot_trips
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+library(patchwork)
+here()
+ggsave(Plot_original+Plot_trips,
+       filename = paste0(here(),"/_posts/2024-09-19-identifyevents/blog37.jpg"),
+       width = 9, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "40%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2024-06-06-pointsdistance/points_export.jpg"))
+```
+
+# Further reading
+
+Functions **count_trips** from the package sula can be used to run loops.
+
+
+# ~~~~~~~~~~~~~
+# 10.October
+# Distance points
+
+# Intro
+
+Calculate distance between points between consecutive locations.\
+One of the uses in animal movements it to calculate how much distance an animal covers on one trip.
+
+# Data
+
+For the exercises, test data is from Masked boobies. <br>
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+```
+
+This data frame contains data from one individual.\
+It has the column Longitude, Latitude and trip_number.
+
+```{r}
+GPS_edited<-sula::GPS_edited
+```
+
+Load the package **tidyverse**
+
+```{r}
+library(tidyverse)
+```
+
+Select one of the trips from this individual.
+
+```{r}
+GPS_trip <- GPS_edited %>% filter(trip_number=='trip_4')
+```
+
+Using the function **geom_path** you can plot the trajectory.
+
+```{r}
+library(ggspatial)
+```
+
+Add the annotation layer to see the scale.
+
+```{r, fig.width=4, fig.height=4}
+ggplot(GPS_trip, aes(x=Longitude, y=Latitude)) + 
+  geom_path()+
+  scale_x_continuous(limits=c(-109.6,-109.0),breaks=c(-109.5,-109.4,-109.3,-109.2,-109.1),labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(limits=c(-27.3,-26.7),labels = function(x) paste0(-x, '\u00B0'))  +
+  ggtitle('Tracking data')+xlab('Longitude')+ylab('Latitude')+
+  theme_bw()+
+  theme(
+    legend.position='none',
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+    annotation_scale(location = "br",bar_cols = c("#ef233c", "#d90429"),text_col = '#ef233c')
+```
+
+# Convert to spatial
+
+Convert to spatial object to assign a reference system.
+
+```{r}
+GPS_spatial <- GPS_trip[, c("Longitude", "Latitude")]
+GPS_spatial <- sp::SpatialPointsDataFrame(coords = GPS_spatial,data = GPS_trip)
+sp::proj4string(GPS_spatial) = sp::CRS("+init=epsg:4326")
+```
+
+This function calculates distance between consecutive points.
+
+```{r}
+GPS_dist <- sapply(2:nrow(GPS_spatial), function(i) {geosphere::distm(GPS_spatial[i - 1, ], GPS_spatial[i,])})
+```
+
+To add it back to the data frame consider that the first point is missing. To solve this add a zero or an NA.
+
+```{r}
+GPS_dist<- c(0, GPS_dist)
+```
+
+It would show in meters, divide by 1000 to show as kilometers, the function **round** helps to transform to only two decimals.
+
+```{r}
+GPS_trip$distances <- round(GPS_dist/1000, 2)
+```
+
+```{r, echo=FALSE, eval=FALSE}
+write_csv(GPS_trip,"GPS_trip.csv")
+```
+
+# Plot
+
+To plot as an spatial object (and get the scale correct) use functions from the package **sf**.
+
+```{r}
+library(sf)
+```
+
+```{r}
+GPS_sf <- st_as_sf(GPS_spatial)
+```
+
+Here the scale is showed correctly.
+
+```{r, fig.width=4, fig.height=4}
+ggplot(GPS_sf)+
+  geom_sf()+
+  geom_point(data=GPS_trip, aes(x=Longitude,y=Latitude))+
+  geom_text(data=GPS_trip, aes(x=Longitude,y=Latitude,label=distances),hjust=-0.3, vjust=0, size=3)+
+  geom_path(data=GPS_trip, aes(x=Longitude,y=Latitude))+
+  annotation_scale(location = "br",bar_cols = c("#ef233c", "#d90429"),text_col = '#ef233c')+
+  scale_x_continuous(limits=c(-109.6,-109.0),breaks=c(-109.5,-109.4,-109.3,-109.2,-109.1),labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(limits=c(-27.3,-26.7),labels = function(x) paste0(-x, '\u00B0'))  +
+  ggtitle('Tracking data')+xlab('Longitude')+ylab('Latitude')+
+  theme_bw()+
+  theme(
+    legend.position='none',
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5))
+```
+
+# Plot
+
+The trajectory would be easier to interpreter if we include more elements on the plot.\
+To include the begging or the end of the trajectory identify the first and last location.
+
+```{r}
+GPS_first<-data.frame(Latitude=first(GPS_trip$Latitude),Longitude=first(GPS_trip$Longitude))
+GPS_last<-data.frame(Latitude=last(GPS_trip$Latitude),Longitude=last(GPS_trip$Longitude))
+```
+
+Here, the first location is shown as the red triangle.\
+The last location is is shown as the green square.
+
+```{r, fig.width=4, fig.height=4}
+Plot_distance<-ggplot(GPS_sf)+
+  geom_sf()+
+  geom_point(data=GPS_trip, aes(x=Longitude,y=Latitude),color='#fb8500')+
+  geom_text(data=GPS_trip, aes(x=Longitude,y=Latitude,label=distances),hjust=-0.3, vjust=0, size=3)+
+  geom_path(data=GPS_trip, aes(x=Longitude,y=Latitude),color='#ffb703')+
+  annotation_scale(location = "br",bar_cols = c("#8ecae6", "#219ebc"),text_col = '#023047')+
+  scale_x_continuous(limits=c(-109.6,-109.0),breaks=c(-109.5,-109.4,-109.3,-109.2,-109.1),labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(limits=c(-27.3,-26.7),labels = function(x) paste0(-x, '\u00B0'))  +
+  ggtitle('Distance between points')+xlab('Longitude')+ylab('Latitude')+
+  theme_bw()+
+  theme(
+    legend.position='none',
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+  geom_point(data=GPS_first, aes(x=Longitude,y=Latitude),color='#c1121f',fill='#c1121f', shape=17, size=4)+
+  geom_point(data=GPS_last, aes(x=Longitude,y=Latitude),color='#4f772d',fill='#4f772d',shape=15,size=4)
+Plot_distance
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+library(patchwork)
+here()
+ggsave(Plot_distance,
+       filename = paste0(here(),"/_posts/2024-10-04-distancepoints/blog38.jpg"),
+       width = 6, 
+       height = 10, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "40%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2024-10-04-distancepoints/points_export.jpg"))
+```
+
+# Further reading
+
+The function **dist_points** from the package **sula** runs this function in loop.\
+This helps when there are more than one trip and several individuals.
+
+```{r, include=FALSE}
+GPS_dist<-dist_puntos(GPS_data = GPS_edited,separador='trip_number')
+```
+
+# ~~~~~~~~~~~~~
+# 11.Novemeber
+# Complete or Incomplete
+
+# Intro
+
+When tracking animals, there may be times when they enter areas with no reception.
+
+If a large part of a trip takes place in such areas, you should consider whether to include this data in your calculations.
+
+For instance, long gaps could lead to an underestimation of the actual distance traveled by the animal.
+
+In this post, I'll walk you through the steps I used to determine whether trips are complete or incomplete.
+
+This post has three parts:\
+- Create a gap\
+- Calculate gaps\
+- Identify if our trips are complete or incomplete
+
+# Data
+
+For the exercises, test data is from masked boobies. <br> To access the data you have to install the package **sula**: devtools::install_github("MiriamLL/sula")
+
+```{r}
+library(sula)
+```
+
+Use the function select from tidyverse to keep the columns ID, latitude, longitude, date, time, and trip number.
+
+```{r}
+library(tidyverse)
+Data_1original<-GPS_preparado %>% select(IDs,Latitude,Longitude,DateGMT,TimeGMT,trip_number)
+```
+
+# Creating a gap
+
+In this part we would eliminate some locations to create an artificial gap
+
+```{r}
+library(sf)
+```
+
+Select a location with "low reception" and remove all the locations to create the gaps
+
+```{r}
+This_area<-data.frame(Longitude=-109.4,Latitude=-27.6)
+
+create_buffer<-function(central_point=central_point, buffer_km=buffer_km){
+  central_spatial<- sp::SpatialPoints(cbind(central_point$Longitude,central_point$Latitude)) 
+  sp::proj4string(central_spatial)= sp::CRS("+init=epsg:4326") 
+  central_spatial <- sp::spTransform(central_spatial, sp::CRS("+init=epsg:4326"))
+  central_spatial<-sf::st_as_sf(central_spatial)
+  buffer_dist<-buffer_km*1000
+  central_buffer<-sf::st_buffer(central_spatial, buffer_dist)
+  return(central_buffer)
+}
+
+This_buffer<-create_buffer(central_point=This_area,buffer_km=20)
+
+Data_2spatial <- Data_1original
+sp::coordinates(Data_2spatial) <- ~Longitude + Latitude
+sp::proj4string(Data_2spatial) = sp::CRS("+init=epsg:4326")
+Data_2spatial <-sf::st_as_sf(Data_2spatial)
+Data_3creategap<-sapply(sf::st_intersects(Data_2spatial ,This_buffer), function(z) if (length(z)==0) NA_integer_ else z[1])
+Data_1original$trip <- as.numeric(Data_3creategap)
+Data_4withgap <- Data_1original %>%
+  filter(is.na(trip)==TRUE)
+```
+
+Plot the area with low reception
+
+```{r, fig.width=4, fig.height=4}
+Plot_locations<-ggplot()+
+  geom_point(data = Data_4withgap,aes(x=Longitude,y = Latitude),color="#6a994e",size=0.5)+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+  geom_sf(data=This_buffer,colour='blue', fill='transparent', linetype='dashed')+
+  geom_text(data=This_area, aes(x=Longitude,y=Latitude,label="No reception"),hjust=+0.46, vjust=0, size=3)
+Plot_locations
+```
+
+# Calculate gaps
+
+A column in the format POSIXct is needed for this example.
+
+```{r}
+Data_4withgap <- Data_4withgap %>%
+  mutate(dt= as.POSIXct(strptime(paste0(DateGMT," ",TimeGMT), format="%d/%m/%Y %H:%M:%S")))
+```
+
+Checking gaps in time on one individual trip.
+
+```{r}
+Data_5oneindividual<-Data_4withgap %>% filter(IDs=='GPS09') %>% filter(trip_number=='trip_2')
+```
+
+```{r}
+Data_5oneindividual<-Data_5oneindividual %>%
+  mutate(times_lag=lag(dt))%>%
+  mutate(time_dif=as.numeric(difftime(dt, times_lag, units = "mins")))%>%
+  mutate(time_dif_mins = round(time_dif,2))
+```
+
+This trip has a large gap.
+
+```{r}
+range(Data_5oneindividual$time_dif_mins,na.rm=TRUE)
+```
+
+Create a loop to calculate gaps separated by individuals and trips.
+
+```{r}
+calculate_gaps<-function (this_data = this_data, 
+                          column_datetime = column_datetime, 
+                          column_separator = column_separator){
+  # to standardize the column names
+  this_data$column_separator<- this_data[[column_separator]]
+  this_data$column_datetime <- this_data[[column_datetime]]
+  trips_list <- split(this_data, this_data$column_separator)
+    gaps_list <- list()
+    for (i in seq_along(trips_list)) {
+        trip_df <- trips_list[[i]]
+        trip_df<-trip_df %>%
+          mutate(times_lag=lag(dt))%>%
+          mutate(time_dif=as.numeric(difftime(dt, times_lag, units = "mins")))%>%
+          mutate(time_dif_mins = round(time_dif,2))
+        gaps_list[[i]] <- trip_df}
+    gaps_df <- do.call("rbind", gaps_list)
+    return(gaps_df)
+}
+```
+
+For this, would help to have an unique ID, which helps separate the individual and their trips.
+
+```{r}
+Data_5uniqueIds <- Data_4withgap %>%
+  mutate(unique_id=paste0(IDs,'_',trip_number))
+```
+
+To run the function, provide the data frame, the information for separating, and the name of the column where the date and time are provided.
+
+```{r}
+Data_6uniqueIds<-calculate_gaps(this_data=Data_5uniqueIds,
+                                column_separator='unique_id',
+                                column_datetime='dt')
+```
+
+# Complete or incomplete
+
+By using the function summarise, we can see which trips have large gaps.
+
+```{r}
+Data_7gaps<-Data_6uniqueIds %>%
+  group_by(unique_id)%>%
+  summarise(min_gap=min(time_dif_mins,na.rm = TRUE),
+            max_gap=max(time_dif_mins,na.rm = TRUE))
+```
+
+Based on the gaps during the trips, the trips could be classified as complete or incomplete.\
+For example, here an incomplete trip would be any trip that had a gap of more than 30 minutes.
+
+```{r}
+Data_7gaps <- Data_7gaps%>%
+  mutate(trip_class = case_when(max_gap <= 30 ~ 'Complete',
+                                TRUE ~ 'Incomplete'))
+```
+
+Use this table to identify those trips that were incomplete.
+
+```{r}
+unique_incomplete<-unique((subset(Data_7gaps,Data_7gaps$trip_class=='Incomplete')$unique_id))
+```
+
+Use the information above, to add the classification on the tracking locations.
+
+```{r}
+Data_8gaps <- Data_6uniqueIds %>%
+  mutate(trip_class = case_when(unique_id %in% unique_incomplete ~ 'Incomplete',
+                                TRUE ~ 'Complete'))
+```
+
+Plot incomplete trips.
+
+```{r, fig.width=4, fig.height=4}
+Plot_trips<-ggplot()+
+  geom_point(data = Data_8gaps,aes(x=Longitude,y = Latitude,color=trip_class),size=0.5)+
+  scale_x_continuous(labels = function(x) paste0(-x, '\u00B0')) +
+  scale_y_continuous(labels = function(x) paste0(-x, '\u00B0'))  +
+  xlab('Longitude')+ylab('Latitude')+
+  theme(
+    panel.background = element_rect(fill = '#edf2f4'),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),legend.position='none',
+    panel.border = element_rect(colour = "black", fill=NA, size=1.5)
+  )+
+  geom_sf(data=This_buffer,colour='blue', fill='transparent', linetype='dashed')+
+  geom_text(data=This_area, aes(x=Longitude,y=Latitude,label="No reception"),hjust=+0.46, vjust=0, size=3)+
+  theme(
+    legend.background = element_rect(colour = "transparent", fill = "transparent"),
+    legend.position = c(0.22,0.15))+
+  scale_colour_manual(name='trip',values = c("#6a994e", "#fca311"))+ 
+  guides(color = guide_legend(override.aes = list(size = 2)))
+Plot_trips
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+library(patchwork)
+Plot_locations+Plot_trips
+ggsave(Plot_locations+Plot_trips,
+       filename = paste0(here(),"/_posts/2024-11-10-gaps/blog39.jpg"),
+       width = 6, 
+       height = 10, 
+       units = "in",
+       dpi = 300)
+```
+
+
+# ~~~~~~~~~~~~~
+# 12.December
+
+```{r, eval=FALSE}
+library(sula)
+```
+
+```{r}
+Data_1original<-GPS_preparado 
+```
+
+# Transform
+
+The function **fortify** helps the data frame to be more easily be plotted.
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+Data_2fortify<-fortify(Data_1original)
+```
+
+Make sure your lat and lon are numerical
+
+```{r}
+Data_2fortify$lat<-as.numeric(Data_2fortify$Latitude)
+Data_2fortify$lon<-as.numeric(Data_2fortify$Longitude)
+```
+
+Transform to spatial.
+
+```{r}
+library(sf)
+```
+
+Select which CRS you will like to use.
+
+```{r}
+Data_3spatial <- st_as_sf(Data_2fortify, coords = c("lon", "lat"),crs = 4326, agr = "constant")
+```
+
+Select the columns that are of interest.
+
+```{r}
+Data_4info<-Data_3spatial[,c("IDs","trip_number","dia_hora")]
+```
+
+# Map
+
+Install the package **tmap**.
+
+This package allows you to create interactive maps.
+
+```{r}
+library(tmap)
+```
+
+For making the map interactive, the mode **view** should be declared.
+
+```{r}
+tmap_mode("view") 
+```
+
+To create your map with points you can use the arguments **tm_shape** and **tm_dots**
+
+```{r}
+tm_shape(Data_4info)+
+   tm_dots()
+```
+
+To rename the information that shows, you can add the argument **popup.vars**
+
+```{r}
+tm_shape(Data_4info)+
+   tm_dots(id = "IDs",col="yellow",popup.vars=c("trip_number"="trip_number","dt"="dia_hora"))
+```
+
+To separate between individuals you can also include them as separated layers.
+
+```{r}
+tm_shape(subset(Data_4info,Data_4info$ID=='GPS01'))+
+   tm_dots(id = "IDs",col="yellow",popup.vars=c("trip_number"="trip_number","dt"="dia_hora"))+
+  tm_shape(subset(Data_4info,Data_4info$ID=='GPS03'))+
+   tm_dots(id = "IDs",col="red",popup.vars=c("trip_number"="trip_number","dt"="dia_hora"))
+```
+
+# Interact with you map
+
+```{r, echo=FALSE}
+library(fontawesome)
+```
+
+Using `r fa("plus", fill = 'black')` you can **zoom-in** to see the points.\
+Using `r fa("minus", fill = 'black')` you can **zoom-out** to see the points.
+
+Using `r fa("layer-group", fill = 'black')` you can select which **layers** to show.
+
+Put the cursor on top of the dot `r fa("mouse-pointer", fill = 'black')`, when `r fa("hand-point-up", fill = 'black')` appears click on it and you should be able to see the ID, trip number and dt and time of the point.
+
+```{r}
+tm_shape(subset(Data_4info,Data_4info$ID=='GPS01'))+
+   tm_dots(id = "IDs",col="yellow",popup.vars=c("trip_number"="trip_number","dt"="dia_hora"))+
+  tm_shape(subset(Data_4info,Data_4info$ID=='GPS03'))+
+   tm_dots(id = "IDs",col="red",popup.vars=c("trip_number"="trip_number","dt"="dia_hora"))
+```
+
+Using tmap might save you the step to export your dataframe, and the import it into another program, particularly if you want to check a particular point and particular information associated to that point.
+
+# Further reading
+
+-   [tmap vignette](https://cran.r-project.org/web/packages/tmap/vignettes/tmap-getstarted.html)\
+-   [examples of use](https://r-tmap.github.io/tmap/index.html)\
+-   [book: Elegant and informative maps with tmap](https://r-tmap.github.io/tmap-book/index.html)\
+-   [book: geocomputation with R](https://r.geocompx.org/adv-map)
+
+# ~~~~~~~~~~~~~
+# Others
+
+# Resting locations
+
+In this post we will try to identify resting locations based on the low movements and high number of locations on a specific point.
+
+## Data
+
+```{r}
+DataFolder<-paste0(here('_posts/2024-13-15-package-larus'))
+```
+
+```{r}
+DataFolder
+```
+
+```{r}
+library(tidyverse)
+```
+
+## Load data
+
+```{r}
+Gull_original<-read_csv(paste0(DataFolder,'/Gull_data.csv'))
+```
+
+## Heat map
+
+## Function 03. calculate_speed
+
+```{r}
+calculate_speed<-function(GPS_data=GPS_data,
+                          column_latitude=column_latitude,
+                          column_longitude=column_longitude,
+                          column_datetime=column_datetime){
+
+  GPS_data<-GPS_data
+  GPS_data$Longitude <- GPS_data[[column_longitude]]
+  GPS_data$Latitude <- GPS_data[[column_latitude]]
+  GPS_data$dt <- GPS_data[[column_datetime]]
+    
+  GPS_coords<- GPS_data[,c('Longitude','Latitude')]
+  GPS_spatial <- sp::SpatialPointsDataFrame(coords = GPS_coords, data = GPS_data)
+  sp::proj4string(GPS_spatial)= sp::CRS("+init=epsg:4326")
+  GPS_distance<-sapply(2:nrow(GPS_spatial),
+                             function(i){geosphere::distm(GPS_spatial[i-1,], GPS_spatial[i,])})
+  GPS_distance<-c(NA,GPS_distance)
+  GPS_data$distance_km<-round(GPS_distance/1000,2)
+  
+  times<-GPS_data[[column_datetime]]
+  times_lag<-lag(times)
+  time_dif<-as.numeric(difftime(times,times_lag, units="mins"))
+  GPS_data$time_hr<-round(time_dif/60,2)
+
+  GPS_data$speed_kmh<-round(as.numeric(GPS_data$distance_km/GPS_data$time_hr),2)
+
+return(GPS_data)
+}
+```
+
+Time format should already be POSTIXct
+
+```{r}
+class(Gull$UTC_datetime)
+```
+
+```{r}
+Gull_speeds<-calculate_speed(GPS_data = Gull,
+                column_latitude='Latitude',
+                column_longitude='Longitude',
+                column_datetime='UTC_datetime')
+```
+
+```{r}
+Compare_speeds<-Gull_speeds[c('speed_kmh','speed_km_h')]
+colnames(Compare_speeds)<-c('device_speed','calculated_speed')
+```
+
+```{r}
+Compare_speeds$speed_dif<-Compare_speeds$device_speed-Compare_speeds$calculated_speed
+```
+
+```{r}
+hist(Gull_speeds$speed_kmh)
+```
+
+## Function 04. identify_stopovers
+
+When speed was low, the bird was considered in a stop over
+
+```{r}
+GPS_data<-Gull_speeds
+stopover_speed<-10
+```
+
+```{r}
+identify_stopovers<-function(GPS_data=GPS_data,
+                         stopover_speed = stopover_speed){
+  
+
+  GPS_stopover<-GPS_data %>%
+    mutate(
+      stopover = case_when(
+      speed_kmh > stopover_speed ~ "flight",
+      TRUE  ~ "stop"
+    ))
+  
+  #add sequence
+  num_seq<-nrow(GPS_stopover)
+  num_seq<-as.numeric(num_seq)
+  GPS_stopover$num_seq<-paste(seq(1:num_seq))
+  
+  #only trips
+  only_trips<-subset(GPS_stopover,GPS_stopover$stopover != "stop")
+  only_trips$num_seq<-as.integer(only_trips$num_seq)
+  only_trips$trip_number<-(cumsum(c(1L, diff(only_trips$num_seq)) != 1L))
+  only_trips$trip_name<-str_pad(only_trips$trip_number+1, 3, pad = "0")
+  only_trips$trip_names<-paste0("trip_",only_trips$trip_name)
+  
+  #only stopovers
+  only_stopovers<-subset(GPS_stopover,GPS_stopover$stopover == "stop")
+  only_stopovers$num_seq<-as.integer(only_stopovers$num_seq)
+  only_stopovers$trip_number<-(cumsum(c(1L, diff(only_stopovers$num_seq)) != 1L))
+  only_stopovers$trip_name<-str_pad(only_stopovers$trip_number+1, 3, pad = "0")
+  only_stopovers$trip_names<-paste0("stopover_",only_stopovers$trip_name)
+  
+  GPS_stopover<-rbind(only_stopovers,only_trips)
+  GPS_stopover<-GPS_stopover[order(GPS_stopover$num_seq),]
+  
+  GPS_stopover$trip_number<-NULL
+  GPS_stopover$trip_name<-NULL
+  
+  return(GPS_stopover)
+}
+```
+
+```{r}
+Gull_stopover<-identify_stopovers(GPS_data=Gull_speeds,stopover_speed=10)
+```
+
+## Function 05. group_stopovers
+
+```{r}
+group_stopovers<-function (GPS_data = GPS_data, 
+                           column_datetime=column_datetime,
+                           column_longitude = column_longitude, column_latitude = column_latitude, 
+                           column_group = column_group) 
+{
+    GPS_df <- as.data.frame(GPS_data)
+    GPS_df <- GPS_df %>% dplyr::mutate(GPS_group = GPS_df[[column_group]])
+    GPS_list <- split(GPS_df, GPS_df$GPS_group)
+    Group_list <- list()
+    for (i in seq_along(GPS_list)) {
+      
+        GPS_individual <- GPS_list[[i]]
+        
+        stopover <- GPS_individual %>% 
+          dplyr::summarise(
+            Start=dplyr::first(GPS_individual[[column_datetime]]),
+            End=dplyr::last(GPS_individual[[column_datetime]]),
+            Longitude = dplyr::first(GPS_individual[[column_longitude]]), 
+            Latitude = dplyr::first(GPS_individual[[column_latitude]]))
+        
+        stopover$Group <- dplyr::first(GPS_individual[[column_group]])
+        
+        stopover<-stopover[,c('Group','Latitude','Longitude','Start','End')]
+        
+        Group_list[[i]] <- stopover
+    }
+    Group_df<- do.call("rbind", Group_list)
+    return(Group_df)
+}
+```
+
+```{r}
+Gull_groupstops<-group_stopovers(GPS_data=Gull_stopover,
+                                 column_datetime='UTC_datetime',
+                                 column_longitude = 'Longitude',
+                                 column_latitude='Latitude',
+                                 column_group='trip_names')
+
+```
+
+```{r}
+Gull_groupstops$timeduration<-round(as.numeric(difftime(Gull_groupstops$End,Gull_groupstops$Start, units="hours")),2)
+```
+
+## Group_stopovers
+
+```{r}
+group_stopovers<-
+{
+    GPS_df <- as.data.frame(GPS_data)
+    GPS_df <- GPS_df %>% dplyr::mutate(GPS_group = GPS_df[[column_group]])
+    GPS_list <- split(GPS_df, GPS_df$GPS_group)
+    Group_list <- list()
+    for (i in seq_along(GPS_list)) {
+      
+        GPS_individual <- GPS_list[[i]]
+        
+        stopover <- GPS_individual %>% 
+          dplyr::summarise(
+            Start=dplyr::first(GPS_individual[[column_datetime]]),
+            End=dplyr::last(GPS_individual[[column_datetime]]),
+            Longitude = dplyr::first(GPS_individual[[column_longitude]]), 
+            Latitude = dplyr::first(GPS_individual[[column_latitude]]))
+        
+        stopover$Group <- dplyr::first(GPS_individual[[column_group]])
+        
+        stopover<-stopover[,c('Group','Latitude','Longitude','Start','End')]
+        
+        Group_list[[i]] <- stopover
+    }
+    Group_df<- do.call("rbind", Group_list)
+    return(Group_df)
+}
+```
