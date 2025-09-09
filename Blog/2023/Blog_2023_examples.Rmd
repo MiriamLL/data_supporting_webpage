@@ -1,0 +1,2045 @@
+---
+title: "Blog"
+output: html_document
+date: "2025-09-09"
+---
+# ~~~~~~~~~~~~~
+# 1.January: Gispolygon
+
+This post is to give you an example on how to create your own polygon using google maps.
+
+
+## Program
+
+For this exercise we used the release candidate of QGIS, but every version has the option to create new layers, so no worries in which version you are using. 
+
+```{r, fig.height=1,echo=FALSE, fig.align='center'}
+library(here)
+Imagen1<-paste0(here(),"/_posts/2023-01-27-qgispolygon/image1.png")
+knitr::include_graphics(Imagen1)
+```
+
+
+
+If you still dont have it, here is the link for download [QGIS](https://www.qgis.org/en/site/forusers/download.html)
+
+
+## QGIS
+
+In earlier QGIS versions, there was a plugin called **Open Layers plugin**, but is not available anymore (as far as I am aware of).
+
+Now to add a **google satellite** map in your QGIS you could do the following:
+
+1. Go to View > Panels > Activate Browser Panel
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen9<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis1.png")
+knitr::include_graphics(Imagen9)
+```
+
+2. Now go to XYZ > a new connection
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen10<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis2.png")
+knitr::include_graphics(Imagen10)
+```
+
+
+
+3. A new window will appear 
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen11<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis3.png")
+knitr::include_graphics(Imagen11)
+```
+
+4. Fill in the spaces with the map you want to use
+
+You need to give it a name and the **URL**
+
+There are many options of maps, you can look at some here: [Google URLs](https://hatarilabs.com/ih-en/how-to-add-a-google-map-in-qgis-3-tutorial)
+
+We will use Open Street Map: https://tile.openstreetmap.org/{z}/{x}/{y}.png for the example.
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen12<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis4.png")
+knitr::include_graphics(Imagen12)
+```
+
+Once you have create the connection, double click on the name and the map should be loaded as a layer.
+
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen14<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis6.png")
+knitr::include_graphics(Imagen14)
+```
+
+Ready to Use!
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen13<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis5.png")
+knitr::include_graphics(Imagen13)
+```
+
+
+## Create polygon
+
+1. Select New Shapefile Layer
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen15<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis7.png")
+knitr::include_graphics(Imagen15)
+```
+
+2. Give a name to your new shapefile
+
+I recommend to click on the three dots to select also the directory
+
+In the exercise, we will create a polygon, therefore, select **Polygon** in Geometry type
+
+```{r, fig.height=10, echo=FALSE, out.width="150%"}
+Imagen16<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis8.png")
+knitr::include_graphics(Imagen16)
+```
+
+
+3. Select Layer > Toggle editing, or just click on the icon with the yellow pencil
+
+```{r, fig.height=10, echo=FALSE, out.width="150%"}
+Imagen17<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis9.png")
+knitr::include_graphics(Imagen17)
+```
+
+
+4. Now add polygon feature by clicking on the green polygon icon
+
+```{r, fig.height=10, echo=FALSE, out.width="150%"}
+Imagen18<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis10.png")
+knitr::include_graphics(Imagen18)
+```
+
+5. Use the pointer of your mouse and click one time to create points
+
+The areas will start to look red
+
+Keep clicking until you have a more or less the polygon you want
+
+When you finish you should add an id, here I used the number 1 for an example
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen20<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis11.png")
+knitr::include_graphics(Imagen20)
+```
+
+Now you should have a polygon!
+
+7. To edit the shapes you can use the vertex tool
+
+```{r, fig.height=10, echo=FALSE, out.width="150%"}
+Imagen21<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis12.png")
+knitr::include_graphics(Imagen21)
+```
+
+
+8. The corners can be moved/dragged when the icon has been selected
+
+```{r, fig.height=10, echo=FALSE, out.width="200%"}
+Imagen22<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis14.png")
+knitr::include_graphics(Imagen22)
+```
+
+
+9. New points can be created using the cross
+
+```{r, fig.height=10, echo=FALSE, out.width="150%"}
+Imagen23<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis15.png")
+knitr::include_graphics(Imagen23)
+```
+
+10. When you are editing your layer you will have a red pencil icon, click on the yellow pencil for **finish editing**
+
+```{r, fig.height=10, echo=FALSE, out.width="150%"}
+Imagen24<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis16.png")
+knitr::include_graphics(Imagen24)
+```
+
+11. Do not forget to save the changes!
+
+```{r, fig.height=10, echo=FALSE, out.width="100%"}
+Imagen25<-paste0(here(),"/_posts/2023-01-27-qgispolygon/qgis18.png")
+knitr::include_graphics(Imagen25)
+```
+
+... Now you are done!
+
+I hope this helped you.
+
+
+## References
+
+For continuing learning, here are other uses of google maps:
+
+- [Medium](https://medium.com/@nerimbarakat/google-maps-basic-d5ecf00ef922)
+
+- [Add background map](https://www.littlemissdata.com/blog/maps)
+
+- [Google API](https://medium.com/@nerimbarakat/google-maps-basic-d5ecf00ef922)
+
+- [Google URLs](https://hatarilabs.com/ih-en/how-to-add-a-google-map-in-qgis-3-tutorial)
+
+
+# ~~~~~~~~~~~~~
+# 2.February: subset shapefile
+
+# Intro
+
+Three steps to subset a shapefile and export a new shapefile with the attributes you are interested in.
+
+# 1. Load shapefile
+
+Load the package **sf** to load your shapefile into R
+
+```{r}
+library(sf)
+```
+
+Load the package **here** to use your directory (in which folder is your shapefile)
+
+```{r}
+library(here)
+```
+
+```{r, echo=FALSE}
+My_directory<-here('_posts/2023-02-04-subset-shapefile')
+```
+
+Load your shapefile, be careful with your directory
+
+```{r}
+Old_shapefile<- read_sf(paste0(My_directory,'/original_shapefile.shp'))
+```
+
+Check the class, theoretically it would show sf
+
+```{r}
+class(Old_shapefile)
+```
+
+Explore the contents
+
+```{r, eval=FALSE}
+str(Old_shapefile)
+```
+
+Check the values in the column that you are interested to subset, to show unique values use the argument **unique** and to show them in alphabetic order use **sort**
+
+```{r, eval = FALSE}
+sort(unique(Old_shapefile$comuna))
+```
+
+# 2. Filter
+
+Load the package **tidyverse**
+
+```{r, message = FALSE, echo=TRUE}
+library(tidyverse)
+```
+
+Using the function **filter** you can subset your old new shapefile and get the new one
+
+In the example we used the column *comuna* and the value we are interested is *La Higuera*, do not forget to replace those values
+
+```{r}
+New_shapefile<-Old_shapefile %>%
+  filter(comuna=="La Higuera")
+```
+
+# 3. Export your new shapefile
+
+Check the class of your new object
+
+```{r}
+class(New_shapefile)
+```
+
+Export to your selected directory
+
+```{r, echo=TRUE, eval=FALSE}
+st_write(New_shapefile, paste0(My_directory,'/New_shapefile.shp'))
+```
+
+# Read more
+
+- [Geocomputation with R](https://geocompr.robinlovelace.net/attr.html)
+# ~~~~~~~~~~~~~
+# 3.March: mapping in R
+
+# Intro
+
+How to create a map in ggplot and add attributes.
+
+## 1. Getting ready
+
+You can download shapefiles from: https://www.naturalearthdata.com/downloads/
+
+Call the package **here** to work in your directory.
+
+```{r}
+library(here)
+```
+
+Call the package **sf** to read the shapefiles into R
+
+```{r}
+library(sf)
+```
+
+## 2. Read your shapefile
+
+Use your directory name, and give the name of your shapefile
+
+```{r, echo=FALSE}
+Directory<-here('_posts/2023-03-04-mapping-in-r')
+MyShapefileName<-"/country.shp"
+```
+
+```{r}
+Europe<-st_read(paste0(Directory,MyShapefileName))
+```
+
+
+## 3. Create a basic map
+
+Load **ggplot2**
+
+```{r}
+library(ggplot2)
+```
+
+Plot your shapefile
+
+```{r}
+ggplot()+  
+  geom_sf(data = Europe)
+```
+
+## 4. Add colors
+
+I copy the hex colors from [coolors](www.coolors.co)
+
+```{r}
+ggplot()+  
+  geom_sf(data = Europe, 
+          colour = "#edf2f4", 
+          fill = "#2b2d42",
+          size=0.5)
+```
+
+## 5. Change background color
+
+You can eliminate the grids and the change the background color in ggplot
+
+```{r}
+ggplot()+  
+  geom_sf(data = Europe, 
+          colour = "#edf2f4", 
+          fill = "#2b2d42",
+          size=0.5)+
+  theme(
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = '#edf2f4'),
+        legend.background = element_rect(fill = '#edf2f4'))
+```
+
+
+## 6. Add limits 
+
+Reduce to focus in your area of interest
+
+```{r}
+ggplot()+  
+  geom_sf(data = Europe, 
+          colour = "#edf2f4", 
+          fill = "#2b2d42",
+          size=0.5)+
+  theme(
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = '#edf2f4'),
+        legend.background = element_rect(fill = '#edf2f4'))+
+  
+  coord_sf(xlim = c(9, 31),ylim = c(53, 65))
+```
+
+
+## 7. Add scale
+
+Load the package **ggspatial** to add a scale and an north arrow
+
+```{r}
+library(ggspatial)
+```
+
+**br** is from bottom right  
+**bar_cols** is for column colors  
+**text_col** is for the color of the text  
+
+```{r}
+ggplot()+  
+  geom_sf(data = Europe, 
+          colour = "#edf2f4", 
+          fill = "#2b2d42",
+          size=0.5)+
+  theme(
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = '#edf2f4'),
+        legend.background = element_rect(fill = '#edf2f4'))+
+  
+  coord_sf(xlim = c(9, 31),ylim = c(53, 65))+
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N")) +
+  
+  annotation_scale(location = "br",bar_cols = c("#ef233c", "#d90429"),text_col = '#ef233c')
+```
+
+## 8. Add arrow
+
+**tl** is for top left  
+**which_north** preferably true (see why [here](https://github.com/paleolimbot/ggspatial/issues/15))  
+**north_arrow_fancy_orienteering** (see other styles [here](https://github.com/paleolimbot/ggspatial/issues/15))  
+
+```{r}
+ggplot()+  
+  geom_sf(data = Europe, 
+          colour = "#edf2f4", 
+          fill = "#2b2d42",
+          size=0.5)+
+  theme(
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = '#edf2f4'),
+        legend.background = element_rect(fill = '#edf2f4'))+
+  
+  coord_sf(xlim = c(9, 31),ylim = c(53, 65))+
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N")) +
+  
+   annotation_scale(location = "br",bar_cols = c("#ef233c", "#d90429"),text_col = '#ef233c')+
+  
+  annotation_north_arrow(location = "tl", style = north_arrow_minimal(text_col = '#ffd60a',line_col = '#ffd60a',fill = '#ffd60a')) 
+```
+
+Thats it for now!
+
+
+
+
+# ~~~~~~~~~~~~~
+# 4.April: grid raster
+
+# Intro
+
+The goal of this post is to:  
+
+1- Create a grid <br>
+2- Extract values per grid <br>
+3- Keep only grid cells with values <br>
+4- Calculate mean values per grid <br>
+5- Customize raster plot <br>
+
+
+## Data
+
+For this example, we will use the data provided in the package **sula** <br>
+The data is from tracked masked boobies at Rapa Nui <br>
+The data is already in tidy format <br>
+
+```{r}
+my_data<-(sula::GPS_preparado)
+```
+
+# 1. Grid 
+
+Start by converting the data from data.frame to an sf object using functions from the package **sf**
+
+```{r}
+library(sf)
+```
+
+Using the argument **st_as_sf** convert the data to a sf object
+
+```{r}
+my_points<-my_data %>%
+  st_as_sf(coords=c('Longitude','Latitude'),
+           crs=4326,
+           remove=FALSE)
+```
+
+For plotting the data use the package **ggplot2**
+
+```{r}
+library(ggplot2)
+```
+
+Since the data is an sf object, use the function **geom_sf** to plot
+
+```{r,fig.height=5}
+ggplot()+
+  geom_sf(data=my_points)+
+  theme_minimal()
+```
+
+To create a grid using the points.
+
+A common used method is the **fish net**. By definition, the fish net, or square grids, is a good method of covering a surface. The method is called [tessellation](https://en.wikipedia.org/wiki/Tessellation), and it converts a surface with no overlaps or gaps, like when using tiles.<br>
+
+
+To create a grid the function **st_make_grid** can be used <br>
+
+The arguments of the function **st_make_grid** are:  <br>
+**n** - an integer of length 1 or 2, which corresponds to the number of grid cells in x and y direction (columns, rows)<br>
+**what** - defines if polygons, corners or centers are to be created <br>
+**square**- is set to TRUE creates squares, if set to FALSE creates an hexagonal grid<br>
+
+To decide on the size of the grids, check the differences in latitudes and longitudes using the function **range**
+
+```{r, eval=FALSE}
+range(my_points$Latitude)
+range(my_points$Longitude)
+```
+
+```{r}
+my_grid<-st_make_grid(my_points, 
+                       c(0.05, 0.05), 
+                       what = "polygons",
+                       square = TRUE)
+```
+
+Now that the grid has been calculated, transform the grid to sf using the function **st_sf** and add an *grid_id* to the grid cell using the function **mutate** from the package **dplyr**
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+my_grid_sf = st_sf(my_grid) %>%
+  mutate(grid_id = 1:length(lengths(my_grid)))
+```
+
+To plot the recently created grid:
+
+```{r,fig.height=5}
+ggplot()+
+  geom_sf(data=my_grid_sf)+
+  geom_sf(data=my_points)+
+  theme_minimal()
+```
+
+
+# 2. Extract values per grid 
+
+Using the function **st_intersection** the values from the points can be added to the grid
+
+Using the argument **lenghts** the sample number per grid can be calculated
+
+```{r}
+my_grid_sf$nlocs <- lengths(st_intersects(my_grid_sf, 
+                                          my_points))
+```
+
+To add color to the plot, the package **viridis** provides the function **scale_fill_viridis**.  
+
+```{r}
+library(viridis)
+```
+
+The color will correspond to the number of locations (nlocs)
+
+```{r,fig.height=5}
+ggplot()+
+  geom_sf(data=my_grid_sf,aes(fill=nlocs))+
+  theme_minimal()+
+  scale_fill_viridis(direction = -1) 
+```
+
+
+# 3. Surveyed 👩🏾‍💻
+
+To keep only the grid cells that were surveyed, the grid cells that have 0 recording can be removed 
+
+```{r}
+grid_w_data = filter(my_grid_sf, nlocs > 0)
+```
+
+To check which grid cells were removed, plot the previous and current grid
+
+```{r,fig.height=5}
+ggplot()+
+  geom_sf(data = my_grid)+
+  geom_sf(data = grid_w_data, colour = "#42a921", fill= '#bde0fe',alpha=0.9)+
+  NULL
+```
+
+
+# 4. Mean values 👩🏾‍🔧
+
+To calculate the mean values per grid, functions from the package **tidyverse** can be used
+
+```{r}
+my_dens<-my_points
+```
+
+For the exercise, generate random data using the function **runif**
+
+```{r}
+my_dens$densities<-runif(nrow(my_dens), min=0, max=1)
+```
+
+To transform from data.frame to sf object the function **st_as_sf** can be used
+
+```{r}
+my_dens_sf <-my_dens %>% 
+  st_as_sf(coords = c("Longitude", "Latitude"))
+```
+
+To assign the coordinate system the function **st_set_crs** can be used
+
+```{r}
+my_dens_sf  = st_set_crs(my_dens_sf , "EPSG:4326")
+```
+
+Using the function **st_intersection**, the grid number to each data point is added
+
+```{r}
+dens_grid <- st_intersection(grid_w_data,my_dens_sf)
+```
+
+With the function **mutate**, the mean density per grid can be calculated
+
+```{r}
+dens_mean <- dens_grid %>%
+  st_drop_geometry() %>%
+  group_by(grid_id)%>%
+  mutate(grid_dens_means=mean(densities))
+```
+
+Finally, the mean density can be added to the general grid
+
+```{r}
+grid_w_dens<-merge(grid_w_data,dens_mean, by='grid_id', all=TRUE)
+```
+
+There might be more than one value per grid, to have one value per grid the function  **summarise_at** can be used.
+
+```{r}
+grid_dens<-grid_w_dens %>%
+  group_by(grid_id)%>%
+  summarise_at(vars(grid_dens_means),
+               list(name = mean)) %>%
+  rename(dens_mean=name)
+```
+
+To remove grid without values, the function **drop_na** can be used
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+grid_dens<-grid_dens%>%
+  drop_na(dens_mean)
+```
+
+To check the values that were removed, plot the data.
+
+```{r,fig.height=5}
+ggplot()+
+  geom_sf(data = grid_dens,aes(fill = dens_mean))+
+  geom_sf(data= my_dens_sf)+
+    scale_fill_viridis(direction = -1) 
+```
+
+
+# 5. Customize  👩🏾‍🎨
+
+The function **geom_sf** allows to plot a raster
+
+Axis labels can be changed using **scale_x_continuous** and **scale_y_continuous**
+
+To see less distracting colors on the background, **theme_minimal** is a prefered option
+
+```{r, fig.height=5}
+ggplot()+
+  geom_sf(data = grid_dens,aes(fill = dens_mean))+
+    scale_fill_viridis(direction = -1) +
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))+
+  theme_minimal()
+```
+
+To make a custom raster palette the function **scale_fill_gradientn** can be used
+
+```{r}
+dens_colors<-c('white','#6CB4D3','#1A89AB','#7CC252','#B2EC2B','#DCF754','#FFE454','#FD9708','#F6640F','#EC2C11')
+dens_breaks<-c(0,0.30,0.60,0.85)
+dens_labels<-c('0','0.30','0.60','> 0.85')
+```
+
+The plot with custom palette arguments consider:<br>
+**colours** the number of colors should correspond to the values <br>
+**breaks** for those numbers that are to be displayed <br>
+**labels** for those labels that are to be displayed<br>
+**limits** to set up minimum and maximum values on the scale<br>
+
+To customize legend:  
+**legend.key** can be used<br>
+
+```{r, fig.height=5}
+ggplot()+
+  geom_sf(data = grid_dens,aes(fill = dens_mean),color='transparent')+
+    
+  scale_fill_gradientn(name='Density',
+    colours = dens_colors,
+    breaks = dens_breaks, 
+    labels = dens_labels,
+    limits=c(0,1))+
+  
+  
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))+
+  
+  theme_bw()+
+  
+  theme(panel.background = element_rect(fill = '#3668b4'),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())+
+  
+  
+  theme(
+    legend.key = element_rect(color = "black",size=5),
+    legend.key.width = unit(1, "cm"),
+    legend.key.height = unit(1, "cm")) +
+  
+  guides(fill = guide_colorbar(ticks.colour = "transparent"))
+```
+
+
+
+# Further reads 👩🏾‍🏫
+
+- [Create a grid by Urban data palette](https://urbandatapalette.com/post/2021-08-tessellation-sf/)<br>
+- [Thematic mapping in Mapping in R](https://map-rfun.library.duke.edu/032_thematic_mapping_geom_sf.html)<br>
+- [Mapping in R workshop](https://geanders.github.io/navy_public_health/index.html#prerequisites) <br>
+- [ggplot2 color scales](https://ggplot2-book.org/scale-colour.html)<br>
+- [ggplot2 legend keys](https://www.rusersplace.com/2022/08/21/index.zh-cn/images/FabxzmnX0AEwau0.jpg)<br>
+
+# ~~~~~~~~~~~~~
+# 5.May: githubpage
+
+# Intro
+
+The goal of this post is to:  
+
+- Create a github page for a presentation
+
+For the example, a xaringan presentation is to be deployed as github page for easy access
+
+## Repository
+
+You need to have a repository, if you are first time creating a reposotory, here are some [instructions](https://miriamll.github.io/git_pres/GitGithubZenodo#11)
+
+## Settings
+
+Go to your repository, select **settings**
+
+In the right side of the screen select **pages**
+
+```{r, fig.height=12,echo=FALSE, fig.align='left'}
+library(here)
+File<-paste0(here(),"/_posts/2023-05-05-github-page/")
+Imagen2<-paste0(File,"02settings.png")
+knitr::include_graphics(Imagen2)
+```
+## Github actions
+
+Look for build and deployment and in source, move from GitHub Actions to **Deploy from branch**
+
+```{r, fig.height=10,echo=FALSE, fig.align='left'}
+Imagen3<-paste0(File,"03BuildDeployment.png")
+knitr::include_graphics(Imagen3)
+```
+
+## Branch
+
+The branch depends where the **html** file is, here I have it in the **master** branch
+
+```{r, fig.height=10,echo=FALSE, fig.align='left'}
+Imagen4<-paste0(File,"04Master.png")
+knitr::include_graphics(Imagen4)
+```
+
+
+This would depend where you have your **html** file, but here I have it in the **master**
+
+```{r, fig.height=10,echo=FALSE, fig.align='left'}
+Imagen4<-paste0(File,"04Master.png")
+knitr::include_graphics(Imagen4)
+```
+
+## Reload
+
+If everything went well **Your site is alive at** will appear
+
+```{r, fig.height=10,echo=FALSE, fig.align='left'}
+Imagen5<-paste0(File,"05SiteIsAlive.png")
+knitr::include_graphics(Imagen5)
+```
+
+## Diferent slides
+
+To access specific slides from different presentations, add the html name at the end of the site.
+
+For example:
+
+```{r, eval=FALSE}
+https://miriamll.github.io/R_intro/IntroToR_0604.html#1
+```
+
+
+## To pdf
+
+The slides can also be converted to pdf
+
+Install package using **install.packages("renderthis")**
+
+```{r}
+library(renderthis)
+```
+
+```{r, eval=FALSE}
+to_pdf(from="https://miriamll.github.io/R_intro/DataWrangling_1205.html")
+```
+
+
+## Further reading
+
+- [Github Pages](https://pages.github.com/)  
+- [renderthis](https://jhelvy.github.io/renderthis/articles/renderthis.html)
+
+
+# ~~~~~~~~~~~~~
+# 6.June: gganimate
+
+# Intro
+
+How to create a map an animation using gganimate
+
+## 1. Getting ready
+
+Load and/or install the following packages:
+
+```{r}
+library(here)
+library(tidyverse)
+```
+
+## 2. Load data
+
+```{r}
+library(sula)
+```
+
+```{r}
+Example<-GPS_01
+```
+
+
+## 3. Mark beggining
+
+Mark a day zero to begging the animation, and the sequence to use
+
+```{r}
+first(Example$DateGMT)
+```
+
+```{r}
+Example$date_diff <- as.Date(as.character(Example$tStamp), 
+                             format="%Y-%m-%d")-
+  as.Date(as.character('2017-11-02'), 
+          format="%Y-%m-%d")
+```
+
+Create number sequence for animation
+
+```{r, echo=TRUE, eval=FALSE}
+Example<-Example %>% 
+  group_by(IDs) %>%
+  mutate(Secuencia = row_number())
+```
+
+## 4. Create map for reference
+
+For creating maps, the package **sf** is to be called.
+
+```{r}
+library(sf)
+```
+
+Now load your data, here I am giving my directory, you should use the one on your computer.
+
+To dowload the shapefile from Chile you can use this [this link](https://github.com/MiriamLL/miriamlerma_/blob/main/_posts/2023-06-01-gganimate/CHL_adm1.shp), this shapefile comes from the [DIVA-GIS](https://www.diva-gis.org/datadown)
+
+```{r echo=FALSE,warning=FALSE}
+Directory<-here('_posts/2023-06-01-gganimate')
+MyShapefileName<-"/CHL_adm1.shp"
+```
+
+```{r, message=FALSE}
+Country<-st_read(paste0(Directory,MyShapefileName))
+```
+
+
+## 5. Plot
+
+Plot the area of interest
+
+```{r, fig.height=5, fig.width=5}
+My_map<-ggplot(data=Example)  + 
+  geom_sf(data = Country,colour = "#edf2f4", fill = "#2b2d42",)+
+  geom_point(data=Example,aes(x = Longitude, y=Latitude))+
+  geom_path(data=Example,aes(x = Longitude, y=Latitude))+
+  coord_sf(xlim = c(-110,-109), ylim = c(-27.5,-26.5))
+My_map
+```
+
+## 6. Modify map to taste
+
+```{r, fig.height=5, fig.width=5}
+My_map<-My_map+
+ theme_bw()+
+
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = '#edf2f4'),
+    
+    axis.text.x =  element_text(size=12,color = "black"),
+    axis.text.y =  element_text(size=12,color = "black"),
+    
+    axis.ticks.x = element_line(color = "black"),
+    axis.ticks.y = element_line(color = "black"),
+    
+    title = element_text(colour = "black"),
+    legend.position = "none")+
+  
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))
+My_map
+```
+
+
+
+## 7. Animate
+
+To animate this plot, we will use the package **gganimate**
+
+```{r, warning=FALSE}
+library(gganimate)
+```
+
+Because animations might take some time, I like to use the package **beepr** to let me know when the animation is ready
+
+```{r}
+library(beepr)
+```
+
+**transition_reveal** leaves the track on the back ground so you can keep record where it was  
+
+
+```{r animating, fig.height=8, fig.width=8, eval=FALSE}
+My_animation<-ggplot(data=Example)  + 
+  geom_sf(data = Country,colour = "#edf2f4", fill = "#2b2d42",)+
+  geom_point(data=Example,aes(x = Longitude, y=Latitude, colour = tStamp))+
+  geom_path(data=Example,aes(x = Longitude, y=Latitude))+
+  coord_sf(xlim = c(-110,-109), ylim = c(-27.5,-26.5))+
+  
+  theme_bw()+
+
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = '#edf2f4'),
+    
+    axis.text.x =  element_text(size=12,color = "black"),
+    axis.text.y =  element_text(size=12,color = "black"),
+    
+    axis.ticks.x = element_line(color = "black"),
+    axis.ticks.y = element_line(color = "black"),
+    
+    title = element_text(colour = "black"),
+    legend.position = "none")+
+  
+    scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N")) +
+  
+  transition_reveal(along=tStamp) +
+  shadow_trail(distance = 0.01,
+               alpha = 0.5,
+               shape = 1)
+My_animation
+```
+
+```{r, echo=FALSE, out.height=350}
+knitr::include_graphics('https://raw.githubusercontent.com/MiriamLL/miriamlerma_/refs/heads/main/_posts/2023-06-01-gganimate/animation.gif')
+```
+
+Other arguments are:  
+**transition_time** use the information for the transition is
+**labs** shows the title with time so you can use as a reference  
+**shadow_wake** is the wake behind the points [read more here](https://goodekat.github.io/presentations/2019-isugg-gganimate-spooky/slides.html#48)
+
+## 8. Export
+
+The package **animation** allows to save the animation as a file
+
+```{r}
+library(animation)
+```
+
+To export, you can save the animation as gif
+
+```{r include= TRUE, eval=FALSE}
+# anim_save("animation.gif",My_animation)
+# beep(sound=1,expr=NULL)
+```
+
+Or transform from gif to mp4 using the package **av**
+
+```{r}
+library(av)
+```
+
+```{r include= TRUE, eval=FALSE}
+# av::av_encode_video("animation.gif", 
+#                     framerate = 5 ,
+#                     output = 'animation.mp4')
+# beep(sound=1,expr=NULL)
+```
+
+
+
+# Further reading
+
+- [A Grammar of Animated Graphics](https://gganimate.com/)
+- [Step by step with Katherine Goode](https://goodekat.github.io/presentations/2019-isugg-gganimate-spooky/slides.html#1)  
+- [Step by step with Ander Fernandez](https://anderfernandez.com/en/blog/how-to-create-animations-in-r-with-gganimate/)  
+- [Migration animated](https://www.climatecentral.org/news/map-animal-migration-climate-change-20646)
+
+
+
+# ~~~~~~~~~~~~~
+# 7.July: custom points
+
+# Intro
+
+Customize your plot using different sizes, shapes and colors in the points of your figures.
+
+# Data
+
+Load or install the package **seamonas** 
+
+```{r, eval=FALSE}
+devtools::install_github("MiriamLL/seamonas")
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(seamonas)
+```
+
+
+Load data
+
+The package contains data from a random generated density data frame.
+
+```{r, eval=FALSE}
+density_df<-density_df
+```
+
+
+The data frame contains latitude, longitude and density estimations. 
+
+To check the data lets use **ggplot**.
+
+First call the library. 
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+```
+
+
+Then check the data contained on the data frame. 
+
+```{r}
+ggplot()+
+  geom_point(data=density_df,
+          aes(x = longitude,
+              y= latitude))
+```
+
+Each of the dots contains density data, to check the values you can use the function **range** for the minimal and maximal values. 
+
+```{r}
+range(density_df$densities)
+```
+
+
+## Classify
+
+Based on the range of the densities, define how many classes you want to use and where the cuts will be made.
+
+```{r}
+class0<-0
+class1<-1
+class2<-2.5
+class3<-5
+```
+
+Using the function **mutate** from the package **tidyverse** add a new column with a classification.  
+Note that using alphanumerical order is important for the order in the legend. 
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+```{r}
+density_df<-density_df %>% 
+    mutate(density_class = case_when(
+      densities ==  class0 ~ as.character("group0"),
+      densities >=  class0 & densities <=  class1 ~ as.character("group1"),
+      densities >=  class1 & densities <=  class2 ~ as.character("group2"),
+      densities >=  class2 & densities <=  class3 ~ as.character("group3"),
+      densities >=  class3 ~ as.character("group4"),
+      TRUE~"U"))
+```
+
+Check number of observations to make sure your classification was working and that you have at least one value per group.
+
+```{r}
+density_df %>%
+  group_by(density_class)%>%
+  tally()
+```
+
+# Define 
+
+To define the sizes, numbers can be used. 
+
+```{r}
+density_sizes<-c("group0"=0.5, "group1"=1,"group2"=2, "group3"=3, "group4"=5)
+```
+
+
+To define the text on the labels, characters can be used.
+
+```{r}
+density_labels<-c('0','> 0-1','> 1-2.5','> 2.5-5','> 5')
+```
+
+```{r}
+class(density_labels)
+```
+
+To define shapes, R uses numbers. Here, each group is assigned a different shape. 
+
+```{r}
+density_shapes<-c("group0"=3, "group1"=21,"group2"=21, "group3"=21, "group4"=21)
+```
+
+For reference on the shape types:
+
+```{r, fig.height=2,echo=FALSE, fig.align='left', out.width="50%"}
+knitr::include_graphics("https://github.com/MiriamLL/R_intro/blob/master/Images/320Shapes.png?raw=true")
+```
+
+## Base plot
+
+To visualize your data, create a base plot with defined shape, size and labels.  
+To define the shape and size, the argument was added inside the **aes**.  
+To assign the values and labels, fill the arguments **scale_shape_manual** and **scale_size_manual**.  
+
+```{r, fig.height=5}
+ggplot()+
+  geom_point(data=density_df,
+          aes(x = longitude,
+              y= latitude,
+              shape = density_class,
+              size= density_class),
+              fill= "#d00000")+
+  
+  scale_shape_manual(values = density_shapes,labels=density_labels)+
+  scale_size_manual(values =  density_sizes,labels=density_labels)
+```
+
+
+
+## Add map
+
+Since we need reference map, the package **sf** contains the function **geom_sf** that allows plotting shapefiles, and the package **GermanNorthSea** contains shapefiles from the North Sea readily available for use.
+
+Call (or install) the packages
+
+```{r, message=FALSE, warning=FALSE}
+library(sf)
+library(GermanNorthSea)
+```
+
+Some parameters need to be adjusted first, such as which CRS to use, and the limits on the map.   
+For more details go to: [Mapping in R](https://www.miriam-lerma.com/posts/2023-03-04-mapping-in-r/) and [GermanNorthSea](https://www.miriam-lerma.com/posts/2023-06-02-germannorthsea/)
+
+Here the parameters define that we are going to use CRS 4326, color the land in yellow and the water in blue, and define the coordinates to plot.
+
+```{r, fig.height=5}
+my_CRS<-4326
+Europa<-sf::st_transform(German_land, my_CRS)
+EEZ<-sf::st_transform(German_EEZ, my_CRS)
+color_land='#f7bf54'
+color_water='#3668b4'
+xval<-c(3,9)
+yval<-c(53,56)
+```
+
+Create a base map.
+
+```{r, fig.height=5}
+base_plot<-ggplot2::ggplot()+
+    # maps
+    ggplot2::geom_sf(data = EEZ, colour = 'black', fill = color_water)+
+    ggplot2::geom_sf(data = Europa, colour = 'black', fill = color_land)+ 
+    ggplot2::coord_sf(xlim = xval, ylim = yval)+
+
+    NULL
+base_plot
+```
+
+
+
+## Add dots
+
+Now add the density data on top of the base map.
+
+```{r, fig.height=5}
+density_wmap<-base_plot+
+  geom_point(data=density_df,
+          aes(x = longitude,
+              y= latitude,
+              shape = density_class,
+              size= density_class),
+              fill= "#d00000")+
+  
+  scale_shape_manual(values = density_shapes,labels=density_labels)+
+  scale_size_manual(values =  density_sizes,labels=density_labels)
+density_wmap
+```
+
+
+Now you have a base map with density information on different shape and size.
+
+# Further reading
+
+These figures are based on the SAS monitoring program, but note that data was randomly generated and do not correspond to real survey information.
+
+See the real maps [here](https://www.researchgate.net/publication/366325582_Monitoring_von_Seevogeln_in_der_deutschen_Nord-_und_Ostsee_2021).
+
+
+
+
+# ~~~~~~~~~~~~~
+# 8.August: custom legend
+
+# Intro
+
+Customize the legend of your plot.
+
+# Plot
+
+Load or install the package **seamonas** 
+
+```{r, eval=FALSE}
+devtools::install_github("MiriamLL/seamonas")
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(seamonas)
+```
+
+
+Load data
+
+The package contains data from a random generated density data frame that can be used for the exercise. 
+
+If you want to create this map from scratch visit: [create a map with custom points](https://www.miriam-lerma.com/posts/2023-07-13-custompoints/).
+
+```{r, eval=FALSE}
+density_wmap<-density_wmap
+```
+
+```{r, fig.height=4}
+density_wmap
+```
+
+## add_legend
+
+I create this function to include the legend inside the plot, the function is available on the package **seamonas**.
+
+The function removes the background of the legend making it transparent, and includes the legend inside the plot based on the coordinates provided. 
+
+```{r}
+add_legend<-function(plot_wbreaks=plot_wbreaks,
+                     legxy=legxy){
+  plot_wlegend<-plot_wbreaks+
+    ggplot2::theme(
+      legend.position = legxy,
+      legend.title = ggplot2::element_blank(),
+      legend.text= ggplot2::element_text(size=10,color="#343a40",family='sans'),
+      legend.spacing.y =  ggplot2::unit(0.01, 'cm'),
+      legend.spacing.x =  ggplot2::unit(0.2, 'cm'),
+      legend.background = ggplot2::element_rect(fill='transparent',colour ="transparent"),
+      legend.box.background = ggplot2::element_rect(fill='transparent',colour ="transparent"),
+      legend.key = ggplot2::element_rect(fill = "transparent", colour = "transparent"),
+      legend.key.size =  ggplot2::unit(0.7, 'cm'))
+  return(plot_wlegend)
+}
+```
+
+
+Here, the arguments inside legxy are referring to where the legend will appear.
+
+
+```{r, fig.height=4}
+density_wlegend<-add_legend(
+  plot_wbreaks=density_wmap,
+  legxy=c(0.11, 0.21))
+density_wlegend
+```
+
+
+To add the title of the legend, I used the function annotate and a specific expression since I am using superscript.
+
+```{r, fig.height=4, warning=FALSE, message=FALSE}
+density_wlegend<-density_wlegend+
+  ggplot2::theme(legend.key.size = ggplot2::unit(0.4, "cm"))+
+  ggplot2::annotate(geom="text",
+                      x=3.0, y=54.0,
+                      label=expression(atop("Density"), paste("[ind/k", m^2,"]")),
+                      color="#343a40",hjust = 0)
+
+density_wlegend
+```
+
+
+## add_theme
+
+This function changes the x and y axis legends to Capitalized words and includes the symbol of degree on the plot.
+Removes the gray background and adds a white line on the panel border. It is also available in the package **seamonas**, but I am including it here in case you want to customize it.
+
+```{r}
+add_theme<-function(plot_wlegend=plot_wlegend){
+
+  plot_wtheme<-plot_wlegend+
+    ggplot2::xlab('Longitude')+
+    ggplot2::ylab('Latitude')+
+    ggplot2::scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+    ggplot2::scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))+
+    ggplot2::theme(
+      panel.border = ggplot2::element_rect(colour = "black", fill=NA, linewidth = 1),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.background = ggplot2::element_blank())
+  return(plot_wtheme)
+}
+```
+
+To run the function just add your plot.
+
+```{r}
+density_wtheme<-add_theme(plot_wlegend = density_wlegend)
+density_wtheme
+```
+
+
+You can theoretically use the function add_theme with any other map.
+
+
+# Keep learning
+
+- [Seamonas](https://github.com/MiriamLL/seamonas)  
+- [Plotting](https://miriamll.github.io/R_intro/Plotting_0606.html#56)  
+
+# ~~~~~~~~~~~~~
+# 9.September: custom multiple legen
+
+## Data
+
+For this example, we will use the data provided in the package **sula** <br>
+The data is from tracked masked boobies at Rapa Nui <br>
+The data is already in tidy format <br>
+
+```{r}
+my_data<-(sula::GPS_preparado)
+```
+
+## Grid
+
+The steps on this parts are on "how to create [grid](https://www.miriam-lerma.com/posts/2023-04-06-gridraster/)"
+  
+  
+Packages to use:
+
+```{r, warning=FALSE}
+library(tidyverse)
+library(sf)
+library(ggplot2)
+```
+
+Run to create a reference grid.
+
+```{r}
+my_points<-my_data %>%
+  st_as_sf(coords=c('Longitude','Latitude'),
+           crs=4326,
+           remove=FALSE)
+
+my_grid<-st_make_grid(my_points, 
+                       c(0.05, 0.05), 
+                       what = "polygons",
+                       square = TRUE)
+
+my_grid_sf = st_sf(my_grid) %>%
+  mutate(grid_id = 1:length(lengths(my_grid)))
+
+my_grid_sf$nlocs <- lengths(st_intersects(my_grid_sf, 
+                                          my_points))
+```
+
+
+For the exercices, we want to create plots per individual.  
+
+So lets first check the name of the individuals.  
+
+```{r}
+unique(my_data$IDs)
+```
+
+To count number of locations per grid and add it as a column in the original grid functions from the package **tidyverse** can be used. 
+
+
+```{r}
+GPS01_subset<- my_data %>%
+  filter(IDs=='GPS01')
+
+GPS01_sf<-GPS01_subset %>%
+  st_as_sf(coords=c('Longitude','Latitude'),
+           crs=4326,
+           remove=FALSE)
+
+my_grid_sf$GPS01_nlocs<- lengths(st_intersects(my_grid_sf, 
+                                          GPS01_sf))
+```
+
+
+```{r}
+GPS02_subset<- my_data %>%
+  filter(IDs=='GPS02')
+
+GPS02_sf<-GPS02_subset %>%
+  st_as_sf(coords=c('Longitude','Latitude'),
+           crs=4326,
+           remove=FALSE)
+
+my_grid_sf$GPS02_nlocs<- lengths(st_intersects(my_grid_sf, 
+                                          GPS02_sf))
+```
+
+# Plots
+
+## Custom palette
+
+Now to create a plot, lets select your palette based on the number of locations.
+
+```{r}
+range(my_grid_sf$GPS01_nlocs)
+range(my_grid_sf$GPS02_nlocs)
+```
+
+Because the palette is between 0 and 16, we will manually create the palette using characters. 
+
+```{r}
+my_palette <- c("1" = "#FFCF70",
+                "2" = "#FFC242",
+                "3" = "#FFBE33",
+                "4" = "#F5A300",
+                "5" = "#FD9A21",
+                "6" = "#FA8C02",
+                "7" = "#FF740A",
+                "8" = "#F56A00",
+                "9" = "#CEA7EE",
+                "10" = "#C698EB",
+                "11" = "#B376E5",
+                "12" = "#9D4EDD",
+                "13" = "#9643DB",
+                "14" = "#72369D",
+                "15" = "#6E3498",
+                "16" = "#3B194D")
+
+```
+
+
+To create the plot:   
+1. Subset only to grids with data  
+2. Convert the locations into character  
+3. Add palette in scale_fill_manual  
+4. Remove legend  
+
+```{r}
+GPS01_plot<-ggplot()+
+  geom_sf(data=subset(my_grid_sf,GPS01_nlocs != 0),
+                      aes(fill=as.character(GPS01_nlocs)))+
+  theme_bw()+
+  scale_fill_manual(name = "no.locs",values = my_palette)+
+  theme(legend.position = 'none')+
+  coord_sf(xlim = c(-110, -108),ylim = c(-28, -26))+  
+  scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+  scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))
+GPS01_plot
+```
+
+```{r}
+GPS02_plot<-ggplot()+
+  geom_sf(data=subset(my_grid_sf,GPS02_nlocs != 0),
+                      aes(fill=as.character(GPS02_nlocs)))+
+  theme_bw()+
+  scale_fill_manual(name = "no.locs",values = my_palette)+
+  theme(legend.position = 'none')+
+  coord_sf(xlim = c(-110, -108),ylim = c(-28, -26))+  
+  scale_x_continuous(labels = function(x) paste0(x, '\u00B0', "W")) +
+  scale_y_continuous(labels = function(x) paste0(x, '\u00B0', "N"))
+GPS02_plot
+```
+
+# Legend
+
+Now to create the legend, the information on the number of locations is also relevant as we will create a data frame with the number of locations and assign a color.   
+
+To create the data frame:  
+
+```{r}
+this_legend <- data.frame(id = rep(1, 16), no.locations = 1:16)
+```
+
+To assign a color:  
+
+```{r}
+my_legend_palette <- c(my_palette[[1]],  
+                          my_palette[[2]],
+                          my_palette[[3]],  
+                          my_palette[[4]],
+                          my_palette[[5]], 
+                          my_palette[[6]],
+                          my_palette[[7]],
+                          my_palette[[8]],
+                          my_palette[[9]],
+                          my_palette[[10]],
+                          my_palette[[11]],
+                          my_palette[[12]],
+                          my_palette[[13]],
+                          my_palette[[14]],
+                          my_palette[[15]],
+                          my_palette[[16]])
+```
+
+To create the plot, we will use the geometry **geom_tile**.
+
+We can duplicate it just to make the plot thicker.  
+
+```{r}
+plot_tracks_legend<-ggplot(this_legend) +
+  geom_tile(aes(x = 0.5, y=no.locations, fill = as.factor(no.locations))) +
+  geom_tile(aes(x = 1, y=no.locations, fill = as.factor(no.locations))) + 
+  scale_x_continuous(expand = c(0, 0),limits=c(0,5))+
+  scale_y_continuous(name="no.locations",breaks=seq(0, 16, 2),expand = c(0, 0))+
+  theme_bw()+
+  scale_fill_manual(values=my_palette)+
+  theme(legend.position='none',
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()
+        )
+plot_tracks_legend
+```
+
+
+
+# Patchwork
+
+The package **patchwork** is very useful to create multiplots, a layout of several plots. 
+
+```{r}
+library(patchwork)
+```
+
+The arguments to create our layout will include:  
+- An empty plot (**plot_spacer**)  
+- ncols is the number of columns  
+- widths are the widths of each of the columns, here the plot is larger (5) and the legend thinner (1)  
+- heights are to create equal height line of plots  
+
+```{r, fig.height=6,fig.width=5}
+(GPS01_plot+plot_spacer()+
+   GPS02_plot+plot_tracks_legend)+
+  plot_layout(ncol = 2,
+              widths = c(5,1), 
+              heights=c(1,1))
+```
+
+
+Although you have the option of plot_layout(guides = "collect") in the package **patchwork**. Sometimes not all plots have all the categories, and therefore it makes sense to create your own customize legend that fits all .
+
+
+# Further reading
+
+[Patchwork](https://patchwork.data-imaginist.com/)
+
+
+# ~~~~~~~~~~~~~
+# 10.October: inside legend
+
+# Data
+
+For this example, we will use the data provided in the package **sula** <br>
+The data is from tracked masked boobies at Rapa Nui <br>
+The data is already in tidy format <br>
+
+```{r}
+my_data<-(sula::GPS_preparado)
+```
+
+```{r}
+color1<-'#ff595e'
+color2<-'#ff924c'
+color3<-'#ffca3a'
+color4<-'#8ac926'
+color5<-'#52a675'
+color6<-'#1982c4'
+color7<-'#4267ac'
+color8<-'#6a4c93'
+```
+
+
+# Plots
+
+```{r}
+library(ggplot2)
+```
+
+Lets create a plot where each color is a different individual and we gave specific colors.  
+Note that this can also be made with scale_color_manual.  
+However, for the example I separate them as you might be using layers.  
+
+```{r, fig.height=5, fig.width=4}
+my_plot<-ggplot() + 
+  
+  geom_point(data = subset(my_data,IDs=='GPS01'),aes(x=Longitude,y=Latitude),color=color1,size=0.5,alpha=1)+
+  geom_point(data = subset(my_data,IDs=='GPS02'),aes(x=Longitude,y=Latitude),color=color2,size=0.5,alpha=1)+
+  geom_point(data = subset(my_data,IDs=='GPS03'),aes(x=Longitude,y=Latitude),color=color3,size=0.5,alpha=1)+
+  geom_point(data = subset(my_data,IDs=='GPS04'),aes(x=Longitude,y=Latitude),color=color4,size=0.5,alpha=1)+
+  geom_point(data = subset(my_data,IDs=='GPS05'),aes(x=Longitude,y=Latitude),color=color5,size=0.5,alpha=1)+
+  geom_point(data = subset(my_data,IDs=='GPS06'),aes(x=Longitude,y=Latitude),color=color6,size=0.5,alpha=1)+
+
+  theme(
+  legend.position='none',
+  legend.spacing.y = unit(0.05, 'cm'),
+  legend.text=element_text(size=10),
+  legend.background = element_rect(fill='transparent',colour ="transparent"),
+  legend.box.background = element_rect(fill='transparent',colour ="transparent"),
+  legend.key = element_rect(fill = "transparent", colour = "transparent"),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.background = element_blank())+
+  xlab('Longitude')+ylab('Latitude')+
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth=1.5))
+my_plot
+```
+
+## Inside legend
+
+Select the coordinates for the legend
+
+```{r}
+legx<- -109.90
+legy<- -27.4
+```
+
+Add text
+
+```{r,fig.height=5, fig.width=4}
+my_plot_wtext<-my_plot + 
+
+  annotate(geom="text",x= legx, y=legy-0.1, label="GPS01",color="#343a40",hjust = 0, size=2)+
+  annotate(geom="text",x= legx, y=legy-0.15, label="GPS02",color="#343a40",hjust = 0, size=2)+
+  annotate(geom="text",x= legx, y=legy-0.2, label="GPS03",color="#343a40",hjust = 0, size=2)+
+  annotate(geom="text",x= legx, y=legy-0.25, label="GPs04",color="#343a40",hjust = 0, size=2)+
+  annotate(geom="text",x= legx, y=legy-0.3, label="GPS05",color="#343a40",hjust = 0, size=2)+
+  annotate(geom="text",x= legx, y=legy-0.35, label="GPS06",color="#343a40",hjust = 0, size=2)
+my_plot_wtext
+```
+
+Add segment
+
+```{r,fig.height=5, fig.width=4}
+my_plot_wtext +
+  annotate("segment", x = legx-0.01, xend = legx-0.04, y = legy-0.1, yend = legy-0.1,color = color1,linewidth=1)+
+  annotate("segment", x = legx-0.01, xend = legx-0.04, y = legy-0.15, yend = legy-0.15,color = color2,linewidth=1)+
+  annotate("segment", x = legx-0.01, xend = legx-0.04, y = legy-0.2, yend = legy-0.2,color = color3,linewidth=1)+
+  annotate("segment", x = legx-0.01, xend = legx-0.04, y = legy-0.25, yend = legy-0.25,color = color4,linewidth=1)+
+  annotate("segment", x = legx-0.01, xend = legx-0.04, y = legy-0.3, yend = legy-0.3,color = color5,linewidth=1)+
+  annotate("segment", x = legx-0.01, xend = legx-0.04, y = legy-0.35, yend = legy-0.35,color = color6,linewidth=1)
+```
+
+Add rectangle
+
+```{r,fig.height=5, fig.width=4}
+my_plot_wtext +
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.09, ymax = legy-0.12,color = color1,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.14, ymax = legy-0.17,color = color2,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.19, ymax = legy-0.22,color = color3,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.24, ymax = legy-0.27,color = color4,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.29, ymax = legy-0.32,color = color5,linewidth=1, fill="transparent")+
+  annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.34, ymax = legy-0.37,color = color6,linewidth=1, fill="transparent")
+```
+
+You can of course use the legend, but this option is for me more easy to custom and move around the plot. Moreover, it allows you to include all kinds of annotations inside the plot.
+
+# Further reading
+
+[Create an annotation layer](https://ggplot2.tidyverse.org/reference/annotate.html)
+
+
+# ~~~~~~~~~~~~~
+# 11.Novemeber: secondary axis title
+
+This post is to show how to create a secondary x title in a ggplot
+
+
+# Data
+
+For this example we will create data.  
+The data includes two species, two subsets and some values.
+
+```{r}
+my_data<-data.frame(my_species=c('a','a','a','a','a','b','b','b','b','b'),
+                    my_subset=c('f','m','f','m','f','m','f','m','f','m'),
+                    my_values=c(24,15,22,24,31,24,29,26,79,21)
+                    )
+```
+
+Then, we will create a artificial grouping.
+
+```{r}
+my_data$my_groups<-paste(my_data$my_species,my_data$my_subset)
+```
+
+# Plot
+
+Lets create a plot using ggplot.
+
+```{r}
+library(ggplot2)
+```
+
+Here, I use a geom_violin but the type of the plot is irrelevant for this exercise.   
+Focus on the x axis.  
+ 
+
+```{r}
+plot_a<-ggplot(my_data, aes(y=my_values,x=my_groups, color=my_groups, fill=my_groups)) +
+  geom_violin(alpha=0.6)+
+  geom_point(color='black')+
+  theme_bw()
+plot_a
+```
+
+
+## Theme
+
+Now lets remove the legend and the title of the x axis.  
+Lets also replace the text in the x axis.
+
+```{r}
+plot_b<-plot_a+
+  theme(legend.position = "none",
+        axis.title.x = element_blank())+
+  scale_x_discrete(labels=  c("F", "M", "F", "M"))
+plot_b
+```
+
+
+## Increase coord
+
+Now, the purpose of the exercise is to add a secondary axis.
+
+To do this, we will expand the space on the y axis. 
+
+By doing so we will have more space for the secondary text. Note that it might be difficult to see at first grasp, but there is some empty space. 
+
+
+The arguments to increase the space are:  
+- coord_cartesian and clip **off**  
+- considering the y limit  
+- change the plot.margin  
+
+```{r}
+plot_c<-plot_b+
+  coord_cartesian(clip = "off",ylim = c(10, 80))+
+  scale_y_continuous(breaks=c(20,40,60,80), 
+                     limits=c(-10,80))+
+  theme(plot.margin=unit(c(0,0.1,2,0.2),"cm"))
+plot_c
+```
+
+
+
+## Add segments and text
+
+Now in the space created under the y axis, we can add the subtitles using the **annotation** arguments.  
+
+```{r}
+plot_c+
+  annotate(geom = "text",x = 1.5,y = -5, label = "Group 1",size = 4)+
+  annotate("segment",y = 0, yend = 0,x = 1, xend = 2,colour = "black")+
+  
+  annotate(geom = "text",x = 3.5,y = -5, label = "Group 2",size = 4)+
+  annotate("segment",y = 0, yend = 0,x = 3, xend = 4,colour = "black")
+```
+
+That was it, I hope it helps :)
+
+# ~~~~~~~~~~~~~
+# 12.December: arrows
+
+This post is to create a plot that has arrows indicating the direction
+
+In the example, we use sample data, but if you know where you event starts and ends you can skip these steps and go directly to the final section.
+
+
+# Data
+
+Load data from package **seamonas**
+
+```{r}
+library(seamonas)
+```
+
+This data is from a simulated survey
+
+```{r}
+survey_data<-survey_4326
+```
+
+
+## Calculate gaps
+
+Using the information from time, we will check when there were gaps and based on where a gap was, identify different events
+
+Load tidyverse package to use some functions
+
+```{r}
+library(tidyverse)
+```
+
+Check that your time data is in the correct format
+
+```{r}
+survey_data$dt <- as.POSIXct(strptime(survey_data$timestamps, "%Y-%m-%d %H:%M:%S"))
+```
+
+This function uses the times to identify where there was a gap, assuming that the data is sorted
+
+```{r}
+calculate_gaps<-function(my_data=my_data){
+  time1<-my_data$dt
+  time2<-lag(time1)
+  time_dif<-as.numeric(difftime(time1,time2, units="mins"))
+  my_data$time_dif<-as.numeric(time_dif)
+  return(my_data)
+}
+```
+
+After running the function, a new data frame will be created which includes a column named **time_dif**
+
+```{r}
+survey_data_gaps<-calculate_gaps(survey_data)
+```
+
+Here we will define, how many minutes should be considered a gap
+
+```{r}
+survey_data_gaps<-survey_data_gaps %>%
+  mutate(gap_event = case_when(is.na(time_dif) ~ 'N',
+                                time_dif >= 2 ~ 'Y',
+                                TRUE ~ 'N'))
+```
+
+
+## Identify events
+
+To add a number to each event in order to be able to identify them separately, we use the following function
+
+```{r}
+identify_events<-function(my_data=my_data){
+  num_seq<-nrow(my_data)
+  num_seq<-as.numeric(num_seq)
+  my_data$num_seq<-as.numeric(paste(seq(1:num_seq)))
+  subset_data<-subset(my_data,my_data$gap_event != "Y")
+  subset_data$num_seq<-as.integer(subset_data$num_seq)
+  subset_data$event_number<-(cumsum(c(1L, diff(subset_data$num_seq)) != 1L))
+  subset_data$event_number<-subset_data$event_number+1
+  subset_data$event_number<-stringr::str_pad(subset_data$event_number, 3, pad = "0")
+  subset_data$event_number<-paste0("event_",subset_data$event_number)
+  subset_data<-subset_data%>%select(num_seq,event_number)
+  my_data_events<-full_join(my_data,subset_data,by='num_seq')
+return(my_data_events)
+}
+```
+
+The function will return a data frame with a new column called **event_number**
+
+```{r}
+survey_data_events<-identify_events(my_data=survey_data_gaps)
+```
+
+## Start and time of the events
+
+Using the classification of the events, we will extract the first and the last location per event, which would become the start and end of the arrow on the plot
+
+```{r}
+survey_time_events<-survey_data_events %>%
+  group_by(event_number)%>%
+  summarise(first_lat=first(latitude),
+            last_lat=last(latitude),
+            first_lon=first(longitude),
+            last_lon=last(longitude))%>%
+  drop_na()
+```
+
+## Plot
+
+To plot we use the function **geom_segment** and the additional argument **arrow**
+
+```{r}
+ggplot(survey_time_events,
+       aes(x = first_lon, y = first_lat)) +
+  geom_segment(aes(xend = last_lon, yend = last_lat), arrow = arrow())
+```
+
+
+# Re-scale
+
+If you were need more frequent arrows, you can re-scale the events
+
+Here I create a for loop to re-scale separately per event
+
+```{r}
+rescale_events<-function(my_data=my_data,each_num=each_num){
+  events_list<-split(my_data,my_data$event_number)
+  new_events_list<-list()
+  for( i in seq_along(events_list)){
+    events_df<-events_list[[i]]
+    rep_secuence<-rep(1:100, each=each_num)
+    replicate_numbers<-rep_secuence[1:nrow(events_df)]
+    events_df$rep_number<-replicate_numbers
+    events_df$event_number2<-paste0(events_df$event_number,'-',events_df$rep_number)
+    new_events_list[[i]]<-events_df
+  }
+new_events_df<- do.call("rbind",new_events_list)
+return(new_events_df)
+}
+```
+
+We define how often do we want the arrow to occur, here I selected 40, which represents the number of locations
+
+```{r}
+survey_rescale<-rescale_events(my_data=survey_data_events,each_num=40)
+```
+
+## Group by event
+
+Use the function **group_by** and **summarise** to identify the start and end of the events, now with the rescaling there would be more events
+
+```{r}
+survey_rescale_arrows<-survey_rescale %>%
+  group_by(event_number2)%>%
+  summarise(first_lat=first(latitude),
+            last_lat=last(latitude),
+            first_lon=first(longitude),
+            last_lon=last(longitude))%>%
+  drop_na()
+```
+
+Similarly to above we use the function geom_segment and the argument arrow
+
+```{r}
+ggplot(survey_rescale_arrows,
+       aes(x = first_lon, y = first_lat)) +
+  geom_segment(aes(xend = last_lon, yend = last_lat), 
+               arrow = arrow())
+```
+
+
+# In a map
+
+Finally, to see how it would look in a map we will include a base map from Germany.
+
+Load the shapefiles and the package to plot
+
+```{r}
+library(GermanNorthSea)
+library(sf)
+```
+
+Transform to the corresponding CRS
+
+```{r}
+German_land<-st_transform(GermanNorthSea::German_land, 4326)
+German_EEZ<-st_transform(GermanNorthSea::German_EEZ, 4326)
+German_coast<-st_transform(GermanNorthSea::German_coast, 4326)
+```
+
+Add the corresponding arguments and voilà
+
+```{r}
+ggplot() + 
+  geom_sf(data = German_EEZ, colour = 'black')+
+  geom_sf(data = German_land, colour = 'black', fill = 'grey')+ 
+  coord_sf(xlim = c(3, 9),ylim = c(53, 56))+
+  theme_bw()+
+  xlab('Longitude')+ylab('Latitude')+  
+  geom_segment(data=survey_rescale_arrows,aes(x = first_lon, y = first_lat,xend = last_lon, yend = last_lat), 
+               arrow = arrow(length=unit(0.10,"cm"), type = "closed"),
+               color='#c1121f')
+```
+
+## Further reading
+
+To change the shape, size and form of the arrow visit [geom_segment](https://ggplot2.tidyverse.org/reference/geom_segment.html)
+
+
+
+
+
+
