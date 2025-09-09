@@ -453,7 +453,7 @@ ggsave(ggplot()+
    annotation_scale(location = "br",bar_cols = c("#ef233c", "#d90429"),text_col = '#ef233c')+
   
   annotation_north_arrow(location = "tl", style = north_arrow_minimal(text_col = '#ffd60a',line_col = '#ffd60a',fill = '#ffd60a')),
-       filename = paste0(here(),"/map_export.jpg"),
+       filename = paste0(here(),"/Blog/2023/map_export.jpg"),
        width = 6, 
        height = 7, 
        units = "in",
@@ -791,7 +791,7 @@ ggsave(ggplot()+
     legend.key.height = unit(1, "cm")) +
   
   guides(fill = guide_colorbar(ticks.colour = "transparent")),
-       filename = paste0(here(),"/grid_export.jpg"),
+       filename = paste0(here(),"/Blog/2023/grid_export.jpg"),
        width = 6, 
        height = 7, 
        units = "in",
@@ -1805,7 +1805,7 @@ ggsave(my_plot_wtext +
   annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.24, ymax = legy-0.27,color = color4,linewidth=1, fill="transparent")+
   annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.29, ymax = legy-0.32,color = color5,linewidth=1, fill="transparent")+
   annotate("rect", xmin = legx-0.01, xmax = legx+0.08, ymin = legy-0.34, ymax = legy-0.37,color = color6,linewidth=1, fill="transparent"),
-       filename = paste0(here(),"/insidelegend_export.jpg"),
+       filename = paste0(here(),"/Blog/2023/insidelegend_export.jpg"),
        width = 4, 
        height = 5, 
        units = "in",
@@ -1922,7 +1922,7 @@ ggsave(plot_c+
   
   annotate(geom = "text",x = 3.5,y = -5, label = "Group 2",size = 4)+
   annotate("segment",y = 0, yend = 0,x = 3, xend = 4,colour = "black"),
-       filename = paste0(here(),"/secondary_export.jpg"),
+       filename = paste0(here(),"/Blog/2023/secondary_export.jpg"),
        width = 6, 
        height = 4, 
        units = "in",
