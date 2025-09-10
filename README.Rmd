@@ -13,9 +13,13 @@ Data supporting blogs.
 
 ## Gallery
 
+```{r,echo=FALSE}
+quarto_link<-"https://github.com/MiriamLL/quarto_webpage/blob/main/"
+```
+
 ### Calendar
 
-Geom point but make squares. Source code [here](https://www.miriam-lerma.com/blog/2024-01-15-calendar/calendar).
+Geom point but make squares. Source code [here](https://www.miriam-lerma.com/blog/2024-01-15-calendar/calendar).  
 
 ```{r, echo=FALSE, fig.align='left',  out.width="50%"}
 # 2024-01
@@ -26,6 +30,7 @@ knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blo
 ### Violin plot
 
 Using geom_violin with secondary X axis. Source code [here](https://www.miriam-lerma.com/blog/2023-11-02-secondaryxtitle/secondaryxtitle).  
+
 ```{r, echo=FALSE, fig.align='left',  out.width="50%"}
 # 2023-11
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/secondary_export.jpg?raw=true")
@@ -33,7 +38,9 @@ knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blo
 
 
 ### Line plot
-Using geom_line with secondary Y axis. Source code [here](https://www.miriam-lerma.com/blog/2024-03-11-year-sst/year-sst).
+
+Using geom_line with secondary Y axis. Source code [here](https://www.miriam-lerma.com/blog/2024-03-11-year-sst/year-sst).  
+
 ```{r, echo=FALSE, fig.align='left',  out.width="50%"}
 # 2024-03
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/sst_chl_yaxis_export.jpg?raw=true")
@@ -43,7 +50,8 @@ knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blo
 ### Map
 
 #### Base Map
-Using geom_sf. Source code [here](https://www.miriam-lerma.com/blog/2023-03-04-mapping-in-r/mapping-in-r).
+Using geom_sf. Source code [here](https://www.miriam-lerma.com/blog/2023-03-04-mapping-in-r/mapping-in-r).  
+
 ```{r, echo=FALSE,fig.align='left', out.width="40%"}
 # 2023-03
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/map_export.jpg?raw=true")
@@ -51,26 +59,30 @@ knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blo
 
 ### Points
 
-Using geom_point with labels. Source code [here](https://www.miriam-lerma.com/blog/2024-10-08-distancepoints/distancepoints).
-```{r, echo=FALSE, fig.align='left',  out.width="40%"}
+Using geom_point with labels. Source code [here](https://www.miriam-lerma.com/blog/2024-10-08-distancepoints/distancepoints).  
+
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
 # 2024-10
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/distancepoints_export.jpg?raw=true")
 ```
 
-Using geom_point with different colors. Source code [here](https://www.miriam-lerma.com/blog/2024-11-05-completeorincomplete/completeorincomplete).
-```{r, echo=FALSE, fig.align='left',  out.width="60%"}
-# 2024-11
-knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/complete_export.jpg?raw=true")
+Using geom_point with different colors. Source code [here](https://www.miriam-lerma.com/blog/2024-11-05-completeorincomplete/completeorincomplete).  
+
+```{r, echo=FALSE, fig.align='left',  out.width="70%"}
+# 2024-11 
+knitr::include_graphics(paste0(quarto_link,"/Blog/2024/complete_export.jpg?raw=true"))
 ```
 
-Using geom_point with different colors. Source code [here](https://www.miriam-lerma.com/blog/2024-09-19-identifyevents/identifyevents).
-```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+Using geom_point with different colors. Source code [here](https://www.miriam-lerma.com/blog/2024-09-19-identifyevents/identifyevents).  
+
+```{r, echo=FALSE, fig.align='left',  out.width="80%"}
 # 2024-09
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/identifytrip_export.jpg?raw=true")
 ```
 
 
-Using geom_poing and patchwork.Source code [here](https://www.miriam-lerma.com/blog/2024-08-01-removelocs/removelocs).
+Using geom_poing and patchwork.Source code [here](https://www.miriam-lerma.com/blog/2024-08-01-removelocs/removelocs).  
+
 ```{r, echo=FALSE, fig.align='left',  out.width="100%"}
 # 2024-08
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/remove_export.jpg?raw=true")
@@ -86,22 +98,25 @@ knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blo
 
 #### Densities
 
-Using geom_sf and geom_points. Source code [here](https://www.miriam-lerma.com/blog/2023-08-02-customlegend/customlegend). 
-```{r, echo=FALSE, fig.align='left',  out.width="80%"}
-#2023-08
+Using geom_sf and geom_points. Source code [here](https://www.miriam-lerma.com/blog/2023-08-02-customlegend/customlegend).  
+
+```{r, echo=FALSE, fig.align='left',  out.width="70%"}
+#2023-08 too much space
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/custompoints_export.jpg?raw=true")
 ```
 
 #### Curve
 
-Using geom_curve. Source code [here](https://www.miriam-lerma.com/blog/2024-06-04-pointsdistance/pointsdistance).
+Using geom_curve. Source code [here](https://www.miriam-lerma.com/blog/2024-06-04-pointsdistance/pointsdistance).  
+
 ```{r, echo=FALSE, fig.align='left',  out.width="50%"}
 # 2024-02
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/distance_export.jpg?raw=true")
 ```
 
 #### Create grids
-Using geom_curve. Source code [here](https://www.miriam-lerma.com/blog/2023-09-01-patchwork-legend/custom-legend).
+Using geom_curve. Source code [here](https://www.miriam-lerma.com/blog/2023-09-01-patchwork-legend/custom-legend).  
+
 ```{r, echo=FALSE, fig.align='left',  out.width="50%"}
 # 2023-09
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/multiple_export.jpg?raw=true")
@@ -109,29 +124,33 @@ knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blo
 
 #### Raster
 
-With buffer. Source code [here](https://www.miriam-lerma.com/blog/2024-04-04-buffer/buffer)
+With buffer. Source code [here](https://www.miriam-lerma.com/blog/2024-04-04-buffer/buffer).  
+
 ```{r, echo=FALSE, fig.align='left', out.width="50%"}
 #2024-04
-knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/buffer_export.jpg?raw=true")
+knitr::include_graphics(paste0(quarto_link,"Blog/2023/buffer_export.jpg?raw=true"))
 ```
 
 ## Raster
 
-SST from NOAA. Source code [here](https://www.miriam-lerma.com/blog/2024-02-06-environmentalvariables/environmentalvariables)
+SST from NOAA. Source code [here](https://www.miriam-lerma.com/blog/2024-02-06-environmentalvariables/environmentalvariables).  
+
 ```{r, echo=FALSE, fig.align='left',  out.width="50%"}
 # 2024-02
-knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/environmental_export.jpg?raw=true")
+knitr::include_graphics(paste0(quarto_link,"Blog/2024/environmental_export.jpg?raw=true"))
 ```
 
 ### Points
-With custom legend inside the plot. Source code [here](https://www.miriam-lerma.com/blog/2023-10-02-inside-legend/inside-legend)
+With custom legend inside the plot. Source code [here](https://www.miriam-lerma.com/blog/2023-10-02-inside-legend/inside-legend).  
+
 ```{r, echo=FALSE, fig.align='left', out.width="50%"}
 #2023-10
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/insidelegend_export.jpg?raw=true")
 ```
 
 ### Animate
-Using geom_sf, geom_poing and geom_path. Source code [here](https://www.miriam-lerma.com/blog/2023-06-01-gganimate/gganimate).
+Using geom_sf, geom_poing and geom_path. Source code [here](https://www.miriam-lerma.com/blog/2023-06-01-gganimate/gganimate).  
+
 ```{r, echo=FALSE, fig.align='left'}
 #2023-06
 knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/animation.gif?raw=true")
@@ -148,25 +167,27 @@ Open [here](https://www.miriam-lerma.com/blog/2024-12-02-tmap/tmap).
 
 ## Bathymetry
 
-```{r, echo=FALSE, out.width = "80%"}
-knitr::include_graphics(paste0(here::here(),"/blog/2025-01-15-bathymetry/bathymetry_export.jpg"))
+```{r, echo=FALSE, fig.align='left', out.width = "50%"}
+quarto_link<-"https://github.com/MiriamLL/quarto_webpage/blob/main/"
+knitr::include_graphics(paste0(quarto_link,"/blog/2025-01-15-bathymetry/bathymetry_export.jpg?raw=true"))
 ```
 
 ## Light pollution
 
-```{r, echo=FALSE, out.width = "80%"}
-knitr::include_graphics(paste0(here::here(),"/blog/2025-05-05-lightpollution/radiance_export.jpg"))
+```{r, echo=FALSE, fig.align='left', out.width = "50%"}
+knitr::include_graphics(paste0(quarto_link,"/blog/2025-05-05-lightpollution/radiance_export.jpg?raw=true"))
 ```
 
 ## SST
-```{r, echo=FALSE, out.width = "80%"}
-knitr::include_graphics(paste0(here::here(),"/blog/2025-04-15-copernicus-sst/sst_export.jpg"))
+
+```{r, echo=FALSE, fig.align='left', out.width = "50%"}
+knitr::include_graphics(paste0(quarto_link,"/blog/2025-04-15-copernicus-sst/sst_export.jpg?raw=true"))
 ```
 
 ## Shipping traffic
 
-```{r, echo=FALSE, out.width = "80%"}
-knitr::include_graphics(paste0(here::here(),"/blog/2025-06-02-shippingtraffic/shipping_export.jpg"))
+```{r, echo=FALSE, fig.align='left', out.width = "50%"}
+knitr::include_graphics(paste0(quarto_link,"/blog/2025-06-02-shippingtraffic/shipping_export.jpg?raw=true"))
 ```
 
 # Vectors (shapefiles)
@@ -175,19 +196,20 @@ knitr::include_graphics(paste0(here::here(),"/blog/2025-06-02-shippingtraffic/sh
 
 ## Fishing data
 
-```{r, echo=FALSE, out.width = "80%"}
-knitr::include_graphics(paste0(here::here(),"/blog/2025-03-03-fishingdata/fishingwatch_export.jpg"))
+```{r, echo=FALSE, fig.align='left', out.width = "50%"}
+knitr::include_graphics(paste0(quarto_link,"/blog/2025-03-03-fishingdata/fishingwatch_export.jpg?raw=true"))
 ```
 
-
 ### Oil
-```{r, echo=FALSE, out.width = "100%"}
-knitr::include_graphics(paste0(here::here(),"/blog/2025-08-04-oil/oil_export.jpeg"))
+
+```{r, echo=FALSE, fig.align='left', out.width = "50%"}
+knitr::include_graphics(paste0(quarto_link,"/blog/2025-08-04-oil/oil_export.jpeg?raw=true"))
 ```
 
 ## Polygons
 ### OWF
-```{r, echo=FALSE, out.width = "100%"}
-knitr::include_graphics(paste0(here::here(),"/blog/2025-07-01-owf/owf_export.jpeg"))
+
+```{r, echo=FALSE, fig.align='left', out.width = "50%"}
+knitr::include_graphics(paste0(quarto_link,"/blog/2025-07-01-owf/owf_export.jpeg?raw=true?raw=true"))
 ```
 
