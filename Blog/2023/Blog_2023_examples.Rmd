@@ -1096,7 +1096,7 @@ library(av)
 - [Migration animated](https://www.climatecentral.org/news/map-animal-migration-climate-change-20646)
 
 # ~~~~~~~~~~~~~
-# XX 7.July: custom points
+# 7.July: custom points
 
 # Intro
 
@@ -1118,7 +1118,7 @@ Load data
 
 The package contains data from a random generated density data frame.
 
-```{r, eval=FALSE}
+```{r}
 density_df<-density_df
 ```
 
@@ -1134,7 +1134,7 @@ library(ggplot2)
 
 Then check the data contained on the data frame. 
 
-```{r, eval=FALSE}
+```{r}
 ggplot()+
   geom_point(data=density_df,
           aes(x = longitude,
@@ -1143,7 +1143,7 @@ ggplot()+
 
 Each of the dots contains density data, to check the values you can use the function **range** for the minimal and maximal values. 
 
-```{r, eval=FALSE}
+```{r}
 range(density_df$densities)
 ```
 
@@ -1151,7 +1151,7 @@ range(density_df$densities)
 
 Based on the range of the densities, define how many classes you want to use and where the cuts will be made.
 
-```{r, eval=FALSE}
+```{r}
 class0<-0
 class1<-1
 class2<-2.5
@@ -1161,11 +1161,11 @@ class3<-5
 Using the function **mutate** from the package **tidyverse** add a new column with a classification.  
 Note that using alphanumerical order is important for the order in the legend. 
 
-```{r, message=FALSE, warning=FALSE, eval=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
 ```
 
-```{r, eval=FALSE}
+```{r}
 density_df<-density_df %>% 
     mutate(density_class = case_when(
       densities ==  class0 ~ as.character("group0"),
@@ -1178,7 +1178,7 @@ density_df<-density_df %>%
 
 Check number of observations to make sure your classification was working and that you have at least one value per group.
 
-```{r, eval=FALSE}
+```{r}
 density_df %>%
   group_by(density_class)%>%
   tally()
@@ -1188,13 +1188,13 @@ density_df %>%
 
 To define the sizes, numbers can be used. 
 
-```{r, eval=FALSE}
+```{r}
 density_sizes<-c("group0"=0.5, "group1"=1,"group2"=2, "group3"=3, "group4"=5)
 ```
 
 To define the text on the labels, characters can be used.
 
-```{r, eval=FALSE}
+```{r}
 density_labels<-c('0','> 0-1','> 1-2.5','> 2.5-5','> 5')
 ```
 
@@ -1204,7 +1204,7 @@ class(density_labels)
 
 To define shapes, R uses numbers. Here, each group is assigned a different shape. 
 
-```{r, eval=FALSE}
+```{r}
 density_shapes<-c("group0"=3, "group1"=21,"group2"=21, "group3"=21, "group4"=21)
 ```
 
@@ -1220,7 +1220,7 @@ To visualize your data, create a base plot with defined shape, size and labels.
 To define the shape and size, the argument was added inside the **aes**.  
 To assign the values and labels, fill the arguments **scale_shape_manual** and **scale_size_manual**.  
 
-```{r, fig.height=5, eval=FALSE}
+```{r}
 ggplot()+
   geom_point(data=density_df,
           aes(x = longitude,
@@ -1277,7 +1277,7 @@ base_plot
 
 Now add the density data on top of the base map.
 
-```{r, fig.height=5, eval=FALSE}
+```{r, fig.height=5}
 density_wmap<-base_plot+
   geom_point(data=density_df,
           aes(x = longitude,
@@ -1311,7 +1311,7 @@ ggsave(density_wmap,
 ```
 
 # ~~~~~~~~~~~~~
-# XX 8.August: custom legend
+# 8.August: custom legend
 
 # Intro
 
@@ -1322,11 +1322,11 @@ Customize the legend of your plot.
 Load or install the package **seamonas** 
 
 ```{r, eval=FALSE}
-devtools::install_github("MiriamLL/seamonas")
+devtools::install_github("MiriamLL/SeaDens")
 ```
 
 ```{r, message=FALSE, warning=FALSE}
-library(seamonas)
+library(SeaDens)
 ```
 
 
@@ -1336,11 +1336,11 @@ The package contains data from a random generated density data frame that can be
 
 If you want to create this map from scratch visit: [create a map with custom points](https://www.miriam-lerma.com/posts/2023-07-13-custompoints/).
 
-```{r, eval=FALSE}
+```{r}
 density_wmap<-density_wmap
 ```
 
-```{r, fig.height=4, eval=FALSE}
+```{r, fig.height=4}
 density_wmap
 ```
 
@@ -1350,7 +1350,7 @@ I create this function to include the legend inside the plot, the function is av
 
 The function removes the background of the legend making it transparent, and includes the legend inside the plot based on the coordinates provided. 
 
-```{r, eval=FALSE}
+```{r}
 add_legend<-function(plot_wbreaks=plot_wbreaks,
                      legxy=legxy){
   plot_wlegend<-plot_wbreaks+
@@ -1372,7 +1372,7 @@ add_legend<-function(plot_wbreaks=plot_wbreaks,
 Here, the arguments inside legxy are referring to where the legend will appear.
 
 
-```{r, fig.height=4, eval=FALSE}
+```{r, fig.height=4}
 density_wlegend<-add_legend(
   plot_wbreaks=density_wmap,
   legxy=c(0.11, 0.21))
@@ -1382,7 +1382,7 @@ density_wlegend
 
 To add the title of the legend, I used the function annotate and a specific expression since I am using superscript.
 
-```{r, fig.height=4, warning=FALSE, message=FALSE, eval=FALSE}
+```{r, fig.height=4, warning=FALSE, message=FALSE}
 density_wlegend<-density_wlegend+
   ggplot2::theme(legend.key.size = ggplot2::unit(0.4, "cm"))+
   ggplot2::annotate(geom="text",
@@ -1399,7 +1399,7 @@ density_wlegend
 This function changes the x and y axis legends to Capitalized words and includes the symbol of degree on the plot.
 Removes the gray background and adds a white line on the panel border. It is also available in the package **seamonas**, but I am including it here in case you want to customize it.
 
-```{r, eval=FALSE}
+```{r}
 add_theme<-function(plot_wlegend=plot_wlegend){
 
   plot_wtheme<-plot_wlegend+
@@ -1418,7 +1418,7 @@ add_theme<-function(plot_wlegend=plot_wlegend){
 
 To run the function just add your plot.
 
-```{r, eval=FALSE}
+```{r}
 density_wtheme<-add_theme(plot_wlegend = density_wlegend)
 density_wtheme
 ```
@@ -1429,8 +1429,20 @@ You can theoretically use the function add_theme with any other map.
 
 # Keep learning
 
-- [Seamonas](https://github.com/MiriamLL/seamonas)  
+- [SeaDens](https://github.com/MiriamLL/SeaDens)  
 - [Plotting](https://miriamll.github.io/R_intro/Plotting_0606.html#56)  
+
+# Export
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+ggsave(density_wtheme,
+       filename = paste0(here(),"/Blog/2023/density_export.jpg"),
+       width = 6, 
+       height = 7, 
+       units = "in",
+       dpi = 300)
+```
 
 # ~~~~~~~~~~~~~
 # 9.September: custom multiple legen
@@ -1937,7 +1949,7 @@ ggsave(plot_c+
 ```
 
 # ~~~~~~~~~~~~~
-# XX 12.December: arrows 
+# 12.December: arrows 
 
 This post is to create a plot that has arrows indicating the direction
 
@@ -1945,15 +1957,15 @@ In the example, we use sample data, but if you know where you event starts and e
 
 # Data
 
-Load data from package **seamonas**
+Load data from package **SeaDens**
 
 ```{r}
-library(seamonas)
+library(SeaDens)
 ```
 
 This data is from a simulated survey
 
-```{r,eval=FALSE}
+```{r}
 survey_data<-survey_4326
 ```
 
@@ -1964,19 +1976,19 @@ Using the information from time, we will check when there were gaps and based on
 
 Load tidyverse package to use some functions
 
-```{r,eval=FALSE}
+```{r}
 library(tidyverse)
 ```
 
 Check that your time data is in the correct format
 
-```{r,eval=FALSE}
+```{r}
 survey_data$dt <- as.POSIXct(strptime(survey_data$timestamps, "%Y-%m-%d %H:%M:%S"))
 ```
 
 This function uses the times to identify where there was a gap, assuming that the data is sorted
 
-```{r,eval=FALSE}
+```{r}
 calculate_gaps<-function(my_data=my_data){
   time1<-my_data$dt
   time2<-lag(time1)
@@ -1988,13 +2000,13 @@ calculate_gaps<-function(my_data=my_data){
 
 After running the function, a new data frame will be created which includes a column named **time_dif**
 
-```{r,eval=FALSE}
+```{r}
 survey_data_gaps<-calculate_gaps(survey_data)
 ```
 
 Here we will define, how many minutes should be considered a gap
 
-```{r,eval=FALSE}
+```{r}
 survey_data_gaps<-survey_data_gaps %>%
   mutate(gap_event = case_when(is.na(time_dif) ~ 'N',
                                 time_dif >= 2 ~ 'Y',
@@ -2006,7 +2018,7 @@ survey_data_gaps<-survey_data_gaps %>%
 
 To add a number to each event in order to be able to identify them separately, we use the following function
 
-```{r,eval=FALSE}
+```{r}
 identify_events<-function(my_data=my_data){
   num_seq<-nrow(my_data)
   num_seq<-as.numeric(num_seq)
@@ -2025,7 +2037,7 @@ return(my_data_events)
 
 The function will return a data frame with a new column called **event_number**
 
-```{r,eval=FALSE}
+```{r}
 survey_data_events<-identify_events(my_data=survey_data_gaps)
 ```
 
@@ -2033,7 +2045,7 @@ survey_data_events<-identify_events(my_data=survey_data_gaps)
 
 Using the classification of the events, we will extract the first and the last location per event, which would become the start and end of the arrow on the plot
 
-```{r,eval=FALSE}
+```{r}
 survey_time_events<-survey_data_events %>%
   group_by(event_number)%>%
   summarise(first_lat=first(latitude),
@@ -2047,7 +2059,7 @@ survey_time_events<-survey_data_events %>%
 
 To plot we use the function **geom_segment** and the additional argument **arrow**
 
-```{r,eval=FALSE}
+```{r}
 ggplot(survey_time_events,
        aes(x = first_lon, y = first_lat)) +
   geom_segment(aes(xend = last_lon, yend = last_lat), arrow = arrow())
@@ -2060,7 +2072,7 @@ If you were need more frequent arrows, you can re-scale the events
 
 Here I create a for loop to re-scale separately per event
 
-```{r,eval=FALSE}
+```{r}
 rescale_events<-function(my_data=my_data,each_num=each_num){
   events_list<-split(my_data,my_data$event_number)
   new_events_list<-list()
@@ -2079,7 +2091,7 @@ return(new_events_df)
 
 We define how often do we want the arrow to occur, here I selected 40, which represents the number of locations
 
-```{r,eval=FALSE}
+```{r}
 survey_rescale<-rescale_events(my_data=survey_data_events,each_num=40)
 ```
 
@@ -2087,7 +2099,7 @@ survey_rescale<-rescale_events(my_data=survey_data_events,each_num=40)
 
 Use the function **group_by** and **summarise** to identify the start and end of the events, now with the rescaling there would be more events
 
-```{r,eval=FALSE}
+```{r}
 survey_rescale_arrows<-survey_rescale %>%
   group_by(event_number2)%>%
   summarise(first_lat=first(latitude),
@@ -2099,7 +2111,7 @@ survey_rescale_arrows<-survey_rescale %>%
 
 Similarly to above we use the function geom_segment and the argument arrow
 
-```{r,eval=FALSE}
+```{r}
 ggplot(survey_rescale_arrows,
        aes(x = first_lon, y = first_lat)) +
   geom_segment(aes(xend = last_lon, yend = last_lat), 
@@ -2128,7 +2140,7 @@ German_coast<-st_transform(GermanNorthSea::German_coast, 4326)
 
 Add the corresponding arguments and voilà
 
-```{r,eval=FALSE}
+```{r}
 ggplot() + 
   geom_sf(data = German_EEZ, colour = 'black')+
   geom_sf(data = German_land, colour = 'black', fill = 'grey')+ 

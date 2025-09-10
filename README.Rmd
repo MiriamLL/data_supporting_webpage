@@ -1,0 +1,27 @@
+# Data supporting webpage
+
+## Teaching
+Materials for teaching section on webpage.
+
+## Blog
+### 2025
+Data supporting blogs. Obtained from EMODnet, NOAA, Global Fishing watch. 
+
+# Gallery
+
+##
+
+
+## Map
+
+### Base Map
+
+```{r, echo=FALSE,  out.width="50%"}
+Blog_2023_03_04<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/map_export.jpg?raw=true"
+knitr::include_graphics(Blog_2023_03_04)
+```
+
+```{r, echo=FALSE,  out.width="50%"}
+Blog_2023_03_04<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/map_export.jpg?raw=true"
+knitr::include_graphics(Blog_2023_03_04)
+```
