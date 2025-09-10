@@ -1329,15 +1329,49 @@ devtools::install_github("MiriamLL/SeaDens")
 library(SeaDens)
 ```
 
-
-Load data
+## Load data
 
 The package contains data from a random generated density data frame that can be used for the exercise. 
 
 If you want to create this map from scratch visit: [create a map with custom points](https://www.miriam-lerma.com/posts/2023-07-13-custompoints/).
 
-```{r}
-density_wmap<-density_wmap
+```{r, eval=FALSE}
+class0<-0
+class1<-1
+class2<-2.5
+class3<-5
+density_df<-density_df %>% 
+    dplyr::mutate(density_class = dplyr::case_when(
+      densities ==  class0 ~ as.character("group0"),
+      densities >=  class0 & densities <=  class1 ~ as.character("group1"),
+      densities >=  class1 & densities <=  class2 ~ as.character("group2"),
+      densities >=  class2 & densities <=  class3 ~ as.character("group3"),
+      densities >=  class3 ~ as.character("group4"),
+      TRUE~"U"))
+```
+
+```{r, eval=FALSE}
+library(ggplot2)
+library(GermanNorthSea)
+```
+
+```{r, eval=FALSE}
+density_wmap<-ggplot2::ggplot()+
+    # maps
+    ggplot2::geom_sf(data = sf::st_transform(GermanNorthSea::German_EEZ,4326), colour = 'black', fill = '#3668b4')+
+    ggplot2::geom_sf(data = sf::st_transform(GermanNorthSea::German_land,4326), colour = 'black', fill = '#f7bf54')+ 
+    ggplot2::coord_sf(xlim = c(3,9), ylim = c(53,56))+
+    geom_point(data=density_df,
+          aes(x = longitude,
+              y= latitude,
+              shape = density_class,
+              size= density_class),
+              fill= "#d00000")+
+  
+  scale_shape_manual(values = c("group0"=3, "group1"=21,"group2"=21, "group3"=21, "group4"=21),
+                     labels=c('0','> 0-1','> 1-2.5','> 2.5-5','> 5'))+
+  scale_size_manual(values =  c("group0"=0.5, "group1"=1,"group2"=2, "group3"=3, "group4"=5),
+                    labels=c('0','> 0-1','> 1-2.5','> 2.5-5','> 5'))
 ```
 
 ```{r, fig.height=4}

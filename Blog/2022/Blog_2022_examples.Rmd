@@ -1,0 +1,2713 @@
+---
+title: "Blog"
+output: html_document
+date: "2025-09-09"
+---
+
+# January: Shared areas
+# Intro
+
+Here, some steps for:
+
+- Generating kernel polygons
+
+- Calculating the intersection between two polygons
+
+- Plotting polygons and their intersection
+
+- Creating a table with the shared areas between two polygons 
+
+# Data
+
+To replicate the exercise, load data from the package 'sula'.
+For accessing the data, you need to have the package installed. 
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+```
+
+The data is from 10 tracked individuals.
+
+```{r}
+GPS_raw<-(GPS_raw)
+```
+
+# Create polygons
+
+Select which individuals you want to compare
+
+```{r}
+GPS01<-subset(GPS_raw,GPS_raw$IDs=='GPS01')
+GPS02<-subset(GPS_raw,GPS_raw$IDs=='GPS02')
+```
+
+With the following function you can create the polygon of the individual using an specific value.
+
+Your need to provide the name of the column that contains the latitude, the name of the column that contains the longitude, and the value you want to calculate (E.g. core=50, general=95).
+
+```{r}
+create_polygon<-function(Data=Data, lon_col=lon_col,lat_col=lat_col,value=value){
+  
+  Data<-Data
+  Data$Longitude<-Data[[lon_col]]
+  Data$Latitude<-Data[[lat_col]]
+    
+  #convert to spatial
+  DataSp<-as.data.frame(Data)
+  sp::coordinates(DataSp) <- c("Longitude", "Latitude")
+  sp::proj4string(DataSp) <- sp::CRS("+init=epsg:4326")
+  
+  #create polygon
+  DataSp<-adehabitatHR::kernelUD(DataSp,h="href") # Using reference
+  Data_50<-adehabitatHR::getverticeshr(DataSp,percent=value)
+  
+  Data_sf_50<-sf::st_as_sf(Data_50)
+  
+  return(Data_sf_50)
+}
+```
+
+Calculate polygons of 50%.  
+Some warnings may appear
+
+```{r, warning=FALSE}
+GPS01_50<-create_polygon(Data=GPS01,lat_col="Latitude",lon_col="Longitude",value=50)
+GPS02_50<-create_polygon(Data=GPS02,lat_col="Latitude",lon_col="Longitude",value=50)
+```
+
+Calculate polygons of 95%.  
+
+```{r, warning=FALSE}
+GPS01_95<-create_polygon(Data=GPS01,lat_col="Latitude",lon_col="Longitude",value=95)
+GPS02_95<-create_polygon(Data=GPS02,lat_col="Latitude",lon_col="Longitude",value=95)
+```
+
+# Compare
+
+With the function **intersection** of the package **sf** you can obtain the area where both polygons intersect
+
+```{r, warning=FALSE}
+library(sf)
+```
+
+[Source: Geocompr](https://geocompr.robinlovelace.net/05-geometry-operations_files/figure-html/circle-intersection-1.png)
+
+```{r}
+sf_use_s2(FALSE)
+```
+
+```{r, warning=FALSE}
+Intersection_95<-sf::st_intersection(st_as_sf(GPS01_95),
+                                     st_as_sf(GPS02_95))
+Intersection_50<-sf::st_intersection(st_as_sf(GPS01_50),
+                                     st_as_sf(GPS02_50))
+```
+
+# Plot
+
+Using the following function **plot_overlaps** and the package ggplot, you can visualize where  the intersection is occurring
+
+```{r, warning=FALSE}
+library(ggplot2)
+```
+
+```{r}
+plot_overlaps<-function(ID1_95=ID1_95,ID1_50=ID1_50,ID2_95=ID2_95,ID2_50=ID2_50){
+  
+  Plot<-ggplot2::ggplot()+
+  
+    ggplot2::geom_sf(data = ID1_95,color='#d00000',fill = "#d00000",alpha=0.3,size=1)+ 
+    ggplot2::geom_sf(data = ID2_95,color='#3f88c5',fill = "#3f88c5",alpha=0.3,size=1)+
+    ggplot2::geom_sf(data = Intersection_95,  color='#ffba08', fill = "#ffba08",alpha=0.3,size=1)+
+    
+    ggplot2::geom_sf(data = ID1_50,color='#d00000',fill = "#d00000",alpha=0.7,size=1)+
+    ggplot2::geom_sf(data = ID2_50,color='#3f88c5', fill = "#3f88c5",alpha=0.7,size=1)+ 
+    ggplot2::geom_sf(data = Intersection_50,  color='#ffba08', fill = "#ffba08",alpha=0.7,size=1)+
+    
+    ggplot2::labs(x = "Longitude", y="Latitude")+
+    
+    theme_bw()
+  
+  return(Plot)
+}
+```
+
+It would show a map with your polygons
+
+```{r, fig.height=6}
+overlap_plot<-plot_overlaps(ID1_95=GPS01_95,
+                            ID1_50=GPS01_50,
+                            ID2_95=GPS02_95,
+                            ID2_50=GPS02_50)
+  
+overlap_plot
+```
+
+# Create table
+
+Once you have your polygons for each individual and also the intersection between polygons, you can now create a table using the following custom function **table_areas**
+
+To calculate the shared area, the function follows the formula as in  [Hedd et al. 2014](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0194389#sec002) and [McFarlane Tranquila et al. 2013](https://www.int-res.com/articles/meps2013/472/m472p287.pdf)
+
+```{r}
+table_areas<-function(ID1_50=ID1_50,
+                      ID2_50=ID2_50,
+                      ID1_95=ID1_95,
+                      ID2_95=ID2_95,
+                      Intersection_50=Intersection_50,
+                      Intersection_95=Intersection_95){
+  
+  Tabla<-data.frame(
+  UDs=c("50","95"),
+  
+  ID1_area_km2=c(
+    round(as.numeric(units::set_units(st_area(ID1_50),km^2)),2),
+    round(as.numeric(units::set_units(st_area(ID1_95),km^2),2))
+    ),
+  
+  ID2_area_km2=c(
+    round(as.numeric(units::set_units(st_area(ID2_50),km^2),2)),
+    round(as.numeric(units::set_units(st_area(ID2_95),km^2),2))
+    ),
+  
+  intersection_area_km2=c(
+    round(as.numeric(units::set_units(st_area(Intersection_50),km^2),2)),
+    round(as.numeric(units::set_units(st_area(Intersection_95),km^2),2))
+  )
+  )
+  
+  Tabla$shared_area_percent<-
+  (Tabla$intersection_area_km2)/
+    (
+      (Tabla$ID1_area_km2 - Tabla$intersection_area_km2) + 
+       (Tabla$ID2_area_km2 - Tabla$intersection_area_km2) + 
+       Tabla$intersection_area_km2)
+  
+  return(Tabla)
+}
+                    
+```
+
+The table contains the area of each polygon, the intersection and the shared areas
+
+```{r}
+areas_table<-table_areas(ID1_50=GPS01_50,
+                      ID2_50=GPS02_50,
+                      ID1_95=GPS01_95,
+                      ID2_95=GPS02_95,
+                      Intersection_50=Intersection_50,
+                      Intersection_95=Intersection_95)
+```
+
+```{r}
+areas_table$shared_area_percent<-round(areas_table$shared_area_percent*100,2)
+```
+
+It should return a table as the following:
+
+```{r, echo=FALSE}
+areas_table %>% 
+  head()%>%
+  knitr::kable(format = "html")
+```
+
+# Export
+
+To export the table as csv:
+
+```{r, eval=FALSE}
+write_csv(areas_table,'areas_table.csv')
+```
+
+To export the polygons as shapefiles:
+
+```{r, eval=FALSE}
+st_write(GPS01_50, "GPS01_50.shp")
+st_write(GPS02_50, "GPS02_95.shp")
+st_write(Intersection_50, "Intersection_50.shp")
+
+st_write(GPS01_95, "GPS01_95.shp")
+st_write(GPS02_95, "GPS02_95.shp")
+st_write(Intersection_95, "Intersection_95.shp")
+```
+
+## Recommended literature
+
+- [Geocomputation in R](https://geocompr.robinlovelace.net/)
+- Shared areas formula by [Hedd et al. 2018](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0194389#sec002) and [McFarlane Tranquila et al. 2013](https://www.int-res.com/articles/meps2013/472/m472p287.pdf)
+
+# ~~~~~~~~~~~~~~~
+# 2. February: time overlaps
+# Intro
+
+This post is about how to find overlapping times between your tracked individuals. <br>
+This might help you to: <br>
+- Identify periods where you have **gaps** for each individual, or <br>
+- To **select which periods are comparable among individuals** that might have been tracked on different periods <br>
+
+
+# Data
+To replicate the exercise, load data from the package 'sula'. <br>
+For accessing the data, you need to have the package installed. 
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+```
+
+The data is from 10 tracked individuals.
+
+```{r}
+GPS_raw<-(GPS_raw)
+```
+
+# Plot
+
+For this exercise you should install or have installed the package **ggplot**.
+
+```{r}
+library(ggplot2)
+```
+
+
+In the example data, time and date are in separated columns, therefore the first step is to join those columns.
+
+```{r}
+GPS_raw$DateTime<-paste(GPS_raw$DateGMT,GPS_raw$TimeGMT)
+```
+
+For plotting times, it is important that the column with the timestamps is in a time format.
+Be cautious with the format of your time stamps.
+
+```{r}
+GPS_raw$DateTime<-as.POSIXct(strptime(GPS_raw$DateTime, "%d/%m/%Y %H:%M:%S"),tz = "GMT")
+```
+
+
+Now for plotting, you can use the timestamp for the x axis and the IDs of each individual as the y axis.  
+If you want each individual to be plotted in different color, you can also add the name of the column after the argument **color=**.
+
+```{r}
+Plot_tracking<-ggplot(data=GPS_raw,
+                      aes(x=DateTime,
+                          y=IDs,
+                          color=IDs))+
+    geom_point(size=3)+
+    geom_line()+
+    theme_bw()
+Plot_tracking
+```
+
+
+
+## Modify legend
+Because is a ggplot, many things can be further customized.  
+Such as the **legends**
+
+Here, I remove the legend from the side (legend.position='none'), modify the legend in the x axis to 'individuals', and change the angle of the x axis to 60 degrees. 
+
+```{r}
+Plot_tracking+
+    theme(legend.position='none')+
+    labs(x = "", y = "Individuals") +
+        theme(axis.text.x=element_text(angle=60, hjust=1))+
+    theme(plot.title = element_text(size = 10, face = "bold"))
+```
+
+## Change breaks
+You can also select how detailed the x axis legend should be and how often you want the breaks.
+
+For one day breaks:
+
+```{r}
+Plot_tracking + scale_x_datetime(date_labels = "%d %b %Y",date_breaks = "1 day")
+```
+
+For one week breaks:
+
+```{r}
+Plot_tracking + scale_x_datetime(date_labels = "%d %b %Y",date_breaks = "1 week")
+```
+
+For one month breaks:
+
+```{r}
+Plot_tracking + scale_x_datetime(date_labels = "%d %b %Y",date_breaks = "1 month")
+```
+
+It doesnt show, because all were in the same month, but it might be useful for you to know this argument. 
+
+## Add lines
+You can also mark separations between periods using a line.
+
+To do so, first you have to make the period where you want to make the line as POSIXct
+
+```{r}
+PA<-as.POSIXct(strptime("2017-11-07 00:00:00", "%Y-%m-%d %H:%M:%S"),tz = "GMT")
+```
+
+Then you add the line to the ggplot using the function geom_vline (v from vertical line) <br>
+Use the period you have interest on getting the line as **xintercept**, and <br>
+The **linetypes** options can be seen [here](http://www.cookbook-r.com/Graphs/Shapes_and_line_types/).
+The color depends on your preference, here I use red to make it easy to see at first glance.
+
+```{r}
+Plot_tracking+
+  geom_vline(xintercept=PA,
+                linetype=4, colour="red")
+```
+
+## Add rectangle
+
+Now if you want to add a rectangle, there are many option but I prefer to use annotation
+
+First I create an object with the timestamps of where I want the rectangle to begging and end.
+
+```{r}
+PA<-as.POSIXct(strptime("2017-11-01 00:00:00", "%Y-%m-%d %H:%M:%S"),tz = "GMT")
+PB<-as.POSIXct(strptime("2017-11-07 00:00:00", "%Y-%m-%d %H:%M:%S"),tz = "GMT")
+```
+
+Then I add it to the plot <br>
+The **xmin** is the time where the rectangle will start, and the **xmax** where it would end. <br>
+Because I want the rectangle to cover the area I used **-Inf** and **Inf**. <br>
+The color is in **fill**, and the **alpha** is to have some transparency (the lower the value the more transparent will be, and the values go from 0 to 1).
+
+```{r}
+Plot_tracking + annotate("rect",
+                         xmin = PA, xmax = PB, 
+                         ymin = -Inf, ymax = Inf,  
+                         fill = "blue", alpha=0.1)
+```
+# Export
+
+To export your plot, you can use the argument **ggsave**
+
+The simplest is just to give it a name to your plot, and ggsave will save the latest plot you have created.
+
+To be able to see it other programs, you will have to give it an extention. Some options are: png, eps, pdf, jpeg, tiff, bmp or svg
+
+```{r, eval=FALSE}
+ggsave(filename = "~/Figure.png")
+```
+
+Note that if you want the figure to be saved on specific folder, you need to include the path in the file name.
+
+```{r, eval=FALSE}
+ggsave(filename = "~Results/Figure.png")
+```
+
+If you want to create several figures and want to export just specific ones, you can also use the name of the plot to export only that one.
+
+```{r, eval=FALSE}
+ggsave(Plot_tracking, 
+       filename = "~/Figura.png")
+```
+
+Also, if you want specific widths and heights, or even dpi, you can also include it. 
+Just note that the size of the letters might need to be adjusted.
+
+```{r, eval=FALSE}
+ggsave(Plot_tracking, 
+       filename = "~/Figura.png",
+       width = 24, 
+       height = 24, 
+       units = "in",
+       dpi = 500)
+```
+
+
+I hope this was useful for you, and if you want to go deep in some aspects of ggplot check the recommended sources below.
+
+# Recommended sources
+
+- [ggplot2](https://ggplot2.tidyverse.org/index.html)
+- [ggsave](https://ggplot2.tidyverse.org/reference/ggsave.html) 
+
+# ~~~~~~~~~~~~~~~
+# 3.March: interpolation
+# Intro
+
+
+Interpolation is a type of estimation, a method of constructing (or finding) new data ponts based on the range of a discrete set of known data points (source: [wikipedia](https://en.wikipedia.org/wiki/Interpolation))
+
+
+This post is about:   <br>
+- How to prepare your data and use the function interpolate from the package **sula** for interpolating your tracking data  <br>
+
+Interpolating your data might help you to: <br>
+- Fill **gaps** on your tracking data, and/or <br>
+- To **make comparable** trips when individuals were tracked at different intervals <br>
+ ... read more at the end of this page.
+
+⚠️**However**, while interpolating you should be very cautious, because you are creating locations where the bird might have not been. 
+
+This post step by step:  
+1. Load data  
+2. Identify nest location / or central location  
+3. Classify if the animal was inside the central location or outside  
+4. Count the number of trips  
+5. Interpolate only when the animal was on a trip  
+
+You can also just go directly to : interpolate 
+
+
+# Data 📖
+
+To do this exercise, load data from the package 'sula'. <br>
+For accessing the data, you need to have the package installed. 
+
+To install:
+
+```{r, eval=FALSE}
+devtools::install_github("MiriamLL/sula")
+```
+
+```{r}
+library(sula)
+```
+
+The data is from 10 tracked individuals.
+
+```{r}
+GPS_raw<-(GPS_raw)
+```
+
+Select only one individual. 
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+ID01_track<-GPS_raw %>%
+  dplyr::filter(IDs=='GPS01')
+```
+
+# Identify trips 🛩️
+
+Identify the trips allows to remove all the central locations (e.g. the nest), because usually you will be not interested in interpolating the locations where the animal was at their central location, only when it was in a trip.
+
+### Nest location 🐣
+
+Is also often the case that at fieldwork, the GPS are activated to start recording data just after releasing the animal back to their central location (-nest-)
+
+Therefore, the first location recorded will correspond to their nest.
+
+To identify the first location I use the function **locate_nest** from the package **sula**.
+
+Because you might have different column names, you can add the names of your columns here in 'column_lon' and 'column_lat'.
+
+```{r, message=FALSE}
+ID01_nest<-locate_nest(GPS_data = ID01_track,
+                         column_lat = 'Longitude',
+                         column_lon = 'Latitude')
+```
+
+**Manually**: If you did not activate the GPS at their nest but you know the nest location, you can manually write it down.
+
+```{r}
+ID01_nest<-data.frame(Longitude=-109.4531,
+                     Latitude=-27.20097)
+```
+
+### Identify trips 🛩️
+
+Now that you have the nest location, the function **identify_trips** from the package **sula** helps you to identify when the bird was out on a trip. 
+
+The function adds a new column, where 'Y' means that the location is outside the range you select (in the example 1 km), and 'N' means that the location is inside the range you select.
+
+Therefore 'Y' is when the bird was on a trip, and 'N' is when it was at the nest. 
+
+```{r}
+ID01_trips<-identify_trips(GPS_data=ID01_track,
+                           Nest_location=ID01_nest,
+                           Distance_km=1)
+```
+
+### Count trips 🧮
+
+The function **count_trips** from the package **sula** removes the locations that are not trips (for example removes all rows where the animal was at the central location) and adds a column with the number of the trip. 
+
+```{r}
+ID01_onlytrips<-count_trips(GPS_data=ID01_trips)
+```
+
+To check when the trips started and ended you can also use functions from the package **tidyverse**.
+
+```{r}
+ID01_onlytrips %>% 
+  group_by(trip_number)%>%
+  summarise(start=paste(first(DateGMT),first(TimeGMT)),
+            end=paste(last(DateGMT),last(TimeGMT)))
+```
+
+If you know when the trip started and ended, you can also add the trip classification **manually**, using also functions from the package tidyverse. 
+
+```{r, eval=FALSE}
+ID01_onlytrips <- ID01_trips %>%
+  mutate(trip_number=
+           case_when(
+             DateGMT == '02/11/2017' & TimeGMT >= '19:34:31' & TimeGMT <= '20:09:24' ~ 'trip_1',
+             DateGMT == '03/11/2017' & TimeGMT >= '12:44:04' & TimeGMT <= '14:30:00' ~ 'trip_2',
+             DateGMT == '04/11/2017' & TimeGMT >= '07:45:17' & TimeGMT <= '09:41:28' ~ 'trip_3',
+             DateGMT == '04/11/2017' & TimeGMT >= '17:05:36' & TimeGMT <= '20:41:10' ~ 'trip_4',
+             DateGMT == '05/11/2017' & TimeGMT >= '09:06:13' & TimeGMT <= '11:26:14' ~ 'trip_5',
+             TRUE ~ "nest")) %>%
+  filter(trip_number != 'nest')
+```
+
+
+# Interpolate 🌐
+
+## interpolate_trips
+Once the data frame contains columns with Longitude, Latitude, and trip_number, the trips can be interpolated. 
+
+The function **interpole_trips** from the package **sula** helps you to interpolate the locations based on an interval. In the examples below 900 secs = 15 minutes and 60 sec = 1 minute
+
+Because you  might have different column names, this function has a lot of arguments, but basically you just need to replace the name of your data frame, the interval you are interested to do the interpolation, the column names, and the format your date and time is presented. 
+
+```{r}
+ID01_interpolated15m<-interpolate_trips(GPS_data=ID01_onlytrips,
+                                     interval='900 sec',
+                                     column_date='DateGMT',
+                                     column_time='TimeGMT',
+                                     column_trip='trip_number',
+                                     column_lat='Latitude',
+                                     column_lon='Longitude',
+                                     datetime_format<-"%d/%m/%Y %H:%M:%S")
+```
+
+```{r}
+ID01_interpolated1m<-interpolate_trips(GPS_data=ID01_onlytrips,
+                                     interval='60 sec',
+                                     column_date='DateGMT',
+                                     column_time='TimeGMT',
+                                     column_trip='trip_number',
+                                     column_lat='Latitude',
+                                     column_lon='Longitude',
+                                     datetime_format<-"%d/%m/%Y %H:%M:%S")
+```
+
+## interpolate_all
+
+In case you want to interpolate a specific trip, or everything (including the central location), and you already have a datetime column in the correct format (so R can understand is date and time) there is also the function **interpolate** in the package **sula** that interpolates all the locations. 
+
+For example, to interpolate a specific trip, subset the trip you are interested in interpolating.
+
+```{r}
+GPS01_trip5<-GPS_preparado %>%
+  filter(IDs=='GPS01')%>%
+  filter(trip_number=='trip_5')
+```
+
+Use the function **interpolate**. Here I select the dataframe, the interval ofinterest, and the name of the columns that will be included in the interpolation.
+
+```{r}
+GPS01_trip1_interpolated<-interpolate(GPS_data = GPS01_trip5,
+                                      interval='10 sec',
+                                      column_datetime = 'dia_hora',
+                                      column_lat = 'Latitude',
+                                      column_lon = 'Longitude')
+```
+
+# Plot 🖌️
+
+Now lets compare the before and after, the tracking data vs the interpolated data.
+
+The package **patchwork** lets us see the plots side by side. 
+
+```{r}
+library(patchwork)
+```
+
+Create three plots, one using the original points, and two using the interpolation to compare. 
+
+```{r, fig.height=3, fig.width=9}
+Original_track<-ggplot(ID01_onlytrips, aes(x=Longitude, y=Latitude, color=trip_number)) + 
+  geom_point()+
+  theme_bw()+
+  ggtitle('Original tracking data')+
+  theme(legend.position='none')
+Interpolated_15m<-ggplot(ID01_interpolated15m, aes(x=Longitude, y=Latitude, color=trip_number)) + 
+  geom_point()+
+  theme_bw()+
+  ggtitle('Interpolated to 15 mins')+
+  theme(legend.position='none')
+Interpolated_1m<-ggplot(ID01_interpolated1m, aes(x=Longitude, y=Latitude, color=trip_number)) + 
+  geom_point()+
+  theme_bw()+
+  ggtitle('Interpolated to 1 min')+
+  theme(legend.position='right')
+Original_track+Interpolated_15m+Interpolated_1m
+```
+
+
+Now it is up to you to decide which interpolation interval fits better to your study.
+
+# Summary 👩🏽‍💻
+
+TL;DR (too long; didn't read)
+
+```{r, eval=FALSE}
+library(sula)
+library(tidyverse)
+
+ID01_track<-GPS_raw %>% filter(IDs=='GPS01')
+
+ID01_nest<-data.frame(Longitude=-109.4531,Latitude=-27.20097)
+
+ID01_trips<-identify_trips(GPS_data=ID01_track,Nest_location=ID01_nest,Distance_km=1)
+
+ID01_onlytrips<-count_trips(GPS_data=ID01_trips)
+
+ID01_interpolated15m<-interpolate_trips(GPS_data=ID01_onlytrips,
+                                        interval='900 sec',
+                                        column_date='DateGMT',
+                                        column_time='TimeGMT',
+                                        column_trip='trip_number',
+                                        column_lat='Latitude',
+                                        column_lon='Longitude',
+                                        datetime_format<-"%d/%m/%Y %H:%M:%S")
+```
+
+
+# Recommended sources 📑
+
+Some of the reasons to interpolate data are:
+
+- To fit the GPS locations with diving data.
+For example: [Lerma et al. 2020](https://link.springer.com/article/10.1007/s00227-020-03700-2#Sec2), 
+[Browning et al. 2017](https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12926)
+
+- Because the recorded data was different between individuals, and thus interpolating data provides fixed intervals. 
+For example: [Borrmann et al. 2019](https://doi.org/10.1111/jav.02156)
+
+- To fill occasional gaps in the tracking data, particularly for animals that dive and do not receive signal when submerged. 
+For example: [Iorio-Merlo et al. 2022](https://royalsocietypublishing.org/doi/pdf/10.1098/rspb.2021.2261).
+
+
+If you can think on another case when interpolation is necessary please do not hesitate to write me to include it on the list. 
+
+Also if you use the function from the package **sula** please consider including the package in your citations. 
+
+For more details or suggestions you can also always write me an [email](miriamjlerma@gmail.com)
+
+# ~~~~~~~~~~~~~~~
+# 4.April: land or not
+# Intro
+
+This post is about how to classify locations on your tracking data based on an polygon with geographical information.
+
+This is useful for example when you want to know:  
+- If the animal is using a specific habitats, and  
+- To calculate the percentage of use of a specific habitat  
+See examples on the recommended literature at the bottom of this post.
+
+In this post we will classify tracking locations as **land** vs **not land**.
+
+# Data 📖
+
+To do this exercise, load data from the package 'sula'. <br>
+For accessing the data, you need to have the package installed. 
+
+To install:
+
+```{r, eval=FALSE}
+#devtools::install_github("MiriamLL/sula")
+```
+
+```{r}
+library(sula)
+```
+
+The data is from 10 tracked individuals.
+
+```{r}
+my_locs<-(GPS_raw)
+```
+
+
+Check how many locations I have per individual
+
+```{r, warnings=FALSE}
+library(tidyverse)
+```
+
+```{r}
+my_locs %>%
+  drop_na(IDs)%>%
+  group_by(IDs)%>%
+  tally()
+```
+
+
+# Points ⏩
+
+To transform your GPS locations to spatial data, use the functions from the package **sp**.   
+It would turn your data frame into a **SpatialPointsDataFrame**.
+
+```{r}
+my_locs <- as.data.frame(my_locs)
+my_points <-my_locs
+sp::coordinates(my_points) <- ~Longitude + Latitude
+sp::proj4string(my_points) = sp::CRS("+init=epsg:4326")
+```
+
+# Polygon 🗺️
+
+For the polygon, you can download shapefiles according to your interest and area of study. 
+
+Some sources of country polygons are:  
+- [DIVA-GIS](https://www.diva-gis.org/datadown)
+
+But there are many shapefile sources per country,  
+- For **Chile**: several exammples [are summarized here](https://sporella.xyz/2020/12/01/30daymap/)  
+- For **Mexico**: IDEA [Infraestructura de Datos Espaciales Abiertos](https://www.gits.igg.unam.mx/idea/descarga)  
+- For **Germany**: [BSH-GeoSeaPortal](https://www.bsh.de/EN/DATA/GeoSeaPortal/geoseaportal_node.html;jsessionid=8CAD8F86337BF25B4A2B2A7F13C0CDC8.live11311)  
+
+... just to mention a few.
+
+
+Because the tracking data from the example was collected in Chile, we will use the country shapefile of Chile downloaded from the [DIVA-GIS](https://www.diva-gis.org/datadown) portal.
+
+```{r, include=FALSE}
+library(here)
+```
+
+```{r, echo=FALSE}
+ShapefilesDirectory<-here('_posts/2022-04-07-land-or-not')
+```
+
+The package **rgdal** has the function **readOGR** which allows us to load the polygon into R. 
+
+```{r}
+library(rgdal)
+```
+
+The polygon will be read as **SpatialPolygonDataFrame**.
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+my_polygon<-readOGR(file.path(ShapefilesDirectory,'CHL_adm0.shp')) 
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, include=FALSE}
+my_polygon<-readOGR(file.path(ShapefilesDirectory,'CHL_adm0.shp')) 
+```
+
+# Over 🏞️
+
+The function **over** checks which of the points (my_locs) fall inside the polygon (my_polygon).
+
+Be cautious, the points and the polygon should be at the same CRS.
+
+```{r}
+polygon_proj <- proj4string(my_polygon)
+```
+
+```{r}
+proj4string(my_points) <- polygon_proj
+```
+
+The function **over** will return a data frame with the information where the points and the polygon intersect.
+
+```{r}
+Landornot_over<- over(my_points, my_polygon)
+```
+
+It depends on the information of your polygon, but in this particular example, in the column NAME_0, if the points fall inside the polygon, it keeps 'Chile' otherwise returns an **NA**.  
+
+```{r}
+unique(Landornot_over$NAME_0)
+```
+
+We can add this information back to our locations to know which of the locations fall inside the territorial land limits or not.
+
+```{r}
+my_locs$landornot <- Landornot_over$NAME_0
+```
+
+To make it easier to remember you can replace Chile and 0 for the data available in your polygon. 
+
+```{r}
+my_locs$landornot[is.na(my_locs$landornot)] <- 0
+```
+
+```{r}
+my_locs<-my_locs %>%
+  mutate(landornot=
+           case_when(
+             landornot == 0 ~ 'notland',
+             landornot != 0 ~ 'land',
+             TRUE ~ "U"))
+```
+
+You can also export this data frame to check in a GIS program.
+
+```{r, eval=FALSE}
+write_csv(my_locs,file =paste0(here("1Data"),'/my_locs.csv'))
+```
+
+# Percentages 🥧
+
+Now using functions from the package **tidyverse** you can quantify the numer of locations that the animal was at land or not.
+
+```{r}
+Habitatuse<-my_locs %>%
+  drop_na(IDs)%>%
+  group_by(IDs,landornot)%>%
+  count()%>%
+  pivot_wider(names_from = landornot, values_from = n)
+```
+
+... and also calculate the percentage of time using one habitat or the other.
+
+```{r}
+Habitatuse$total<-Habitatuse$land+Habitatuse$notland
+Habitatuse$prop_land<-Habitatuse$land*100/Habitatuse$total
+Habitatuse$prop_notland<-Habitatuse$notland*100/Habitatuse$total
+Habitatuse$prop<-Habitatuse$prop_land+Habitatuse$prop_notland
+```
+
+# Plot 🖌️
+
+## Map
+
+Plotting the data will help to confirm if the classification is correct.  
+
+```{r, fig.height=5, fig.width=4}
+ggplot()+
+  geom_polygon(data=my_polygon, aes(x=long, y=lat, group=group), color='black',fill='grey')+
+  geom_point(data=my_locs, aes(x=Longitude,y=Latitude,color=landornot))+
+  scale_color_manual(values=c('#9b2226','#005f73'))+
+  theme_bw()+
+  theme(legend.position = 'top')+
+  labs(x = "Longitude", y="Latitude",color='')+
+  xlim(-110, -108)+
+  ylim(-28.5, -26.5)
+```
+
+To customize your plot, you can change many arguments, for example to change the **theme_bw** [here are other options](https://ggplot2.tidyverse.org/reference/ggtheme.html).  
+**Do not forget** to adjust your xlim and ylim to your coordinates. 
+
+
+## Percentages
+
+You can also plot the percentage of habitat use per individual.
+
+To do this, preparing the information in a *long* format will make it easier to plot. 
+
+```{r}
+Habitatuse_prop<-Habitatuse %>%
+  pivot_longer(c(prop_land,prop_notland),
+               names_to = "habitat_use",
+               values_to = "prop_use" )
+```
+
+```{r}
+ggplot(Habitatuse_prop, aes(fill=habitat_use, y=prop_use, x=IDs)) + 
+  geom_bar(position="fill", stat="identity")+
+  scale_fill_manual(values=c('#9b2226','#005f73'))+
+  theme_bw()+
+  theme(legend.position = 'top')+
+  scale_y_continuous(expand = c(0,0)) 
+```
+
+# Recommended literature 👩🏽‍🏫
+
+- Function **over**:  
+[Geometry overlays](https://cran.r-project.org/web/packages/sp/vignettes/over.pdf)
+
+- Examples in the literature:  
+[Quantify habitats visited](https://onlinelibrary.wiley.com/doi/10.1111/ibi.12917)  
+[Individual specialization in an ecological winner](https://www.int-res.com/articles/theme/m578p243.pdf)  
+[Tracking positions inside the protected areas](https://www.researchgate.net/publication/258062415_Correction_Do_Power_Lines_and_Protected_Areas_Present_a_Catch-22_Situation_for_Cape_Vultures_Gyps_coprotheres)
+
+If you can think on another sources of geographical data please do not hesitate to write me to include it on the list. 
+
+For more details or suggestions, or just to say hi you can also always write me an [email](miriamjlerma@gmail.com)
+
+# ~~~~~~~~~~~~~~~
+# 5.May: speed
+
+# Intro
+
+This post is about how to calculate the speed between points.
+
+This is useful for example when you want to:  
+- Classify behavioral states of the individuals  
+- Clean errors in locations  
+See examples on the literature at the bottom of this post.
+
+In this post we will calculate **distance** between points, then the **time** between those points, and finally the **speed**.
+
+# Data 📖
+
+To do this exercise, load data from the package 'sula'. <br>
+For accessing the data, you need to have the package installed. 
+
+To install:
+
+```{r, eval=FALSE}
+#devtools::install_github("MiriamLL/sula")
+```
+
+```{r}
+library(sula)
+```
+
+The data is from 10 tracked individuals.
+
+```{r}
+my_locs<-(GPS_raw)
+```
+
+Select one individual for the exercise.
+
+```{r, warnings=FALSE}
+library(tidyverse)
+```
+
+```{r}
+ID01<-my_locs %>%
+  filter(IDs=='GPS01')
+```
+
+# Distance 📏
+
+Lets select the columns of interest
+
+```{r}
+ID01_coords<- ID01[,c('Longitude','Latitude')]
+```
+
+Convert the data frame into a spatial object
+
+```{r}
+ID01_spatial <- sp::SpatialPointsDataFrame(coords = ID01_coords, data = ID01)
+```
+
+Use the corresponding CRS (Coordinate Reference System).  
+Note that the CRS might change according to your study area.
+
+```{r}
+sp::proj4string(ID01_spatial)= sp::CRS("+init=epsg:4326")
+```
+
+Using the function **distm** from the package geosphere to calculate the distance between points.
+
+```{r}
+ID01_distance<-sapply(2:nrow(ID01_spatial),
+                             function(i){geosphere::distm(ID01_spatial[i-1,], ID01_spatial[i,])})
+```
+
+To add this information to your original data frame:
+
+```{r}
+ID01_distance<-c(NA,ID01_distance)
+```
+
+To transform it to kilometers:
+
+```{r}
+ID01$dist_km<-ID01_distance/1000
+```
+
+# Time ⏰
+
+Lets select the columns of interest
+
+```{r}
+Times<-paste(ID01$DateGMT,ID01$TimeGMT)
+```
+
+Transform to the corresponding time formart
+
+```{r}
+Times<-as.POSIXct(strptime(Times,"%d/%m/%Y %H:%M:%S"),"GMT")
+```
+
+✋🏽
+Make sure it did not return NAs, otherwise check the format you used.
+
+
+In this example, we will create a new column with the time using the function **lag**. 
+
+```{r}
+Lag<-lag(Times)
+```
+
+Then, we will include a column with the original time (in time format) and the lag as another column on the original data frame.
+
+```{r}
+ID01$Time1<-Times
+ID01$Time2<-Lag
+```
+
+Now, using the function **difftime**, we can calculate the time difference between those columns.  
+In **units** you can select "secs", "mins", "hours","days", "weeks".  
+
+```{r}
+ID01$time_dif<-as.numeric(difftime(ID01$Time1,ID01$Time2, units="mins"))
+```
+
+You can also transform it to hours, with basic conversion.
+
+```{r}
+ID01$time_hr<-as.numeric(ID01$time_dif/60)
+```
+
+# Speed 🥏
+
+As simple as [speed = distance ÷ time](https://www.bbc.co.uk/bitesize/topics/z83rkqt/articles/zhbtng8)
+
+```{r}
+ID01$speed<-ID01$dist_km/ID01$time_hr
+```
+
+# Plots
+
+To visualize the speed from the animal you can also create plots.
+
+```{r, fig.height=2}
+ggplot(ID01, aes(x=speed)) + 
+  geom_density()+
+  theme_minimal()+
+  xlab('Speed (km/hr)')
+```
+
+Also, you can modify the plots according to the units you want to use. Here in **m/s**.
+
+```{r, fig.height=2}
+ggplot(ID01, aes(x=speed*0.277778)) + 
+  geom_density(color="darkblue", fill="lightblue")+
+  theme_minimal()+
+  xlab('Speed (m/s)')
+```
+
+# Further reading 👩🏽‍🏫
+
+- **Speed** [Wikipedia definition](https://en.wikipedia.org/wiki/Speed)
+
+- **Converters** [Speed-converter](https://www.unitconverters.net/speed-converter.html) 
+
+- Some papers that use speed for different pourposes:
+
+Raya Rey et al. 2010 [*"...we identified three phases based on sinuosity and speed of the trajectory..."*](https://link.springer.com/article/10.1007/s10336-010-0531-y)
+
+Nourani et al. 2022 ["...*all data were filtered by speed to ensure that the position information represented period of flight..."*](https://www.biorxiv.org/content/10.1101/2022.05.02.490292v1.full.pdf)
+
+
+I hope this helped you! 
+
+# ~~~~~~~~~~~~~~~
+# 6.June: time formats
+# Intro 
+
+This post is about how to convert date and time to a format that R can understand it. <br>
+
+For example if you wrote the date and time during fieldwork in a notebook, and then wrote it down in a spreadsheet at your computer. When you load your this spreadsheet into R, very often R would think that your date and time is text. Therefore, you need to change the 'class' of the column where you have date and time.  
+
+It is important to change the 'class' of your column, so you can:   
+- Correct the time zone <br>
+- Calculate duration of events (for example foraging trip duration)<br>
+- Count days (for example Julian days)<br>
+- Identify night and day periods<br>
+... and many many more
+
+In this post we will transform the **class** of our column date and time from **character** or other class, into **POSTIXct**. 
+Additionally, we will change the **time zone**.
+
+
+# Data 📖
+
+To do this exercise, load data from the package 'sula'. <br>
+For accessing the data, you need to have the package installed. 
+
+To install:
+
+```{r, eval=FALSE}
+#devtools::install_github("MiriamLL/sula")
+```
+
+```{r}
+library(sula)
+```
+
+The data is from 10 tracked individuals.
+
+```{r}
+GPS_raw<-(GPS_raw)
+```
+
+
+### Date 📅
+
+The data frame contains a column with **date** information.
+
+```{r}
+head(GPS_raw$DateGMT)
+```
+The **date infomation** is of class **character**.
+
+```{r}
+class(GPS_raw$DateGMT)
+```
+
+### Time ⏰
+
+The data frame contains a column with **time** information.
+
+```{r}
+head(GPS_raw$TimeGMT)
+```
+The **time infomation** is of class **character**.
+
+```{r}
+class(GPS_raw$TimeGMT)
+```
+
+## Transform the column to POSIXct
+
+**POSIX** comes from *Portable Operating System Interface* and the X from *UNIX*. <br>
+There are two subclasses **ct** from *calendar time*  and **lt** from *local time*. See [R news](https://www.r-project.org/doc/Rnews/Rnews_2001-2.pdf).<br>
+Calendar time being the number of seconds since the beginning of 1970.
+
+<br>
+To create our column with date and time, lets merge the column DateGMT and TimeGMT from our data frame into one column DateTime.
+
+```{r}
+GPS_raw$DateTime<-paste(GPS_raw$DateGMT,GPS_raw$TimeGMT)
+```
+
+Then convert it to **POSIXct**
+
+```{r}
+GPS_raw$DateTime<-as.POSIXct(strptime(GPS_raw$DateTime, format = "%d/%m/%Y %H:%M:%S"))
+```
+
+Arguments used:
+
+**strptime** is a function to convert characters to time objects, where str stands for **string**,  p from **parse**, and time is self explanatory.
+
+Then we provide the information of the format we were using, be specially careful with the format of your date and time.
+
+For the example, I used **%d/%m/%Y %H:%M:%S**
+
+**DAY**  
+**%d** - is used for day and goes from 0 to 31<br>
+**%a** - is used for the day of the week using the first three letters of the name<br>
+**%A** - is used for the day of the week using the full name<br>
+<br>
+**MONTH**  
+**%m** - is used for month it goes from 0 to 12<br>
+**%b** - is used for the name of the month using the first three letters of the name<br>
+**%B** - is used for the name of the month using the full name<br>
+<br>
+**YEAR**  
+**%y** - is used for year using two digits<br>
+**%Y** - is used for year using four difits<br>
+<br>
+
+**HOURS**  
+**%H** -  is used for hours and goes from 0 to 24<br>
+**MINUTES**  
+**%M** is used for minutes and goes from 0 to 60<br>
+**SECONDS**  
+**%S** is used for seconds and goes from 0 to 60<br>
+
+It is also important to note if you are using slash (**/**), dash (**-**) or any other, and do not forget the colon (**:**) when separating the times<br>
+
+Note for **excel-users**: if you open your file first in excel, excel tries to identify the class, and might have transform the column. Therefore you might need to use one of the examples from [stackoverflow](https://stackoverflow.com/questions/31647364/data-difference-in-as-posixct-with-excel)
+
+### Check
+
+Many struggles come from the format. If the format you are giving doesnt corresponds to the format of your column, it would generate you NAs.  
+Therefore, I recommend to create a column to make the trials on the format and to always check that you have the correct transformations.
+
+Here is an example for checking:
+
+```{r}
+range(GPS_raw$DateTime)
+```
+
+Note that in this example it returns the word *CET*.
+
+This is because I am in the **C**entral **E**uropean **T**ime.
+
+This might be correct and all good, but it is useful to know that you can transform it to you **time zone**.
+
+
+
+# Correct time 🌐
+
+One way to directly have the format in our time zone, is to specify the time zone when converting the class.
+
+Here, I am adding the "GMT" at the end.
+
+```{r}
+GPS_raw$GMT<-as.POSIXct(strptime(GPS_raw$DateTime, format = "%Y-%m-%d %H:%M:%S"),"GMT")
+```
+
+And now shows GMT.
+
+```{r}
+range(GPS_raw$GMT)
+```
+
+## Identify your time zone 🗺️
+
+According to where your study was made, you might need to change the time to your time zone [**tz**](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Timezones2008_UTC%2B0.png/1200px-Timezones2008_UTC%2B0.png)
+
+There are many ways to identify your tz:
+
+- You can click on your area on this [map](https://dayspedia.com/time-zone-map/)<br>
+- You can check the list of name in R using the code **OlsonNames()**<br>
+- You can check lists like those of [wikipedia](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
+
+In case you are here because you are interested in analyzing tracking data, note that it's common that the GPS record data in GMT+0.
+
+```{r echo=FALSE, out.height=350}
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Timezones2008_UTC%2B0.png/1200px-Timezones2008_UTC%2B0.png")
+```
+
+### lubridate
+
+One option to change your date and time to your time zone is using the package **lubridate**
+
+```{r}
+library(lubridate)
+```
+
+Example with the data.
+
+```{r}
+GPS_tz<-GPS_raw
+```
+
+My original tz:
+
+```{r}
+GPS_tz$CET<-ymd_hms(GPS_tz$DateTime, tz = "Europe/Amsterdam")
+```
+
+My goal tz:
+
+```{r}
+GPS_tz$UTC_4<- with_tz(GPS_tz$CET,tzone = "America/La_Paz")
+```
+
+### Manually
+
+If you know the time difference between the recording and the region where you are, you can also calculate it manually.
+
+For example:
+
+```{r}
+GPS_tz$five_hours_difference <- GPS_tz$CET - 3600*5
+```
+
+Thats it! 
+
+Hopefully this would help you.
+
+
+### Recommendations 
+
+Be very careful with the format and your time zone.
+
+I would recommend that you always create an extra column in your data frame to make the transformations, not your original column because if it returns NAs you will have to load the data frame over and over.
+
+It takes time to get use to this transformations and there are many different ways to transform times and date, so if you are struggling, you are not the only one, just give it some time.
+
+
+# Other resources 👩🏽‍🏫
+
+- This post in [Spanish](https://miriamll.github.io/Curso_tracking/Parte2#1)  
+- More options to use Date and Times in R also in [Spanish](https://estadistica-dma.ulpgc.es/cursoR4ULPGC/6h-Fechas.html)  
+
+- [Time zones map](https://dayspedia.com/time-zone-map/)<br>
+- [List of time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
+- [Other time transformations](https://www.r-bloggers.com/2014/02/using-dates-and-times-in-r/)
+# ~~~~~~~~~~~~~~~
+# 7.July: nest locations
+
+# Intro 
+
+This post is about how to identify the central location from an animal. <br>
+
+For example if you want to identify how far an animals moves, it is helpful to identify where the central location of the animal is to use it as a reference point.  
+
+In this post we will use different logic and/or functions to identify **central locations** for animals.
+
+# Data 📖
+
+To do this exercise, load data from the package 'sula'. <br>
+For accessing the data, you need to have the package installed. 
+
+To install:
+
+```{r, eval=FALSE}
+#devtools::install_github("MiriamLL/sula")
+```
+
+```{r}
+library(sula)
+```
+
+It contains data from 1 individual.
+
+```{r}
+GPS_01<-GPS_01
+```
+
+
+It contains data from 10 tracked individuals.
+
+```{r}
+GPS_raw<-(GPS_raw)
+```
+
+
+# Locate nest 🐣
+
+If your devices were deployed and activated at the nest of the animal, then you can assume that the first recording is the nest location. 
+
+### One individual 
+
+If you are interested in only one individual you can use the function **localizar_nido**.
+
+```{r}
+nest<-localizar_nido(GPS_data = GPS_01,lat_col="Latitude",lon_col="Longitude")
+```
+
+It returns a row with the longitud and latitude of the nest for that individual.
+
+### Several individuals
+
+For identifying the nest location of several individuals, you can use the function **localizar_nidos** from the package **sula**.
+
+```{r}
+nests<-localizar_nidos(GPS_data=GPS_raw,
+                         lon_col="Longitude",
+                         lat_col="Latitude",
+                         ID_col="IDs")
+```
+
+This function will return a data frame with the location of the nest per individual.
+
+```{r}
+head(nests)
+```
+
+# Manually 🔥
+
+Having some knowledge of the behavior of the animals will help us to identify the nest.
+In this example, the species (Masked boobies) are mostly diurnal feeders, which means they are mostly at their nest at night.
+
+Therefore, you can filter all the locations at day, and try to find the place where they spent most of their time at night to find the nest.
+
+### Data 😴
+
+For this example, we will be using data from one individual.
+
+```{r}
+head(GPS_01)
+```
+
+## Night time 🌜
+
+```{r}
+library(tidyverse)
+```
+
+To use only locations of night, subset the hours for only night time.
+
+You can do this by creating a column with the hour of the day.
+
+```{r}
+GPS_01$Hour <- substr(GPS_01$tStamp, 12, 13)
+```
+
+Note that in the example, we use tStamp because is on the correct time zone, for more details [click here](https://www.miriam-lerma.com/posts/2022-06-30-time-formats/))
+
+
+For this area, the night time was considered to be between 6 am (6 h) and 8 pm (20 h).
+
+Here, a new column named **Day_or_night** to identify the time period will be created. 
+
+```{r}
+GPS_01<-GPS_01 %>%
+ mutate(
+    Day_or_night = case_when(
+      Hour > 6  |  Hour < 20 ~ "day",
+      TRUE  ~ "night"
+    )
+  )
+```
+
+Then, filtered to only keep night recordings. 
+
+```{r}
+GPS_01_night<- GPS_01 %>%
+  filter(Day_or_night == 'night')
+```
+
+### Definition 👩🏽‍🚒
+
+Heat mapping, from a  GIS perspective, is a method of showing the geographic clustering of a phenomenon. Heat maps show locations of higher densities of geographic entities. Heat mapping is a way of geographically visualizing locations so that patterns of higher than average occurrence of things can emerge. To read more [click here.](https://www.gislounge.com/heat-maps-in-gis/)
+
+A heatmap can thus help us to visualize the place where the animal spends most of its time.
+This would be very often the nest, for breeding animals. 
+
+To visualize the heatmap we can use functions from the package **ggplot**.
+
+```{r}
+library(ggplot2)
+```
+
+The function **geom_density_2d_filled** will create a heat map on the area where most locations were occurring. 
+
+```{r, fig.height=5, fig.width=8}
+ggplot()+
+  geom_point(data = GPS_01_night, aes(x=Longitude, y = Latitude),
+             color='black',size = 0.8,alpha=0.4)+
+  geom_density_2d_filled(data = GPS_01_night, aes(x = Longitude, y = Latitude),alpha = 0.5)+ 
+  theme_bw()+
+  theme(legend.position = 'none')
+```
+
+You can already see that there is a region that stands out as where most locations were recorded.
+
+By adding the known-nest using **geom_point** (as a red-triangle, nest located using the function **localizar_nido** above), we can corroborate that this region is where the nest of the bird was. 
+
+```{r}
+ggplot()+
+  geom_point(data = GPS_01_night, aes(x=Longitude, y = Latitude),
+             color='black',size = 0.8,alpha=0.4)+
+  geom_density_2d_filled(data = GPS_01_night, aes(x = Longitude, y = Latitude),alpha = 0.5)+ 
+  geom_point(data=nest, aes(x=Longitude, y=Latitude),color='red',shape=17, size=5)+
+  theme_bw()+
+  theme(legend.position = 'none')
+```
+
+So, now we know that there is where the animal spend most of the night.
+
+For the next step, we will try to see the coordinates by using an **interactive plot** of the area that was most used by the animal.
+
+### Interactive plot 
+
+With ggplotly() by [plotly](https://plotly.com/ggplot2/), we can convert ggplot2 figures into interactive ones. 
+
+```{r}
+library(plotly)
+```
+
+The advantage of using plotly is that it allows zooming in and out of the area and see the place where most of the locations occurred.
+
+By placing the cursor on top of the area, you can see the longitude and latitude.
+
+```{r, fig.height=5, fig.width=8}
+ggplotly(ggplot(GPS_01_night, aes(x=Longitude, y = Latitude))+
+  stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE) +
+  scale_fill_continuous(type = "viridis") +
+  geom_point(data = GPS_01_night, aes(x=Longitude, y = Latitude),
+             color='black',size = 0.5,alpha=0.4)+
+  theme_bw())
+```
+
+
+With this information, we can note down the locations most used.
+
+However, since the GPS has some errors, you will notice that there is not an specific point.
+
+To solve this we can calculate the **centroid** location, as in the example below.
+
+
+
+# Automatic 🤖
+
+To identify the areas where most points occurred the function **kde2d** from the package **MASS** can be used.
+
+```{r}
+library(MASS)
+```
+
+```{r}
+night_kde2d <- kde2d(GPS_01_night$Longitude, GPS_01_night$Latitude)
+```
+
+Using the function **raster** from the package **raster** we can identify the areas of highest occurrence.
+
+```{r}
+library(raster)
+```
+
+```{r, fig.height=5, fig.width=8}
+night_raster<-raster(night_kde2d)
+```
+
+Next step is to convert the areas with the highest densities (>95%) into a **polygon**.
+
+```{r, warning=FALSE}
+night_pol <- rasterToPolygons(night_raster %/% 95,dissolve = T)
+```
+
+Now, we want to keep only the locations that fall inside the most common used areas, and for this we need to transform our points into **SpatialPointsDataFrame** and our polygon as **SpatialPolygonDataFrame**. 
+
+```{r}
+my_points <-GPS_01_night
+sp::coordinates(my_points) <- ~Longitude + Latitude
+sp::proj4string(my_points) = sp::CRS("+init=epsg:4326")
+class(my_points)
+
+my_polygon<-night_pol
+class(my_polygon)
+```
+
+Then, using the function **over** we will end up with densities per point. 
+
+```{r}
+inside<- over(my_points, my_polygon)
+```
+
+We can add this information to our data frame.
+
+```{r}
+GPS_01_night$inside<-inside
+range(GPS_01_night$inside)
+```
+
+Finally, **filter** to just keep the areas of highest occurrence.
+
+```{r}
+GPS_01_high<-GPS_01_night %>%
+  filter(inside>100000)
+```
+
+## Centroid 🎯
+
+Now that we have **only** the locations inside the most use areas, we can calculate the **centroid** location.
+
+```{r}
+require(sp)
+require(rgeos)
+```
+
+First, convert the night time to **SpatialPoints**
+
+```{r}
+GPS_01_sp= SpatialPoints(coords = GPS_01_high[, c('Longitude','Latitude')], 
+                   proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") )
+
+class(GPS_01_sp)
+```
+
+Then, use the function **gCentroid** to obtain the centroid location.
+
+```{r}
+GPS_01_centroids = gCentroid(GPS_01_sp,byid=FALSE)
+```
+
+Obtain coordinates from the centroid location.
+
+```{r}
+centroid<-data.frame(Longitude=GPS_01_centroids@coords[,1],
+           Latitude=GPS_01_centroids@coords[,2])
+centroid
+```
+
+Check if the centroid location fits to the area of the nest.
+
+```{r, fig.height=5, fig.width=8}
+ggplot()+
+  geom_point(data = GPS_01_night, aes(x=Longitude, y = Latitude),
+             color='black',size = 0.8,alpha=0.4)+
+  geom_density_2d_filled(data = GPS_01_night, aes(x = Longitude, y = Latitude),alpha = 0.5)+ 
+  geom_point(data=centroid, aes(x=Longitude, y=Latitude),color='red',shape=17, size=5)+
+  theme_bw()+
+  theme(legend.position = 'none')
+```
+
+
+And thats it, now you should have the centroid location of this individual.
+
+You can do this per individual, or create a function to run automatically to each one of your individuals.
+
+
+
+
+
+I hope this might help you.
+
+
+# Other resources 👩🏽‍🏫
+
+- More options of [density plots](https://r-graph-gallery.com/2d-density-plot-with-ggplot2.html)  
+- Details on how to use [plotly](https://plotly.com/ggplot2/)
+
+# ~~~~~~~~~~~~~~~
+# 8. August: count days
+
+# Intro 
+
+This post is about how: <br> 
+- Add a column counting the days (day 1, 2...).<br>
+- Check differences in parameters as days pass. <br>
+- Add a column with julian day (days from the first day of the calendar). <br>
+
+**Examples** <br>
+
+This post is useful to study: 
+
+- In species that fed their offspring. Trips might be shorter when the parents need to mantain a constant feeding rate, but trips can be longer during the incubation period, and when offspring can be left unattended.
+
+- Species that use resources that availability change over time. Trips might be shorter when the prey availability is at its peak, and trips might be longer when the prey availability is lower, as individuals expend more time to reach their energetic demands.
+
+# Data 📖
+
+To do this exercise, we will load data from the package 'sula'
+
+To install:
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+```
+
+```{r}
+library(sula)
+```
+
+To load data from from 1 tracked individual. 
+
+```{r}
+GPS<-GPS_edited
+```
+
+Get nest location.
+
+```{r}
+nest_loc<-localizar_nido(GPS_data = GPS,
+                          lat_col="Latitude",
+                          lon_col="Longitude")
+```
+
+Calculate foraging trip parameters. 
+
+```{r}
+Foraging_trips<-calcular_tripparams(GPS_data = GPS,
+                              diahora_col = "tStamp",
+                              formato = "%Y-%m-%d %H:%M:%S",
+                              nest_loc=nest_loc,
+                              separador="trip_number")
+```
+
+# Count days 🧮
+
+Ideally, you will have a data frame with the date and time information.
+
+To add the number of days, we select a column with information from date and time.
+
+For the example we will use **trip_start** and extract the date.
+
+```{r}
+Foraging_trips$date<-substr(Foraging_trips$trip_start, start = 1, stop = 10)
+```
+
+Now we use this date as a factor and number it. 
+
+```{r}
+Foraging_trips$day_number<-as.numeric(as.factor(Foraging_trips$date))
+```
+
+We can also use this information to see the number of days the individual was tracked.
+
+```{r}
+length(unique(Foraging_trips$day_number))
+```
+Load the package tidyverse.
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+```
+
+Summarize the information per day.
+
+```{r}
+duration_per_day<-Foraging_trips%>%
+  group_by(day_number)%>%
+  summarise(duration_day=mean(duration_h))
+```
+
+In the plot, you can now see if there were differences in the trip durations among the days that the bird was tracked.
+
+```{r, fig.height=5, fig.width=8}
+ggplot(duration_per_day, aes(x=day_number, y=duration_day)) +
+  geom_segment( aes(x=day_number, xend=day_number, y=0, yend=duration_day), color="grey") +
+  geom_point( color="orange", size=4) +
+  theme_classic() +
+  xlab('Days since begginnig of tracking')+
+  ylab('Mean duration (h)')+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 3))
+```
+
+# Julian day 📅
+
+Load package lubridate
+
+```{r, warning=FALSE, message=FALSE}
+library(lubridate)
+```
+
+Extract the date using the function as.Date
+
+```{r}
+Foraging_trips$julian_date <- as.Date(Foraging_trips$date, format=c("%Y-%m-%d"))
+```
+
+Use the argument **%j** to obtain the julian day.
+
+```{r}
+Foraging_trips$julian <- as.numeric(format(Foraging_trips$julian_date, "%j"))
+```
+
+The bird was tagged between the day 306 and 309 of the calendar. 
+
+```{r}
+range(Foraging_trips$julian)
+```
+
+Summarize the information per day.
+
+```{r}
+duration_per_julian<-Foraging_trips%>%
+  group_by(julian)%>%
+  summarise(duration_day=mean(duration_h))
+```
+
+The plot would be more informatiive for whole seasons, or breeding seasons.
+
+```{r, fig.height=5, fig.width=8}
+ggplot(duration_per_julian, aes(x=julian, y=duration_day)) +
+  geom_segment( aes(x=julian, xend=julian, y=0, yend=duration_day), color="grey") +
+  geom_point( color="orange", size=4) +
+  theme_classic() +
+  xlab('Calendar day')+
+  ylab('Mean duration (h)')+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 3))+
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 365))
+```
+
+I hope this might help you.
+
+
+# More to read 👩🏽‍🏫
+
+- [Pistorious et al. 2015](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4651498/).
+- [Lerma et al. 2020](https://link.springer.com/article/10.1007/s00265-020-02921-1)
+
+
+
+
+
+
+# ~~~~~~~~~~~~~~~
+# 9. September: hr considerations
+
+# Intro
+
+This post is to exemplify some considerations when calculating kernel density analyses. 
+
+Before start calculating kernel density analyses, its useful to consider some sources of error that might change your results.
+
+For the exercises, test data is from masked boobies. <br>
+To access the data you have to install the package **sula**: devtools::install_github("MiriamLL/sula")
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+GPS_raw<-(GPS_raw)
+```
+
+To manipulate the data we will use functions from the package **tidyverse**
+
+```{r}
+library(tidyverse)
+```
+
+For spatial manipulations we will use functions from the packages **sp** and **sf**
+
+```{r}
+library(sp)
+library(sf)
+```
+
+For creating the polygons of kernel density we will use the package **adehabitathr**
+
+```{r}
+library(adehabitatHR)
+```
+
+## 1. Individuals
+
+
+Some individuals might drive kernel density calculations in one or other direction as effect of different number of recordings (or days recorded) per individual.
+
+### Unpaired
+
+To illustrate this, lets see the calculations using together one individual sampled for 1 day and other for 5 days
+
+#### Individual one day
+
+```{r, echo=FALSE, eval=FALSE}
+GPS_raw %>%
+  filter(IDs=='GPS01') %>%
+  distinct(DateGMT)
+```
+
+```{r}
+ID_1day<-GPS_raw %>%
+  filter(IDs=='GPS01') %>%
+  filter(DateGMT %in% c('02/11/2017'))
+```
+
+#### Individual 5 days
+
+```{r, echo=FALSE, eval=FALSE}
+GPS_raw %>%
+  filter(IDs=='GPS03') %>%
+  distinct(DateGMT)
+```
+
+```{r}
+ID_5days<-GPS_raw %>%
+  filter(IDs=='GPS03')
+```
+
+#### Unpaired days
+
+```{r}
+Unpaired<-rbind(ID_1day,ID_5days)
+```
+
+Transform to spatial object.
+
+```{r}
+Unpaired<-as.data.frame(Unpaired)
+coordinates(Unpaired) <- c("Longitude", "Latitude")
+class(Unpaired)
+```
+
+Calculate kernelUD.
+
+```{r}
+UnpairedUD<-kernelUD(Unpaired[,3],h='href') 
+```
+
+Obtain polygons. 
+
+```{r}
+UnpairedUD95 <- getverticeshr(UnpairedUD, percent = 95, unout = c("m2"))
+UnpairedUD50 <- getverticeshr(UnpairedUD, percent = 50, unout = c("m2"))
+```
+
+Here you can check on you polygons visually.
+
+```{r}
+Unpaired95<-st_as_sf(UnpairedUD95)
+Unpaired50<-st_as_sf(UnpairedUD50)
+```
+
+```{r}
+ggplot()+
+  geom_sf(data = Unpaired95,color='#006d77',fill = "#006d77",alpha=0.3,size=1)+
+  geom_sf(data = Unpaired50,color='#5f0f40',fill = "#5f0f40",alpha=0.3,size=1)+
+  labs(x = "Longitude", y="Latitude")+
+  theme_bw()
+```
+
+### Paired 
+
+To compare, lets now see the kernel density calculated with these same individuals but recorded at similar number of days (3 days)
+
+```{r}
+ID_01<-GPS_raw %>%
+  filter(IDs=='GPS01') %>%
+  filter(DateGMT %in% c('02/11/2017','03/11/2017','04/11/2017','05/11/2017'))
+```
+
+```{r}
+ID_03<-GPS_raw %>%
+  filter(IDs=='GPS03') %>%
+  filter(DateGMT %in% c('02/11/2017','03/11/2017','04/11/2017','05/11/2017'))
+```
+
+```{r}
+Paired<-rbind(ID_01,ID_03)
+```
+
+Transform to spatial object.
+
+```{r}
+Paired<-as.data.frame(Paired)
+coordinates(Paired) <- c("Longitude", "Latitude")
+class(Paired)
+```
+
+Calculate kernelUD.
+
+```{r}
+PairedUD<-kernelUD(Paired[,3],h='href') 
+```
+
+Obtain polygons. 
+
+```{r}
+PairedUD95 <- getverticeshr(PairedUD, percent = 95, unout = c("m2"))
+PairedUD50 <- getverticeshr(PairedUD, percent = 50, unout = c("m2"))
+```
+
+Here you can check on you polygons visually.
+
+```{r}
+Paired95<-st_as_sf(PairedUD95)
+Paired50<-st_as_sf(PairedUD50)
+```
+
+```{r}
+ggplot()+
+  geom_sf(data = Paired95,color='#006d77',fill = "#006d77",alpha=0.3,size=1)+
+  geom_sf(data = Paired50,color='#5f0f40',fill = "#5f0f40",alpha=0.3,size=1)+
+  labs(x = "Longitude", y="Latitude")+
+  theme_bw()
+```
+
+As you can see the resulting areas would be different.
+
+To solve this problem, you might want to make sure to have tracking data of similar number of days or recordings.
+
+
+## 2. Intervals
+
+**Do you have similar recordings in time?**
+
+If some devices have gaps, or record at different intervals, you might underestimate or overestimate specific areas.
+
+For this example, lets see one individuals
+
+```{r}
+GPS01<-GPS_raw %>%
+  filter(IDs=='GPS01')
+```
+
+### Gaps.
+
+Using the column of hours, lets extract all the recordings after 5 pm.
+
+```{r}
+GPS01$Hour <- as.numeric(substr(GPS01$TimeGMT, 1, 2))
+Gaps<-GPS01 %>%
+  filter(Hour <= 17)
+```
+
+Transform to spatial object.
+
+```{r}
+Gaps<-as.data.frame(Gaps)
+coordinates(Gaps) <- c("Longitude", "Latitude")
+```
+
+Calculate kernelUD.
+
+```{r}
+GapsUD<-kernelUD(Gaps[,3],h='href') 
+```
+
+Obtain polygons. 
+
+```{r}
+GapsUD95 <- getverticeshr(GapsUD, percent = 95, unout = c("m2"))
+GapsUD50 <- getverticeshr(GapsUD, percent = 50, unout = c("m2"))
+```
+
+Here you can check on you polygons visually.
+
+```{r}
+Gaps95<-st_as_sf(GapsUD95)
+Gaps50<-st_as_sf(GapsUD50)
+```
+
+```{r}
+ggplot()+
+  geom_sf(data = Gaps95,color='#006d77',fill = "#006d77",alpha=0.3,size=1)+
+  geom_sf(data = Gaps50,color='#5f0f40',fill = "#5f0f40",alpha=0.3,size=1)+
+  labs(x = "Longitude", y="Latitude")+
+  theme_bw()
+```
+
+### Complete
+
+In contrast, the kernel density calculations without gaps would give different results. 
+
+```{r}
+Complete<-GPS_raw %>%
+  filter(IDs=='GPS01')
+```
+
+Transform to spatial object.
+
+```{r}
+Complete<-as.data.frame(Complete)
+coordinates(Complete) <- c("Longitude", "Latitude")
+```
+
+Calculate kernelUD.
+
+```{r}
+CompleteUD<-kernelUD(Complete[,3],h='href') 
+```
+
+Obtain polygons. 
+
+```{r}
+CompleteUD95 <- getverticeshr(CompleteUD, percent = 95, unout = c("m2"))
+CompleteUD50 <- getverticeshr(CompleteUD, percent = 50, unout = c("m2"))
+```
+
+Here you can check on you polygons visually.
+
+```{r}
+Complete95<-st_as_sf(CompleteUD95)
+Complete50<-st_as_sf(CompleteUD50)
+```
+
+```{r}
+ggplot()+
+  geom_sf(data = Complete95,color='#006d77',fill = "#006d77",alpha=0.3,size=1)+
+  geom_sf(data = Complete50,color='#5f0f40',fill = "#5f0f40",alpha=0.3,size=1)+
+  labs(x = "Longitude", y="Latitude")+
+  theme_bw()
+```
+
+
+To solve the problem with gaps, you can interpolate the data to fill the gaps and have [similar intervals](https://www.miriam-lerma.com/posts/2022-03-22-interpolation). 
+However, caution should be taken if you have large gaps, it would create a line.
+
+## 3. Behaviour
+
+**Do you want to know the general areas that the animal used or just where it was feeding?**
+
+It depends on your question, but if you are interested in specific behaviours, for example feeding areas, the kernel density analyses might be bring very different results than when using all movement data.
+
+### Foraging
+
+Here, we are using only areas where the animal was foraging. 
+
+Load data
+
+```{r}
+GPS_raw<-as.data.frame(GPS_raw)
+GPS01<-subset(GPS_raw,GPS_raw$IDs=='GPS01')
+```
+
+Use an specific period
+
+```{r}
+GPS_bc<-recortar_periodo(GPS_data=GPS01,
+                                inicio='02/11/2017 18:10:00',
+                                final='05/11/2017 14:10:00',
+                                dia_col='DateGMT',
+                                hora_col='TimeGMT',
+                                formato="%d/%m/%Y %H:%M:%S")
+```
+
+Convert to the correct format
+
+```{r}
+GPS_bc$tStamp<-paste(GPS_bc$DateGMT,GPS_bc$TimeGMT)
+GPS_bc$tStamp <- as.POSIXct(strptime(GPS_bc$tStamp,"%d/%m/%Y %H:%M:%S"),"GMT")
+GPS_bc$lon<- as.numeric(GPS_bc$Longitude)
+GPS_bc$lat<- as.numeric(GPS_bc$Latitude)
+GPS_bc$id <- as.factor(GPS_bc$IDs)
+```
+
+Keep only the important columns
+
+```{r}
+GPS_bc<-GPS_bc %>%
+  dplyr::select('id','tStamp','lon','lat')
+```
+
+Load the package
+
+```{r, warning=FALSE}
+library(EMbC)
+```
+
+Run the function 
+
+```{r}
+BC_clustering<-EMbC::stbc(GPS_bc[2:4],info=-1) 
+```
+
+Add the behavioral classifications
+
+```{r}
+GPS_bc$Behaviours<-(BC_clustering@A)
+```
+
+Rename it so you can understand what each behaviour means
+
+```{r}
+GPS_bc<-mutate(GPS_bc, BC = ifelse(GPS_bc$Behaviours == "1", "Resting",
+                                        ifelse(GPS_bc$Behaviours == "2", "Intense foraging",
+                                               ifelse(GPS_bc$Behaviours == "3", 'Travelling',
+                                                      ifelse(GPS_bc$Behaviours == "4", "Relocating", 
+                                                             "Unknown")))))
+
+
+```
+
+Filter to keep only foraging
+
+```{r}
+Foraging<-GPS_bc %>%
+  filter(BC=='Intense foraging')
+```
+
+Transform to spatial object
+
+```{r}
+Foraging<-as.data.frame(Foraging)
+coordinates(Foraging) <- c("lon", "lat")
+```
+
+Calculate kernelUD.
+
+**Note** Here the href is of 0.0048 which is giving the error of *subscript out of bounds*
+Lets then better calculate using other h value
+
+```{r, eval=FALSE}
+#ForagingUD<-kernelUD(Foraging[,3],h='href') 
+#ForagingUD95 <- getverticeshr(ForagingUD, percent = 95, unout = c("m2"))
+```
+
+The new h value is of 0.01
+
+```{r}
+ForagingUD<-kernelUD(Foraging[,3],h=0.009) 
+ForagingUD
+```
+
+Obtain polygons. 
+
+```{r}
+ForagingUD95 <- getverticeshr(ForagingUD, percent = 95, unout = c("m2"))
+ForagingUD50 <- getverticeshr(ForagingUD, percent = 50, unout = c("m2"))
+```
+
+Here you can check on you polygons visually.
+
+```{r}
+Foraging95<-st_as_sf(ForagingUD95)
+Foraging50<-st_as_sf(ForagingUD50)
+```
+
+```{r}
+ggplot()+
+  geom_sf(data = Foraging95,color='#006d77',fill = "#006d77",alpha=0.3,size=1)+
+  geom_sf(data = Foraging50,color='#5f0f40',fill = "#5f0f40",alpha=0.3,size=1)+
+  labs(x = "Longitude", y="Latitude")+
+  theme_bw()
+```
+
+### All recordings
+Here, we are using all the areas. 
+
+```{r}
+GPS_bc<-GPS_bc %>%
+  dplyr::select('id','tStamp','lon','lat')
+```
+
+```{r}
+Behas<-as.data.frame(GPS_bc)
+coordinates(Behas) <- c("lon", "lat")
+```
+
+Calculate kernelUD.
+
+```{r, message=FALSE, warning=FALSE}
+BehasUD<-kernelUD(Behas,h='href') 
+BehasUD
+```
+
+Obtain polygons. 
+
+```{r}
+BehasUD95 <- getverticeshr(BehasUD, percent = 95, unout = c("m2"))
+BehasUD50 <- getverticeshr(BehasUD, percent = 50, unout = c("m2"))
+```
+
+Here you can check on you polygons visually.
+
+```{r}
+Behas95<-st_as_sf(BehasUD95)
+Behas50<-st_as_sf(BehasUD50)
+```
+
+```{r}
+ggplot()+
+  geom_sf(data = Behas95,color='#006d77',fill = "#006d77",alpha=0.3,size=1)+
+  geom_sf(data = Behas50,color='#5f0f40',fill = "#5f0f40",alpha=0.3,size=1)+
+  labs(x = "Longitude", y="Latitude")+
+  theme_bw()
+```
+If you want to classify the behaviour, please check the post on [EmBC](https://www.miriam-lerma.com/posts/2021-11-25-embc/)
+
+
+
+
+
+
+# ~~~~~~~~~~~~~~~
+# 10. October: identify gaps
+# Intro
+
+This post is to find and calculate gaps between points.  
+
+For the exercises, test data is from masked boobies. <br>
+To access the data you have to install the package **sula**: devtools::install_github("MiriamLL/sula")
+
+```{r}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+GPS01<-(GPS01)
+```
+
+```{r}
+library(dplyr)
+```
+
+Identify column with time date data
+
+```{r}
+GPS01$dt <- as.POSIXct(strptime(GPS01$tStamp, "%Y-%m-%d %H:%M:%S"))
+```
+
+Check gaps in time between recordings
+
+```{r}
+GPS01$Gaps_time<-as.numeric(GPS01$dt - lag(GPS01$dt))
+```
+
+Classify gaps
+
+```{r}
+GPS01 <- GPS01 %>%
+  mutate(Gaps_class = case_when(is.na(Gaps_time) ~ 'U',
+                                Gaps_time <= 300 ~ 'Small',
+                                TRUE ~ 'Large'))
+```
+
+Check gaps between locations
+
+```{r}
+range(GPS01$Gaps_time,na.rm=TRUE)
+```
+
+
+# Create gap
+
+To artificially create a gap, remove all locations between 13 and 14 hrs 
+
+```{r}
+GPS01$Hour <- as.numeric(substr(GPS01$dt, 12, 13))
+```
+
+```{r}
+GPS01_wGap<-GPS01 %>%
+  filter(Hour != 13 & Hour != 14)
+```
+
+Add row number
+
+```{r}
+GPS01_wGap$seq<-seq(1:nrow(GPS01_wGap))
+```
+
+Calculate lag
+
+```{r}
+GPS01_wGap$Gaps_time<-as.numeric(GPS01_wGap$dt - lag(GPS01_wGap$dt))
+```
+
+Classify gaps <br>
+Here, small gaps are when they were less than 15 min between locations
+
+```{r}
+GPS01_wGap <- GPS01_wGap %>%
+  mutate(Gaps_class = case_when(is.na(Gaps_time) ~ 'U',
+                                Gaps_time <= 15 ~ 'Small',
+                                TRUE ~ 'Large'))
+```
+
+## When?
+
+When did the gap occurred?
+
+The result show the latest record, therefore the gap occurred between the previous recording and this one
+
+```{r}
+Large_gaps<-GPS01_wGap %>%
+  filter(Gaps_class=='Large')
+Large_gaps
+```
+
+To see the previous line to see when the gap started you can select this and the previous row
+
+```{r}
+all_rows<-c(Large_gaps$seq,Large_gaps$seq-1)
+```
+
+```{r}
+GPS01_wGap %>%
+  filter(seq %in% all_rows)
+```
+
+## How much? 
+
+To calculate the duration of the gap in hours
+
+```{r}
+GPS01_wGap$Gap_hrs<-GPS01_wGap$Gaps_time/60
+```
+
+```{r}
+range(GPS01_wGap$Gap_hrs,na.rm=TRUE)
+```
+
+## Where?
+
+Where did the gap occurred?
+
+```{r}
+library(ggplot2)
+```
+
+Each circle is the locations, the size of the circle is the gap between locations
+
+```{r}
+ggplot()+
+  geom_point(data = GPS01_wGap,
+            aes(x=Longitude,y = Latitude,size = Gap_hrs),color='red')+
+  geom_path(data = GPS01_wGap,
+            aes(x=Longitude,y = Latitude),color='blue',size = 0.5)+
+  theme_bw()
+```
+
+```{r}
+library(plotly)
+```
+
+```{r}
+ggplotly(ggplot()+
+  geom_point(data = GPS01_wGap,
+            aes(x=Longitude,y = Latitude,size = Gap_hrs, color=Hour))+
+  geom_path(data = GPS01_wGap,
+            aes(x=Longitude,y = Latitude),color='blue',size = 0.5)+
+  theme_bw())
+```
+
+# Further considerations
+
+To solve issues with gaps there are several options:
+
+- Interpolate the tracking data to specific intervals.<br>
+For example: 'Gaps in the tracking datasets were linearly interpolated using the adehabitatLT package in R in order to obtain tracks at 2 h time intervals.' (Ventura et al. 2020; Raine t al. 2021). <br>
+Other options for interpolate tracking points [here](https://www.miriam-lerma.com/posts/2022-03-22-interpolation/).<br>
+However, be cautious because large intervals will return a straight line that might under or overestimate some areas used.
+
+- Define a threshold.
+a) 'Incomplete trips (departure or return from/to the nest not registered)' (Lerma et al. 2020; Fijn et al. 2022).<br>
+Note that including incomplete trips for calculating trip durations will not greatly affect the results. However, gaps in the tracking data might underestimate the true maximum distance used by the animal, and their total distance covered during the trip. Therefore it is not advisable to use it for this purpose. 
+
+
+b) 'A track was considered to be complete whenever the GPS recorded 80% or more of the duration of the foraging trip.' (Tarroux et al. 2020)
+
+c) Use portions of the recordings of the incomplete tracks.<br>
+For example '... tracks were examined individually; only complete portions of tracks were used for analyses...' (Young et al. 2010).
+
+- Do not use incomplete tracks. <br>
+For example: 'All records with incomplete information were excluded for the analyses'
+
+
+# ~~~~~~~~~~~~~~~
+# 11. Novemeber: mastodon
+
+# Intro
+
+Este post es para compartir los pasos que seguí para crear mi cuenta de **mastodon**.
+
+# Mastodon
+
+Lo primero que hice fue googlear **mastodon**
+
+```{r, echo=FALSE}
+library(here)
+File<-paste0(here(),"/_posts/2022-11-20-mastodon/Imagenes/")
+Imagen1<-paste0(File,"Bild1.png")
+Imagen2<-paste0(File,"Bild2.png")
+Imagen3<-paste0(File,"Bild3.png")
+Imagen4<-paste0(File,"Bild4.png")
+Imagen5<-paste0(File,"Bild5.png")
+Imagen6<-paste0(File,"Bild6.png")
+Imagen7<-paste0(File,"Bild7.png")
+Imagen8<-paste0(File,"Bild8.png")
+
+Imagen9<-paste0(File,"Bild9.png")
+Imagen9b<-paste0(File,"Bild9b.png")
+Imagen9c<-paste0(File,"Picture9.png")
+Imagen9d<-paste0(File,"Bild9d.png")
+Imagen9e<-paste0(File,"Bild9e.png")
+Imagen9f<-paste0(File,"Bild9f.png")
+
+Imagen10<-paste0(File,"Bild10.png")
+Imagen11<-paste0(File,"Bild11.png")
+Imagen12<-paste0(File,"Bild12.png")
+Imagen13<-paste0(File,"Bild13.png")
+Imagen14<-paste0(File,"Bild14.png")
+
+```
+
+Me encontré con esta pagina y di click en **sign up** (debajo de donde dice log in)
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen1)
+```
+
+Mi lógica me decía que lo primero que tenia que hacer es **create account**.
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen2)
+```
+
+Pero me encontré que no era tan sencillo. Necesito elegir un **server**.
+
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen3)
+```
+
+
+## Server
+
+Elegir un servidor puede o no ser critico. 
+Como a mi me interesan temas de biología elegí **ecoevo.social**. Pero al parecer muchas personas con interés en **R** se fueron a diferentes servidores, como **fosstodon**. El servidor al final da lo mismo porque puedes seguir a todas las personas desde cualquier servidor. Además los servidores se ven muy parecidos. Al parecer hay un problema con el conteo de seguidores, pero veremos como evoluciona la plataforma.
+Si elegir servidor te abruma, te recomiendo elegir uno de los servidores a donde migraron las personas que tal vez seguías en twitter.
+
+
+## ecoevo.social 
+
+Ecoevo definitivamente eran mi servidor. Así que le di click en **create account** (del lado derecho, debajo del sign in).
+
+```{r, fig.height=4,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen4)
+```
+
+Me salió un aviso de reglas en la plataforma y al final de la pagina le di al botón de **accept**.
+
+```{r, fig.height=4,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen5)
+```
+
+Ahora si todo listo para registrarme!
+
+```{r, fig.height=4,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen6)
+```
+
+Me llegó un correo y me hice un perfil.
+
+
+## Pagina web
+
+Para usar mastodon desde mi computador, me voy al enlace  https://ecoevo.social/explore y le doy click en **log in**
+
+```{r, fig.height=4,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen7)
+```
+
+
+Ahora ya puedo empezar a **tootear** (escribiendo en el cuadro blanco de la izquierda y dandole al botón de publicar)
+
+```{r, fig.height=4,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen8)
+```
+
+
+## Android
+
+Seré sincera, mi primer encuentro con mastodon no fue fácil.
+Cuando quise descargar la app en mi celular no estaba disponible.
+
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen9)
+```
+
+También intente varias de las aplicaciones recomendadas por la [página](https://joinmastodon.org/apps).
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen9b)
+```
+
+El 80% del tiempo en el que uso redes sociales es mientras estoy en el transporte publico... por lo que tener mastodon en mi celular es la mejor opción para mi. 
+
+Termine instalando **tooot*
+
+```{r, fig.height=10,fig.width=20,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen9c)
+```
+
+Lo primero que me pidio la app fue ingresar el servidor donde me registre. Para mi caso fue **ecoevo.social**
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen9d)
+```
+
+Una vez ingresado el servidor, lo siguiente es aceptar las reglas de uso.
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen9e)
+```
+
+Y empezar a **tootear**.
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen9f)
+```
+
+## iOS
+
+Mi otra opción fue usar iOS.
+
+En iOS no tuve ningún problema para descargar la app.
+
+```{r, fig.height=1,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen10)
+```
+
+Así es la app una vez que la abres.
+
+```{r, fig.height=2,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen11)
+```
+
+Para acceder a tu perfil, primero hay que poner exactamente el nombre del servidor que elegiste.
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen12)
+```
+
+Una vez elegido el servidor, puedes acceder a tu cuenta usando tu correo electronico y contraseña. 
+
+```{r, fig.height=4,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen13)
+```
+
+Y listo para **tootear**
+
+```{r, fig.height=6,echo=FALSE, fig.align='center'}
+knitr::include_graphics(Imagen14)
+```
+
+
+## Primeras impresiones
+
+Hasta ahora lo que más me ha gusto es el contenido dirigido que tiene cada servidor. También agradezco mucho no tener que ver anuncios, ni publicaciones que "podrían gustarme".
+No obstante, dedique mucho tiempo a buscar a las personas que seguía en twitter, aunque afortunadamente muchos pusieron su dirección de mastodon en su nombre de perfil. 
+Solo falta que entren más personas. Mientras tanto creo que mantendré ambas plataformas (twitter y mastodon) para mantenerme actualizada con los temas y sobre las personas que me interesan. 
+
+## Leer más
+
+[Informacion detallada sobre mastodon -en inglés-](https://blog.djnavarro.net/posts/2022-11-03_what-i-know-about-mastodon/)
+
+[Mastodon para investigadores -en inglés-](https://www.nature.com/articles/d41586-022-03668-7)
+
+
+
+# ~~~~~~~~~~~~~~~
+# 12.December: day or night
+
+
+# Intro
+
+This post is to create a column day or night.   
+
+
+## Data
+For the exercises, test data is from masked boobies. <br>
+To access the data you have to install the package **sula**: devtools::install_github("MiriamLL/sula")
+
+
+```{r, eval=FALSE}
+#devtools::install_github("MiriamLL/sula")
+library(sula)
+GPS01<-(GPS_01)
+```
+
+## Transform time and date
+```{r, eval=FALSE}
+library(dplyr)
+```
+
+Identify column with time date data
+
+```{r, eval=FALSE}
+GPS01$dt <- as.POSIXct(strptime(GPS01$tStamp, "%Y-%m-%d %H:%M:%S"))
+```
+
+
+## Extract hours
+
+Once is in time and date format, you can extract just the hours
+
+```{r, eval=FALSE}
+GPS01$hour <- as.numeric(substr(GPS01$dt, 12, 13))
+```
+
+## Classify day and night
+Create a classification base on the time of sunset and sunrise.
+
+```{r, eval=FALSE}
+GPS01<-GPS01 %>%
+ mutate(
+    day_night = case_when(
+      hour > 20 |  hour < 6 ~ "night",
+      TRUE  ~ "day"
+    ))
+```
+
+## Quantify proportions
+
+```{r, eval=FALSE}
+library(tidyverse)
+```
+
+Now you can quantify how much your animals were out at night
+
+```{r, eval=FALSE}
+GPS01 %>%
+  group_by(day_night)%>%
+  count()%>%
+  pivot_wider(names_from = day_night, values_from = n)
+```
+
+I hope this might help you
+
+## Further reads
+
+Classify activities at night [in penguins](https://www.miriam-lerma.com/posts/bls7)
