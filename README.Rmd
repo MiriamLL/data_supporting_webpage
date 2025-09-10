@@ -1,27 +1,152 @@
+---
+output: github_document
+---
+
 # Data supporting webpage
 
 ## Teaching
 Materials for teaching section on webpage.
 
 ## Blog
-### 2025
-Data supporting blogs. Obtained from EMODnet, NOAA, Global Fishing watch. 
+Data supporting blogs. 
+
 
 # Gallery
 
-##
+## Calendar
 
+Geom point but make squares
+
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-01
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/calendar_export.jpg?raw=true")
+```
+
+## Violin plot
+
+With secondary X axis
+
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2023-11
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/secondary_export.jpg?raw=true")
+```
+
+## Line plot
+
+With secondary Y axis
+
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-03
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/sst_chl_yaxis.jpg?raw=true")
+```
 
 ## Map
 
 ### Base Map
 
 ```{r, echo=FALSE,  out.width="50%"}
-Blog_2023_03_04<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/map_export.jpg?raw=true"
-knitr::include_graphics(Blog_2023_03_04)
+# 2023-03
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/map_export.jpg?raw=true")
 ```
 
-```{r, echo=FALSE,  out.width="50%"}
-Blog_2023_03_04<-"https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/map_export.jpg?raw=true"
-knitr::include_graphics(Blog_2023_03_04)
+## Points
+
+geom_point
+
+with labels
+https://www.miriam-lerma.com/blog/2024-10-08-distancepoints/distancepoints
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-10
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/distancepoints_export.jpg?raw=true")
 ```
+
+
+with different colors
+https://www.miriam-lerma.com/blog/2024-11-05-completeorincomplete/completeorincomplete
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-11
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/complete_export.jpg?raw=true")
+```
+
+https://www.miriam-lerma.com/blog/2024-09-19-identifyevents/identifyevents
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-09
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/identifytrip_export.jpg?raw=true")
+```
+
+with patchwork
+https://www.miriam-lerma.com/blog/2024-08-01-removelocs/removelocs
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-08
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/remove_export.jpg?raw=true")
+```
+https://www.miriam-lerma.com/blog/2024-07-05-interpolate/interpolate
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-07
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/interpolate_export.jpg?raw=true")
+```
+
+### Densities
+
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+#2023-08
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/custompoints_export.jpg?raw=true")
+```
+
+## Curve
+
+geom_curve
+https://www.miriam-lerma.com/blog/2024-06-04-pointsdistance/pointsdistance
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-02
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/distance_export.jpg?raw=true")
+```
+
+### Create grids
+
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2023-09
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/multiple_export.jpg?raw=true")
+```
+
+
+## Raster
+
+With buffer
+https://www.miriam-lerma.com/blog/2024-04-04-buffer/buffer
+```{r, echo=FALSE, fig.align='left', out.width="50%"}
+#2024-04
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/insidelegend_export.jpg?raw=true")
+```
+
+## Raster
+SST from NOAA
+https://www.miriam-lerma.com/blog/2024-02-06-environmentalvariables/environmentalvariables
+```{r, echo=FALSE, fig.align='left',  out.width="50%"}
+# 2024-02
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2024/environmantal_export.jpg?raw=true")
+```
+
+
+### Points
+
+With custom legend inside the plot
+
+```{r, echo=FALSE, fig.align='left', out.width="50%"}
+#2023-10
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/insidelegend_export.jpg?raw=true")
+```
+
+
+
+### Animate
+
+```{r, echo=FALSE, fig.align='left'}
+#2023-06
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2023/animation.gif?raw=true")
+```
+
+
+### Interactive
+
+https://www.miriam-lerma.com/blog/2024-12-02-tmap/tmap

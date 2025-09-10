@@ -99,6 +99,38 @@ ggplot(may,aes(x=calen_xs,y=calen_ys,color=events))+
 
 # Thats it!
 
+# Export
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(ggplot(may,aes(x=calen_xs,y=calen_ys,color=events))+
+  geom_point(size=25,shape=15)+
+
+  scale_x_continuous(limits=c(0.5,7.5))+
+  scale_y_continuous(limits=c(0.5,5.5))+
+  
+  # remove background colors
+  theme_void()+
+  
+  # adds texts
+  geom_text(aes(label=day),color='white') +
+  
+  # sets the legend below
+  theme(legend.position = 'top')+
+   
+  # lines the legend
+  guides(colour = guide_legend(override.aes = list(size=6),nrow = 1))+
+  
+  # uses palette
+  scale_color_manual(name = "May no. events",values = my_palette),
+       filename = paste0(here(),"/Blog/2024/calendar_export.jpg"),
+       width = 6, 
+       height = 7, 
+       units = "in",
+       dpi = 300)
+```
+
 # ~~~~~~~~~~~~~
 # 2. February
 # Environmental variables
@@ -249,7 +281,7 @@ ggsave(ggplot(SST03.2017dt) +
     coord_sf(xlim = c(xlim1+2,xlim2-2), 
              ylim = c(ylim1+2,ylim2-2))+ 
   scale_fill_viridis_c(option = "H"), 
-       filename = paste0(here::here(),"/environmental_export.jpg"),
+       filename = paste0(here::here(),"/Blog/2024/environmental_export.jpg"),
        width = 8, 
        height = 8, 
        units = "in",
@@ -603,7 +635,7 @@ Create a plot using **geom_line** using functions from the package ggplot.
 ```{r, fig.height=4, fig.width=6}
 plot_SST<-ggplot(SST_months) +
   geom_line(aes(x = xaxis, y = mean_sst),color='red', size=1)+ 
-  scale_y_continuous(("Sea Surface Temperature (°C)"),limits=c(8.5,35.5),expand=c(0, 0))+
+  scale_y_continuous(("Sea Surface Temperature (C)"),limits=c(8.5,35.5),expand=c(0, 0))+
     scale_x_continuous("Months",breaks=c(1,2,3,4,5,6,7,8,9,10),labels=c('Mar','Apr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dec'))+
   theme_bw()+#dejar lineas de las orillas
   theme(axis.title.x = element_text(size=13),
@@ -666,9 +698,30 @@ library(patchwork)
 To further learn how to change the layout [click here](https://patchwork.data-imaginist.com/articles/guides/layout.html).
 
 ```{r, fig.height=4, fig.width=6}
-plot_SST_wlegend + plot_CHL+
-  plot_layout(design = c(area(t = 1, l = 1, b = 5, r = 4),
-            area(t = 1, l = 1, b = 5, r = 4)))
+plot_SST_wlegend + plot_CHL +
+  plot_layout(
+    design = c(
+      area(t = 1, l = 1, b = 5, r = 4),  # Area for plot_SST_wlegend
+      area(t = 6, l = 1, b = 10, r = 4)  # Area for plot_CHL (placed below)
+    )
+  )
+```
+
+```{r, echo=FALSE, eval=FALSE}
+library(here)
+here()
+ggsave(plot_SST_wlegend + plot_CHL +
+  plot_layout(
+    design = c(
+      area(t = 1, l = 1, b = 5, r = 4),  # Area for plot_SST_wlegend
+      area(t = 6, l = 1, b = 10, r = 4)  # Area for plot_CHL (placed below)
+    )
+  ), 
+       filename = paste0(here::here(),"/Blog/2024/sst_chl_yaxis_export.jpg"),
+       width = 8, 
+       height = 8, 
+       units = "in",
+       dpi = 300)
 ```
 
 # ~~~~~~~~~~~~~
@@ -900,7 +953,7 @@ ggsave(ggplot() +
         panel.border = element_rect(colour = "black", fill='transparent'))+
   coord_sf(xlim = c(-109.7,-109.1),ylim = c(24.6,25.2))+ 
   NULL,
-       filename = paste0(here(),"/buffer_export.jpg"),
+       filename = paste0(here(),"/Blog/2024/buffer_export.jpg"),
        width = 6, 
        height = 4, 
        units = "in",
@@ -984,12 +1037,12 @@ My_directory<-here()
 ```
 
 ```{r, eval=TRUE, echo=FALSE}
-image_write(Fig1_text, path = paste0(My_directory,"/Fig1_rb.png"), format = "png")
+image_write(Fig1_text, path = paste0(My_directory,"/Blog/2024/Fig1_rb.png"), format = "png")
 ```
 
 ```{r, fig.height=4,echo=FALSE, fig.align='left'}
 #list.files(My_directory)
-Fig1A_rb<-paste0(My_directory,"/Fig1_rb.png")
+Fig1A_rb<-paste0(My_directory,"/Blog/2024/Fig1_rb.png")
 knitr::include_graphics(Fig1A_rb)
 ```
 
@@ -1000,12 +1053,12 @@ Fig1_text<-image_annotate(Fig1_draw, "(a)",  location = "+50+50", font = 'Arial'
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-image_write(Fig1_text, path = paste0(My_directory,"/Fig1_lt.png"), format = "png")
+image_write(Fig1_text, path = paste0(My_directory,"/Blog/2024/Fig1_lt.png"), format = "png")
 ```
 
 ```{r, fig.height=4,echo=FALSE, fig.align='left'}
 #list.files(My_directory)
-Fig1A_lt<-paste0(My_directory,"/Fig1_lt.png")
+Fig1A_lt<-paste0(My_directory,"/Blog/2024/Fig1_lt.png")
 knitr::include_graphics(Fig1A_lt)
 ```
 
@@ -1014,7 +1067,7 @@ knitr::include_graphics(Fig1A_lt)
 Use the function **image_write** to export.
 
 ```{r, eval=FALSE}
-image_write(Fig1_text, path = paste0(My_directory,"/Fig1_tl.png"), format = "png")
+image_write(Fig1_text, path = paste0(My_directory,"/Blog/2024/Fig1_tl.png"), format = "png")
 ```
 
 # Merge two pictures into one and export
@@ -1063,7 +1116,7 @@ My_directory<-here()
 ```
 
 ```{r, eval=FALSE}
-image_write(image_append(c(Fig1_border,Fig2_border)), path = paste0(My_directory,"/Fig1_append.png"), format = "png")
+image_write(image_append(c(Fig1_border,Fig2_border)), path = paste0(My_directory,"/Blog/2024/Fig1_append.png"), format = "png")
 ```
 
 # ~~~~~~~~~~~~~
@@ -1475,7 +1528,7 @@ If you want to give it a try, there are other packages to interpolate data:\
 library(here)
 here()
 ggsave(Original_track+Interpolated_1m+Interpolated_15m,
-       filename = paste0(here(),"/interpolate_export.jpg"),
+       filename = paste0(here(),"/Blog/2024/interpolate_export.jpg"),
        width = 10, 
        height = 4, 
        units = "in",
@@ -1682,7 +1735,7 @@ GPS_ten$In_or_out <- as.numeric(sp::over(GPS_sp,This_buffer))
 library(here)
 here()
 ggsave(Original_plot+Buffer_plot+Filtered_plot,
-       filename = paste0(here(),"/interpolate_export.jpg"),
+       filename = paste0(here(),"/Blog/2024/remove_export.jpg"),
        width = 9, 
        height = 4, 
        units = "in",
@@ -1872,7 +1925,7 @@ library(here)
 library(patchwork)
 here()
 ggsave(Plot_original+Plot_trips,
-       filename = paste0(here(),"/identifytrip_export.jpg"),
+       filename = paste0(here(),"/Blog/2024/identifytrip_export.jpg"),
        width = 9, 
        height = 4, 
        units = "in",
@@ -2051,11 +2104,8 @@ GPS_dist<-dist_puntos(GPS_data = GPS_edited,separador='trip_number')
 # Export
 
 ```{r, echo=FALSE, eval=FALSE}
-library(here)
-library(patchwork)
-here()
 ggsave(Plot_distance,
-       filename = paste0(here(),"/points_export.jpg"),
+       filename = paste0(here(),"/Blog/2024/distancepoints_export.jpg"),
        width = 6, 
        height = 10, 
        units = "in",
