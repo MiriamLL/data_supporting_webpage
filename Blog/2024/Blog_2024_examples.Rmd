@@ -698,25 +698,17 @@ library(patchwork)
 To further learn how to change the layout [click here](https://patchwork.data-imaginist.com/articles/guides/layout.html).
 
 ```{r, fig.height=4, fig.width=6}
-plot_SST_wlegend + plot_CHL +
-  plot_layout(
-    design = c(
-      area(t = 1, l = 1, b = 5, r = 4),  # Area for plot_SST_wlegend
-      area(t = 6, l = 1, b = 10, r = 4)  # Area for plot_CHL (placed below)
-    )
-  )
+plot_SST_wlegend + plot_CHL+
+  plot_layout(design = c(area(t = 1, l = 1, b = 5, r = 4),
+            area(t = 1, l = 1, b = 5, r = 4)))
 ```
 
 ```{r, echo=FALSE, eval=FALSE}
 library(here)
 here()
-ggsave(plot_SST_wlegend + plot_CHL +
-  plot_layout(
-    design = c(
-      area(t = 1, l = 1, b = 5, r = 4),  # Area for plot_SST_wlegend
-      area(t = 6, l = 1, b = 10, r = 4)  # Area for plot_CHL (placed below)
-    )
-  ), 
+ggsave(plot_SST_wlegend + plot_CHL+
+  plot_layout(design = c(area(t = 1, l = 1, b = 5, r = 4),
+            area(t = 1, l = 1, b = 5, r = 4))), 
        filename = paste0(here::here(),"/Blog/2024/sst_chl_yaxis_export.jpg"),
        width = 8, 
        height = 8, 
@@ -2106,8 +2098,8 @@ GPS_dist<-dist_puntos(GPS_data = GPS_edited,separador='trip_number')
 ```{r, echo=FALSE, eval=FALSE}
 ggsave(Plot_distance,
        filename = paste0(here(),"/Blog/2024/distancepoints_export.jpg"),
-       width = 6, 
-       height = 10, 
+       width = 4, 
+       height = 4, 
        units = "in",
        dpi = 300)
 ```
