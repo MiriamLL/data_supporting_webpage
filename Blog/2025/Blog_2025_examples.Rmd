@@ -1,0 +1,2488 @@
+---
+title: "Blog"
+output: html_document
+date: "2025-09-09"
+---
+
+# Intro
+
+The advantage of having it here, is that all steps are shown, whereas in the webpage this would slow it down.
+
+
+# ~~~~~~~~~~~
+# 1. January: Bathymetry
+# Intro
+
+Bathymetry gives us information on the water depth around an area.
+
+This post includes:\
+- Download raster data\
+- Read and subset raster data\
+- Plot raster data
+
+# Download raster data
+
+GEBCO: General Bathymetry Chart of the Oceans provides information from bathymetry in the ocean.
+
+To download [visit webpage](https://www.gebco.net/data_and_products/gridded_bathymetry_data/#area)
+
+Go to:\
+- Download data for user-defined areas\
+- [Use the application](https://download.gebco.net/)\
+- Add your coordinates -here I use 1 to 10 and 50 to 60-\
+- Add to basket and download
+
+# Load
+
+To download test data in tif format [click here](https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/Bathymetry/gebco_2024_n60.0_s50.0_w1.0_e9.0.tif).
+
+Select the directory where the information is stored, or as here, use the data directly form the repository.
+
+```{r, eval=TRUE}
+Bath_tif<-'https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/Bathymetry/gebco_2024_n60.0_s50.0_w1.0_e9.0.tif'
+```
+
+Load the [terra package](https://datacarpentry.org/r-raster-vector-geospatial/01-raster-structure.html) for reading raster data
+
+```{r, eval=TRUE}
+library(terra)
+```
+
+The function **rast** helps to read raster data - replacing package raster
+
+```{r, eval=TRUE}
+Bath_file<-rast(Bath_tif)
+```
+
+Change to data frame
+
+```{r, eval=TRUE}
+Bath_dataframe <- as.data.frame(Bath_file, xy = TRUE)
+```
+
+Alternatively, use the test information included in the package **GermanNorthSea**
+
+```{r, eval=TRUE}
+##devtools::install_github("MiriamLL/GermanNorthSea")
+library(GermanNorthSea)
+```
+
+```{r, eval=TRUE}
+Bath_dataframe<-GermanNorthSea::German_bath
+```
+
+Load the package **tidyverse**
+
+```{r, eval=TRUE}
+library(tidyverse)
+```
+
+Use **filter** to subset your data
+
+```{r, eval=TRUE}
+Bath_dataframe_sub <-Bath_dataframe  %>%
+  filter(x > 2 & x < 10)%>%
+  filter(y > 52 & y < 57)%>%
+  rename(Bathymetry=3) %>%
+  filter(Bathymetry < 10)
+```
+
+# Plot
+
+Load the package **ggplot2**
+
+```{r, eval=TRUE}
+library(ggplot2)
+```
+
+Plot your data using **geom_raster**
+
+```{r, fig.width=4, fig.height=4, eval=TRUE}
+ggplot() +
+  geom_raster(data = Bath_dataframe_sub , aes(x = x, y = y, fill = Bathymetry)) +
+  scale_fill_viridis_c(option = "mako")+
+  theme_void()+
+  theme(legend.position='bottom')+
+  xlab('Longitude')+ylab('Latitude')+
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))
+
+```
+
+Load the package **sf**
+
+```{r, eval=TRUE}
+library(sf)
+```
+
+Use the function **st_transform** to convert to the same CRS
+
+```{r, eval=TRUE}
+German_land<-st_transform(GermanNorthSea::German_land, 4326)
+```
+
+Add the land to the plot using **geom_sf**
+
+```{r, fig.width=4, fig.height=4, eval=TRUE}
+Plot_bath<-ggplot() +
+  geom_raster(data = Bath_dataframe_sub , aes(x = x, y = y, fill = Bathymetry)) +
+  geom_sf(data = German_land, colour = 'black', fill = '#ffffbe')+
+  scale_fill_viridis_c(option = "mako")+
+  theme_void()+
+  theme(legend.position='bottom')+
+  xlab('Longitude')+ylab('Latitude')+
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))
+Plot_bath
+```
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-01-15-bathymetry/bathymetry_export.jpg"))
+```
+
+More details about how to add features to a map [here](https://www.miriam-lerma.com/posts/2023-03-04-mapping-in-r/)
+
+```{r, echo=FALSE, eval=TRUE}
+ggsave(Plot_bath,
+       filename = paste0(this_folder,"/bathymetry_export.jpg"),
+       width = 4, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+# Further reading
+
+-   [Package GermanNorthSea](https://github.com/MiriamLL/GermanNorthSea)
+-   [Package terra](https://rspatial.github.io/terra/)
+-   [Package sf](https://r-spatial.github.io/sf/)
+-   [GEBCO download](https://download.gebco.net/)
+# ~~~~~~~~~~~
+# 2. February: Distance to coast
+
+# Intro
+
+Distance to coast gives us information on the distance (in meters) from one point at sea to the nearest coast.
+
+This post includes:\
+- Download raster data\
+- Read and subset raster data\
+- Plot raster data
+
+# Distance to coast
+
+To download:\
+- Access [OceanColor NASA](https://oceancolor.gsfc.nasa.gov/resources/docs/distfromcoast/)\
+- Select **the interpolated 0.01-degree GeoTiff packed together with a brief description file.**\
+- Unzip information.
+
+# Read and subset
+
+To read from file.
+
+Select the directory where the information is.
+
+```{r, eval=TRUE, echo=TRUE}
+this_folder<-here()
+this_file<-paste0(this_folder,"/GMT_intermediate_coast_distance_01d.tif")
+this_raster<-rast(this_file)
+```
+
+```{r, eval=TRUE, echo=FALSE}
+library(here)
+here()
+this_folder<-paste0("C:/Users/lerma/OneDrive/Documents/03Academico/02Proyectos-Postdoc/2025/1Programming/1Distill/Tests/")
+this_file<-paste0(this_folder,"/GMT_intermediate_coast_distance_01d.tif")
+library(terra)
+this_raster<-rast(this_file)
+library(raster)
+this_extent <- as(extent(2, 10, 52, 57), 'SpatialPolygons')
+crs(this_extent) <- "+proj=longlat +datum=WGS84 +no_defs"
+this_cut <- crop(this_raster, this_extent)
+class(this_cut)
+writeRaster(this_cut,'Subset_GMT_intermediate_coast_distance_01d.tif')
+```
+
+Alternatively, use the data directly from the repository.
+
+```{r, eval=TRUE}
+DistCoast_tif<-"https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/DistanceToCoast/Subset_GMT_intermediate_coast_distance_01d.tif"
+```
+
+Use the package **terra** to use the function **rast**.\
+Then convert to data frame.
+
+```{r, eval=TRUE}
+library(terra)
+DistCoast_file<-rast(DistCoast_tif)
+```
+
+```{r, eval=TRUE}
+DistCoast_dataframe <- as.data.frame(DistCoast_file, xy = TRUE)
+```
+
+The file is quite large, so I recommend to subset the data to the area of interest.
+
+Here I select the area close to the German North Sea.
+
+```{r, eval=TRUE}
+library(tidyverse)
+DistCoast_dataframe_sub <-DistCoast_dataframe  %>%
+  filter(x > 2 & x < 10)%>%
+  filter(y > 52 & y < 57)%>%
+  rename(Dist=3) %>%
+  mutate(Dist = as.numeric(Dist))
+```
+
+To save as rda would make the reading a lot faster.
+
+```{r,eval=TRUE}
+German_distancecoast<-DistCoast_dataframe_sub
+save(German_distancecoast, file="German_distancecoast.rda")
+```
+
+# Plot
+
+To plot adding land.
+
+```{r, eval=TRUE}
+library(sf)
+```
+
+Make sure is in the same CRS.
+
+```{r, eval=TRUE}
+German_land<-st_transform(GermanNorthSea::German_land, 4326)
+```
+
+To exclude information on land.
+
+```{r, eval=TRUE}
+library(tidyverse)
+```
+
+```{r, eval=TRUE}
+DistCoast_dataframe_sub<-DistCoast_dataframe_sub %>%
+  filter(Dist > -20)
+```
+
+Use **ggplot** to create your plot.
+
+```{r, fig.width=4, fig.height=4, eval=TRUE}
+Plot_distance<-ggplot() +
+  geom_raster(data = DistCoast_dataframe_sub, aes(x = x, y = y, fill = Dist)) +
+  geom_sf(data = German_land, colour = 'black', fill = '#ffffbe')+
+  scale_fill_viridis_c(option = "rocket")+
+  theme_void()+
+  theme(legend.position='bottom')+
+  xlab('Longitude')+ylab('Latitude')+
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))
+Plot_distance+
+  guides(fill=guide_legend(title="Distance to coast"))
+```
+
+```{r, echo=FALSE, eval=TRUE}
+library(here)
+here()
+this_folder<-paste0(here(),"/Blog/2024-10-15-distancetocoast")
+ggsave(Plot_distance,
+       filename = paste0(this_folder,"/coast_export.jpg"),
+       width = 4, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-02-15-distancetocoast/coast_export.jpg"))
+```
+# ~~~~~~~~~~~
+
+# 3. March: fishing data
+
+# Intro
+
+[Global Fishing Watch](https://globalfishingwatch.org/datasets-and-code/) map is a open-access online tool designed for the visualization and analysis of vessel-based human activity at sea. It allows anyone with an internet connection to access the map and monitor global fishing activity from 2012 to the present. The map tracks more than 65,000 commercial fishing vessels, which are responsible for a significant portion of the global seafood catch.
+
+The data is broadcast through the automatic identification system (AIS) and collected via satellites and terrestrial receivers. This information is then combined with vessel monitoring system data provided by partner countries. A fishing detection algorithm is applied to determine the "apparent fishing effort" based on changes in vessel speed and direction. The heat map grid cell colors indicate the level of fishing activity in each area, allowing for precise comparisons.
+
+# Fishing Effort
+
+Global Fishing Watch's "fishing effort" refers to the measure of human activity related to fishing that is detected and analyzed from data provided by commercial fishing vessels.
+
+[Explanatory video from GFW to download data](https://www.youtube.com/watch?v=iWkgapKbJWg)
+
+To download the data, you need to log in using your [email](https://globalfishingwatch.org/datasets-and-code/).
+
+For a test data we will see the apparent [fishing effort](https://globalfishingwatch.org/map?access-token=wi1_Ffdm-AjT1k_urFVmOPTMqMXrKQ) (AIC).\
+Fishing effort data is provided in **tif** format.\
+To download test data in tif format [click here](https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/FishingWatch/public-global-fishing-effort-v3.0.tif).\
+The example data is limited to April and May of 2018.
+
+To read the raster data define the folder, or as here, use the data directly form the repository.
+
+```{r, eval=TRUE}
+Fishing_tif<-"https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/FishingWatch/public-global-fishing-effort-v3.0.tif"
+```
+
+Use the package **terra** to use the function **rast**.
+
+```{r, eval=TRUE}
+library(terra)
+```
+
+```{r, eval=TRUE}
+Fishing_rast<-rast(Fishing_tif)
+```
+
+Check that you have properly read the data.
+
+```{r, eval=TRUE}
+class(Fishing_rast)
+```
+
+### Plot
+
+Load (or install) package tidyterra to use the function **geom_spatraster** in ggplot.
+
+```{r, eval=TRUE}
+library(tidyterra)
+```
+
+```{r, eval=TRUE}
+library(ggplot2)
+```
+
+Here is an example of how the raw data looks.
+
+```{r, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = Fishing_rast) +
+  facet_wrap(~lyr, ncol = 2)+
+  theme_bw()
+```
+
+### Tif To data frame
+
+To manipulate raster data converting it to data frame facilitates the process.
+
+```{r, eval=TRUE}
+Fishing_df<- as.data.frame(Fishing_rast, xy = TRUE)
+```
+
+```{r, eval=TRUE}
+head(Fishing_df)
+```
+
+### Subset
+
+To subset the data use the function **filter** from the package tidyverse.
+
+```{r, eval=TRUE}
+library(tidyverse)
+```
+
+Define longitude and latitude limits of interest.
+
+```{r, eval=TRUE}
+Fishing_sub <-Fishing_df  %>%
+  filter(x > 2 & x < 10)%>%
+  filter(y > 52 & y < 57)%>%
+  rename(FishingEffort=3) 
+```
+
+Check briefly the average Fishing Effort for the area.
+
+```{r, eval=TRUE}
+mean(Fishing_sub$FishingEffort)
+```
+
+## Plot
+
+Shapefiles of the German North Sea are accessible in my package GermanNorthSea.
+
+```{r, echo=TRUE, eval=TRUE}
+install.packages("devtools")
+devtools::install_github("MiriamLL/GermanNorthSea")
+library(GermanNorthSea)
+```
+
+The package sf helps to convert the CRS.
+
+```{r, eval=TRUE}
+library(sf)
+```
+
+To transform to the appropriate CRS, use the function **st_transform**.
+
+```{r, eval=TRUE}
+German_land<-st_transform(GermanNorthSea::German_land, 4326)
+German_EEZ<-st_transform(GermanNorthSea::German_EEZ, 4326)
+German_SCA<-st_transform(GermanNorthSea::German_SCA, 4326)
+German_natura<-st_transform(GermanNorthSea::German_natura, 4326)
+```
+
+Use **ggplot** to create your plot. Each dot is a value of fishing effort.
+
+```{r, fig.width=8, fig.height=8,eval=TRUE}
+Fishing_plot<-ggplot() +
+  geom_tile(data = Fishing_sub, aes(x = x, y = y, fill = FishingEffort)) +
+  theme_bw()+
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))
+```
+
+Change plot style
+
+```{r, eval=TRUE}
+Fishing_plot<-ggplot() +
+  geom_tile(data = Fishing_sub, aes(x = x, y = y, fill = FishingEffort)) +
+  geom_sf(data = German_EEZ, colour = 'black', fill = 'transparent')+
+  geom_sf(data = German_land, colour = 'black', fill = '#edede9')+
+  geom_sf(data = German_natura, colour = 'transparent', fill = '#3d6d22',alpha=0.2)+
+  theme_void()+
+  xlab('Longitude')+ylab('Latitude')+
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))+
+  geom_tile(data = Fishing_sub, aes(x = x, y = y, fill = FishingEffort)) +
+  theme(legend.background = element_rect(colour = "transparent", fill = "transparent"),
+        legend.position = c(0.30,0.30),
+        panel.background = element_rect(fill = '#edf2f4'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+  scale_fill_gradient(low = "#fcbf49", high = "#d62828")+ 
+  guides(fill=guide_legend(title="GFW \nFishing effort \nApr May 2018"))
+Fishing_plot
+```
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-03-03-fishingdata/fishingwatch_export.jpg"))
+```
+
+### Notes
+
+This data is part of an exercise using information from the platform, and the details provided have not been verified or checked for accuracy. The figures and patterns observed are based on the data from Global Fishing Watch, but they may not represent the final, validated insights.
+
+No guarantee is made regarding the accuracy or reliability of this data.
+
+# Activity data
+
+The fishing effort information includes information on Time Range, Flag, GearType and Apparent Fishing Hours.
+
+To download test data in csv format [here](https://raw.githubusercontent.com/MiriamLL/miriamlerma_/refs/heads/main/Blog/2025/2025-03-03-fishingdata/layer-activity-data-0/public-global-fishing-effort-v3.0.csv) or \[here\]<https://github.com/MiriamLL/TestData/tree/main/layer-activity-data-0>).
+
+To load, select your folder and file.
+
+```{r, eval=TRUE}
+Fishing_csv<-"https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/FishingWatch/layer-activity-data-0/public-global-fishing-effort-v3.0.csv"
+```
+
+### Read csv
+
+To read a csv use the function **read_csv**
+
+```{r, eval=TRUE}
+Fishing_csv<-read_csv(Fishing_csv)
+```
+
+There is no clear way to link this data and the previous map.
+
+### Gear Type
+
+For an overview of the GearType. This information may not be conclusive, but it provides a solid overview of the types of gear primarily registered.
+
+```{r, eval=TRUE}
+Fishing_csv %>%
+  group_by(Geartype)%>%
+  tally()%>%
+  arrange(-n)
+```
+
+```{r, echo=FALSE, eval=TRUE}
+knitr::kable(Fishing_csv %>%
+  group_by(Geartype)%>%
+  tally()%>%
+    arrange(-n))
+```
+
+The vessel registry database is used to identify vessels in the AIS data that have a known vessel class. A convolutional neural network—a cutting-edge form of machine learning model—is then trained to identify other vessels in the AIS data that behave in a similar fashion.
+
+Read more here about [vessel identity](https://globalfishingwatch.org/datasets-and-code-vessel-identity/).
+
+<html>
+
+<body><left> <a href="https://globalfishingwatch.org/wp-content/uploads/anaimated_track_example_larger-resize.gif"><img src="https://globalfishingwatch.org/wp-content/uploads/anaimated_track_example_larger-resize.gif" style="width:450px"/></a> </left></body>
+
+</html>
+
+```{r, echo=FALSE, eval=TRUE}
+library(here)
+here()
+this_folder<-paste0(here(),"/Blog/2025/2025-03-03-fishingdata")
+ggsave(Fishing_plot,
+       filename = paste0(this_folder,"/blog54.jpg"),
+       width = 4, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+
+
+# Further read
+
+Global fishing watch: [Tracking the global footprint of fisheries](https://www.science.org/doi/10.1126/science.aao5646)
+
+Fisheries in the German North Sea: [Mapping fisheries in the German exclusive economic zone with special reference to offshore Natura 2000 sites](https://www.sciencedirect.com/science/article/abs/pii/S0308597X08001930)
+
+**Examples of publications using data from Global Fishing Watch**:\
+Seabirds: [Ocean sentinel albatrosses locate illegal vessels and provide the first estimate of the extent of nondeclared fishing](https://www.pnas.org/doi/10.1073/pnas.1915499117)\
+Fish: [Global collision-risk hotspots of marine traffic and the world’s largest fish, the whale shark](https://www.pnas.org/doi/10.1073/pnas.2117440119)
+
+Other resources to download GFW data:\
+[Working with public data](https://globalfishingwatch.org/data/downloadable-public-data-in-r/#)\
+[GitHub with outdate instructions](https://github.com/GlobalFishingWatch/paper-global-footprint-of-fisheries/blob/master/data_documentation/fishing_effort_byvessel.md)
+
+Citation: Global Fishing Watch. 2022, updated daily. Vessel presence and apparent fishing effort v20201001, \[Apr 01 2018 00:00 UTC May 31 2018 00:00 UTC\]. Data set accessed at <https://globalfishingwatch.org/map>
+
+
+# ~~~~~~~~~~~
+# 4. April: SST
+# Intro
+
+The Copernicus Marine Service (CMS), also known as the Copernicus Marine Environment Monitoring Service, is the marine component of the European Union's Copernicus Programme.\
+It delivers free, regular, and systematic information on the state of the ocean, encompassing the Blue (physical), White (sea ice), and Green (biogeochemical) components, both globally and regionally.\
+Funded by the European Commission (EC) and implemented by Mercator Ocean International, the service is designed to support EU policies and international legal commitments related to Ocean Governance. It also addresses the global need for ocean knowledge and fosters the Blue Economy across all maritime sectors by providing cutting-edge ocean data and information at no cost.
+
+This post includes:\
+- Download raster data\
+- Read and subset raster data\
+- Plot raster data
+
+# Data
+
+Raster data is available at: [Copernicus Marine Data Store](https://marine.copernicus.eu/about)
+
+To access the [products](https://data.marine.copernicus.eu/products). You need to register to be able to download data
+
+Sea surface temperature (SST) refers to the temperature of the uppermost layer of the ocean, typically measured at the surface of the sea.
+
+For downloading the data: [follow this instructions.](https://help.marine.copernicus.eu/en/articles/4469993-how-to-download-copernicus-marine-products#h_ec9344c750)
+
+-   For this exercise:\
+    Download sea water potential temperaturethetao \[°C\]\
+    Based on the coordinates 1 to 10 and 50 to 60\
+    For the time frame of April and May 2018\
+    From the depths 0 to 60 m
+
+To download test data in nc format [click here](https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/SST/cmems_mod_glo_phy_my_0.083deg-climatology_P1M-m_1729785319560.nc).
+
+## Read data
+
+Select the directory where the information is stored, or as here, use the data directly form the repository.
+
+```{r, eval=TRUE}
+SST_nc<-"https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/SST/cmems_mod_glo_phy_my_0.083deg-climatology_P1M-m_1729785319560.nc"
+```
+
+Load the [terra package](https://pjbartlein.github.io/REarthSysSci/netcdf_terra.html) for reading raster data.
+
+```{r, eval=TRUE}
+library(terra)
+```
+
+The function **rast** helps to read raster data - replacing package raster.
+
+```{r, eval=TRUE}
+SST_file<-rast(SST_nc)
+```
+
+## Subset raster data
+
+Change to data frame for data wrangling.
+
+```{r, eval=TRUE}
+SST_dataframe <- as.data.frame(SST_file, xy = TRUE)
+```
+
+Load the package **tidyverse**.
+
+```{r, eval=TRUE}
+library(tidyverse)
+```
+
+Use **filter** to subset the data to a specific geographical area.
+
+```{r, eval=TRUE}
+SST_sub <-SST_dataframe  %>%
+  filter(x > 2 & x < 10)%>%
+  filter(y > 52 & y < 57)
+```
+
+**Obtain mean values per latitude and longitude**
+
+There are many columns with data per depth, as data was collected almost every meter.
+
+```{r, eval=TRUE}
+ncol(SST_sub)
+```
+
+To keep columns with the depth area use the functions **select** and **starts_with**.
+
+```{r, eval=TRUE}
+SST_depth<-SST_sub %>%
+  select(starts_with("thetao"))
+```
+
+Check the depths were the data was collected.
+
+```{r, eval=TRUE}
+Depths<-colnames(SST_depth)
+head(Depths)
+```
+
+Using functions from tidyverse such as **rowwise**, summarise the information per depth.
+
+```{r, eval=TRUE}
+SST_depth_perloc<-SST_depth %>%
+  rowwise()%>%
+  mutate(mean_SST = mean(c_across(where(is.numeric)),na.rm=TRUE),
+         min_SST = min(c_across(where(is.numeric)),na.rm=TRUE),
+         max_SST = max(c_across(where(is.numeric))),na.rm=TRUE)%>%
+  relocate(mean_SST,min_SST,max_SST)
+```
+
+The function **arrange** from the package tidyverse allows to see the columns of interest first.
+
+```{r, eval=TRUE}
+first_column<-SST_depth[1,]
+long_values<-first_column %>% 
+  pivot_longer(
+    cols = 1:228, 
+    names_to = "type",
+    values_to = "value"
+)
+arrange_values<-arrange(long_values, desc(value))
+```
+
+```{r KnitTableSightings, echo=FALSE, eval=TRUE}
+knitr::kable(head(arrange_values))
+```
+
+Now there is a value per latitude and longitude of the sea surface temperature, summarizing the first 60 m of the water column.
+
+```{r, eval=TRUE}
+SST_sub$SST<-SST_depth_perloc$mean_SST
+```
+
+```{r, eval=TRUE}
+mean(SST_sub$SST)
+```
+
+# Plot
+
+Load the package **ggplot2**
+
+```{r, eval=TRUE}
+library(ggplot2)
+```
+
+Plot your data using **geom_raster**
+
+```{r, fig.width=6, eval=TRUE}
+ggplot() +
+  geom_raster(data = SST_sub , aes(x = x, y = y, fill = SST)) +
+  theme_void()+
+  theme(legend.position='bottom')+
+  coord_sf(xlim = c(3,9), ylim = c(53,56))
+```
+
+To select different palettes explore [ggplot2 book](https://ggplot2-book.org/scales-colour). Here are some of the palette options.
+
+```{r, echo=FALSE, out.width = "80%", eval=TRUE}
+knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2025/SST/color_palettes.png?raw=true")
+```
+
+To change the color palette use **scale_fill_distiller**.
+
+```{r, fig.width=6, eval=TRUE}
+ggplot() +
+  geom_raster(data = SST_sub , aes(x = x, y = y, fill = SST)) +
+  scale_fill_distiller(palette = "YlOrBr")+
+  theme_void()+
+  theme(legend.position='bottom')+
+  xlab('Longitude')+ylab('Latitude')+
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))
+
+```
+
+Add land shapefiles to complete the map. To add shapefiles load the package **sf**.
+
+```{r, eval=TRUE}
+library(sf)
+```
+
+Use the function **st_transform** to convert to the same CRS.\
+For the exercise, use the shapefiles from the package **GermanNorthSea**
+
+```{r, eval=TRUE}
+German_land<-st_transform(GermanNorthSea::German_land, 4326)
+```
+
+Add the land to the plot using **geom_sf**.
+
+```{r, fig.width=6, eval=TRUE}
+Plot_sst<-ggplot() +
+  geom_tile(data = SST_sub , aes(x = x, y = y, fill = SST)) +
+  scale_fill_distiller(name="Sea surface temperature (°C) \nFrom 0 to 60 m depth\n(April and May montly composites)",
+                       palette = "Spectral")+
+  geom_sf(data = German_land, colour = 'black', fill = '#d5bdaf')+
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))+
+  theme_void()
+Plot_sst
+```
+
+Change a little bit the design using arguments in the **theme**.
+
+```{r, eval=TRUE}
+Plot_sst +
+  theme_void()+
+  xlab('Longitude')+ylab('Latitude')+
+  theme(legend.background = element_rect(colour = "transparent", fill = "transparent"),
+        legend.position = c(0.40,0.30),
+        panel.background = element_rect(fill = '#edede9'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+  NULL
+```
+
+```{r, echo=FALSE, eval=TRUE}
+ggsave(Plot_sst +
+  theme_void()+
+  xlab('Longitude')+ylab('Latitude')+
+  theme(legend.background = element_rect(colour = "transparent", fill = "transparent"),
+        legend.position = c(0.40,0.30),
+        panel.background = element_rect(fill = '#edede9'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+  NULL,
+       filename = paste0(this_folder,"/sst_GermanNorthSea.jpg"),
+       width = 4, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-04-15-copernicus-sst/sst_export.jpg"))
+```
+
+# Further reading
+
+-   [Examples from Copernicus](https://marine.copernicus.eu/services/user-learning-services/using-r-work-copernicus-marine-data)
+-   [How to download Copernicus marine products](https://help.marine.copernicus.eu/en/articles/4469993-how-to-download-copernicus-marine-products#h_ec9344c750)
+-   [Video Tutorials from Copernicus](https://events.marine.copernicus.eu/dataviz-webinar-series/content/replays-presentations?iw_mailid=97e89e1f-a0f9-ef11-90cb-6045bdf3a630&iw_scope=Event)
+-   Comparing with other studies palettes: [SST in the German North Sea from 2004](https://www.researchgate.net/publication/222406095_Defining_habitats_suitable_for_larval_fish_in_the_German_Bight_southern_North_Sea_An_IBM_approach_using_spatially-_and_temporally-resolved_size-structured_prey_fields)
+-   [Package GermanNorthSea](https://github.com/MiriamLL/GermanNorthSea)
+-   [Package terra](https://rspatial.github.io/terra/)
+-   [Package sf](https://r-spatial.github.io/sf/)
+
+
+# ~~~~~~~~~~~
+# 5. May: Light pollution
+# Intro
+
+The Visible Infrared Imaging Radiometer Suite (VIIRS) is aboard the joint NASA/NOAA Suomi National Polar-orbiting Partnership (Suomi NPP) and NOAA-platforms. VIIRS collects visible and infrared imagery along with global observations of Earth's land, atmosphere, cryosphere, and ocean.
+
+# Data
+
+Data are available at [Light pollution map](https://www.lightpollutionmap.info/#zoom=3.32&lat=48.8875&lon=2.7774&state=eyJiYXNlbWFwIjoiTGF5ZXJCaW5nUm9hZCIsIm92ZXJsYXkiOiJ2aWlyc18yMDE3Iiwib3ZlcmxheWNvbG9yIjpmYWxzZSwib3ZlcmxheW9wYWNpdHkiOjYwLCJmZWF0dXJlc29wYWNpdHkiOjg1fQ==).\
+- The data can be downloaded by selecting the icons of the tools, then the square, wait until information appears, then click in the download icon.
+
+To download test data in tif format [click here](https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2025/LightPollution/viirs_npp_202300b.tif).
+
+Select the directory where the information is stored, or as here, use the data directly form the repository.
+
+```{r, eval=TRUE}
+Light_pollution_tif<-'https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/LightPollution/viirs_npp_202300.tif'
+```
+
+Use the package **terra** to use the function **rast**.
+
+```{r, message=FALSE, eval=TRUE}
+library(terra)
+```
+
+The function **rast** reads your file as a formal class SpatRaster
+
+```{r, eval=TRUE}
+Light_pollution<-rast(Light_pollution_tif)
+```
+
+```{r, eval=TRUE}
+crs(Light_pollution)
+```
+
+Use **ggplot2** and **tidyterra** to create your plot.
+
+```{r, eval=TRUE}
+library(ggplot2)
+library(tidyterra)
+```
+
+```{r, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = Light_pollution) +
+  scale_fill_gradient(limits = c(0,1),low = 'black', high = '#f9c74f', 
+                      na.value = "grey93", 
+                      breaks = c(0.02,0.20, 0.40, 0.60,0.75, 0.87)
+                      )+
+  NULL
+```
+
+## Data frame
+
+To manipulate convert to data frame.
+
+```{r, eval=TRUE}
+Light_pollution_df <- as.data.frame(Light_pollution, xy = TRUE)
+beepr::beep(sound=1)
+```
+
+The function rename, allows to change the name of the column. The radiance information is in the third column.
+
+```{r, eval=TRUE}
+Light_pollution_radiance<-Light_pollution_df %>%
+  rename(radiance=3)
+```
+
+Check if the radiance values are plausible.
+
+```{r, eval=TRUE}
+range(Light_pollution_radiance$radiance)
+```
+
+### Basic plot
+
+Use the function **geom_spatraster** to plot the radiance data.
+
+```{r, fig.height=6, fig.width=6, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = Light_pollution) +
+  
+  coord_sf(xlim = c(4.5,9), ylim = c(53,56),
+           label_axes = list(top = "E", left = "N", bottom = 'E', right='N'),
+           default_crs = sf::st_crs(4326))+
+  scale_fill_gradient(name='Light pollution \n in the North Sea \n Radiance ',
+                      limits = c(0,1),
+                      low = 'black', high = '#f9c74f', 
+                      na.value = "grey93", 
+                      breaks = c(0.02,0.20, 0.40, 0.60,0.75, 0.90)
+                      )+
+  NULL
+```
+
+### Change theme
+
+Change the arguments inside **theme** to adjust the looks of your plot.
+
+```{r, fig.height=6, fig.width=6, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = Light_pollution) +
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+           label_axes = list(top = "E", left = "N", bottom = 'E', right='N'),
+           default_crs = sf::st_crs(4326))+
+  scale_fill_gradient(name='Light pollution \n in the North Sea \n Radiance ',
+                      limits = c(0,1),
+                      low = 'black', high = '#f9c74f', 
+                      na.value = "grey93", 
+                      breaks = c(0.02,0.20, 0.40, 0.60,0.75, 0.90)
+                      )+
+  theme_void()+
+    theme(legend.background = element_rect(colour = "transparent", fill = "transparent"),
+        legend.position = c(0.20,0.30),
+        panel.background = element_rect(fill = 'black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5),
+        legend.text=element_text(color='#f9c74f',size=12),
+        legend.title=element_text(color='#f9c74f',size=12))+ 
+  NULL
+```
+
+### Change fill
+
+Select some colors create a color palette.
+
+```{r, eval=TRUE}
+color_NA <-"#000000"
+color_K <-"#ffff3f"
+color_J <-"#eeef20"
+color_I <-"#dddf00"
+color_H <-"#d4d700"
+color_G <-"#bfd200"
+color_F <-"#aacc00"
+color_E <-"#80b918"
+color_D <-"#55a630"
+color_C <-"#2b9348"
+color_B <-"#007f5f"
+color_A <-"#548c2f"
+your_palette<-c(color_NA,color_A,color_B,color_C,color_D,color_E,color_F,color_G,color_H,color_I,color_J,color_K)
+```
+
+Include **scale_fill_gradientn** to use the color palette.
+
+```{r, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = Light_pollution) +
+ 
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+           label_axes = list(top = "E", left = "N", bottom = 'E', right='N'),
+           default_crs = sf::st_crs(4326))+
+ 
+  theme_void()+
+    theme(legend.background = element_rect(colour = "transparent", fill = "transparent"),
+        legend.position = c(0.20,0.30),
+        panel.background = element_rect(fill = 'black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5),
+        legend.text=element_text(color='#f9c74f',size=12),
+        legend.title=element_text(color='#f9c74f',size=12))+
+  
+  scale_fill_gradientn(name='Light pollution \n in the North Sea \n Radiance ',
+                      limits = c(0,1),
+                      colours = your_palette,
+                      na.value = "grey93", 
+                      breaks = c(0.02,0.20, 0.40, 0.60,0.75, 0.90)
+                      )+
+  NULL
+```
+
+### Add text
+
+Add text using the function **annotate** for reference.
+
+```{r, fig.height=4, fig.width=4, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = Light_pollution) +
+ 
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+           label_axes = list(top = "E", left = "N", bottom = 'E', right='N'),
+           default_crs = sf::st_crs(4326))+
+ 
+  theme_void()+
+    theme(legend.background = element_rect(colour = "transparent", fill = "transparent"),
+        legend.position = c(0.20,0.30),
+        panel.background = element_rect(fill = 'black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5),
+        legend.text=element_text(color='#f9c74f',size=12),
+        legend.title=element_text(color='#f9c74f',size=12))+
+  
+  scale_fill_gradientn(name='Light pollution \n in the North Sea \n Radiance ',
+                      limits = c(0,1),
+                      colours = your_palette,
+                      na.value = "grey93", 
+                      breaks = c(0.02,0.20, 0.40, 0.60,0.75, 0.90)
+                      )+
+annotate("text", x = 7.885143539318454-1.6, y = 54.181291760152874,
+           label = "Helgoland",size=5,color='#d6d6d6',hjust = 0)
+```
+
+```{r, echo=FALSE, eval=TRUE}
+ggsave(ggplot() +
+  geom_spatraster(data = Light_pollution) +
+ 
+  coord_sf(xlim = c(3,9), ylim = c(53,56),
+           label_axes = list(top = "E", left = "N", bottom = 'E', right='N'),
+           default_crs = sf::st_crs(4326))+
+ 
+  theme_void()+
+    theme(legend.background = element_rect(colour = "transparent", fill = "transparent"),
+        legend.position = c(0.20,0.30),
+        panel.background = element_rect(fill = 'black'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5),
+        legend.text=element_text(color='#f9c74f',size=12),
+        legend.title=element_text(color='#f9c74f',size=12))+
+  
+  scale_fill_gradientn(name='Light pollution \n in the North Sea \n Radiance ',
+                      limits = c(0,1),
+                      colours = your_palette,
+                      na.value = "grey93", 
+                      breaks = c(0.02,0.20, 0.40, 0.60,0.75, 0.90)
+                      )+
+  annotate("text", x = 7.885143539318454-1.6, y = 54.181291760152874,
+           label = "Helgoland",size=5,color='#d6d6d6',hjust = 0),
+       filename = paste0(your_folder,"/radiance_GermanNorthSea.jpg"),
+       width = 4, 
+       height = 4, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-05-05-lightpollution/radiance_export.jpg"))
+```
+
+
+# Further read
+
+-   Package [Tidyterra](https://dieghernan.r-universe.dev/articles/tidyterra/welcome.html)\
+-   [Viirs](https://www.sciencedirect.com/topics/earth-and-planetary-sciences/viirs)\
+-   [Virrs Mission](https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/viirs/)\
+-   [Dark Sky](https://darksky.org/news/eyes-in-the-sky-exploring-global-light-pollution-with-satellite-maps/)\
+-   [Blue Marble](https://blue-marble.de/nightlights/)\
+-   [Global atlas of artifical light](https://online.ucpress.edu/elementa/article/9/1/00049/119144/A-global-atlas-of-artificial-light-at-night-under)
+
+
+# ~~~~~~~~~~~
+# 6. June: Shipping
+
+# Intro
+
+The Vessel Density maps in the EU are created since the 2019 by Cogea for the European Marine Observation and Data Network [EMODnet](https://emodnet.ec.europa.eu/geoviewer/#!/). The dataset is updated every year and is available for viewing and download on EMODnet Human Activities web portal (<https://emodnet.ec.europa.eu/en/human-activities>).\
+The maps are based on AIS data yearly purchased from Collecte Localisation Satellites (CLS) and ORBCOMM. The maps, GeoTIFF format, show shipping density in 1x1km cells of a grid covering all EU waters and some neighbouring areas.\
+Density is expressed as hours per square kilometre per month. The following ship types are available:0 Other, 1 Fishing, 2 Service, 3 Dredging or underwater ops, 4 Sailing, 5 Pleasure Craft, 6 High speed craft, 7 Tug and towing, 8 Passenger, 9 Cargo, 10 Tanker, 11 Military and Law Enforcement, 12 Unknown and All ship types.\
+Data are available by month of year. Yearly averages are also available.
+
+## Data
+
+To download go to [EMODnet Map Viewer](https://emodnet.ec.europa.eu/geoviewer/) \> Catalogue \> EMODnet Human Activities \> Vessel density \> Monthly totals 2017-2023 \> All Types \> Click on the "i" icon \> Select Download.
+
+A zip file named "EMODnet_HA_Vessel_Density_all_2017-2023 would be downloaded. For the period of December 2023, the raster information is under **vesseldensity_all_20231201.tif**.
+
+## Load
+
+To download test data in tif format [click here](https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/ShippingTraffic/ShippingTraffic_crop.tif).
+
+Use the package **terra** to use the function **rast**.
+
+```{r, message=FALSE, eval=TRUE}
+library(terra)
+```
+
+The function **rast** reads your file as a formal class SpatRaster. Here I am using the file directly from the repository.
+
+```{r, eval=TRUE}
+ShippingTraffic_tif<-'https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/ShippingTraffic/ShippingTraffic_crop.tif'
+```
+
+```{r, eval=TRUE}
+ShippingTraffic<-rast(ShippingTraffic_tif)
+```
+
+```{r, eval=TRUE}
+crs(ShippingTraffic)
+```
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+ggplot2::ggplot() +
+  tidyterra::geom_spatraster(data = ShippingTraffic) +
+  NULL
+```
+
+## Data frame
+
+```{r, message=FALSE, eval=TRUE}
+library(tidyverse)
+```
+
+```{r, eval=TRUE}
+ShippingTraffic_df <- as.data.frame(ShippingTraffic, xy = TRUE)
+beepr::beep(sound=1)
+```
+
+The function rename, allows to change the name of the column. The density information is in the third column.
+
+```{r, eval=TRUE}
+ShippingTraffic_df<-ShippingTraffic_df %>%
+  rename(vessel_density=3)
+```
+
+Check if the density values are plausible.
+
+```{r, eval=TRUE}
+range(ShippingTraffic_df$vessel_density)
+```
+
+Values distribution
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+hist(ShippingTraffic_df$vessel_density)
+```
+
+```{r, echo=TRUE, eval=TRUE}
+ShippingTraffic_class<-ShippingTraffic_df %>%
+ mutate(
+    density_class = case_when(
+      vessel_density <= 0  ~ "class_A_0",
+      vessel_density > 0 &  vessel_density < 1 ~ "class_A_0_1",
+      vessel_density > 1 &  vessel_density < 2 ~ "class_A_1_2",
+      vessel_density > 2 &  vessel_density < 3 ~ "class_A_2_3",
+      vessel_density > 3 &  vessel_density < 4 ~ "class_A_3_4",
+      vessel_density > 4 &  vessel_density < 5 ~ "class_A_4_5",
+      vessel_density > 5 &  vessel_density < 6 ~ "class_A_5_6",
+      vessel_density > 6 &  vessel_density < 7 ~ "class_A_6_7",
+      vessel_density > 7 &  vessel_density < 8 ~ "class_A_7_8",
+      vessel_density > 8 &  vessel_density < 9 ~ "class_A_8_9",
+      vessel_density > 9 &  vessel_density < 10 ~ "class_A_9_10",
+      
+      vessel_density >= 10 &  vessel_density < 100 ~ "class_B_10_100",
+      vessel_density >= 100 &  vessel_density < 1000 ~ "class_C_100_1000",
+      vessel_density >= 1000 &  vessel_density < 10000 ~ "class_D_1000_10000",
+      vessel_density >= 10000 &  vessel_density < 100000 ~ "class_E_10000_100000",
+      TRUE  ~ "unknown"
+    ))
+```
+
+The majority of values are between 0 and 1
+
+```{r, echo=FALSE, eval=TRUE}
+knitr::kable(ShippingTraffic_class %>%
+  group_by(density_class)%>%
+  tally())
+```
+
+## Select area
+
+Use the function **geom_spatraster** to plot the vessel density data.
+
+```{r, eval=TRUE}
+library(tidyterra)
+```
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = ShippingTraffic)
+```
+
+## Land
+
+Add land for reference using **geom_sf** and the package **GermanNorthSea**.
+
+```{r, echo=TRUE, eval=TRUE}
+install.packages("devtools")
+devtools::install_github("MiriamLL/GermanNorthSea")
+library(GermanNorthSea)
+```
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+ShippingTraffic_01plot<-ggplot() +
+  geom_spatraster(data = ShippingTraffic) +
+  geom_sf(data = GermanNorthSea::German_EEZ, color='grey',fill='transparent',alpha=0.1, size = 1)+
+  geom_sf(data = GermanNorthSea::German_land, colour = 'black', fill = '#e5e5e5')+
+  coord_sf(xlim = c(3820000,4250000), ylim = c(3370000,3660000),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))
+ShippingTraffic_01plot
+```
+
+## Theme
+
+Change background colors using the arguments on theme.
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+ShippingTraffic_02plot<-ShippingTraffic_01plot+
+  theme_void()+
+    theme(panel.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA, size=1.5))
+ShippingTraffic_02plot
+```
+
+## Gradient colors
+
+Low traffic
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+LowShippingTraffic_03plot<-ShippingTraffic_02plot+
+    
+  scale_fill_gradientn(name='Low Vessel density \n Dec 2023',
+                      na.value = "transparent", 
+                      colours = palette_yellow<-c("#ffff3f","#eeef20","#dddf00","#d4d700","#bfd200","#aacc00","#80b918","#55a630","#2b9348","#007f5f"),
+                      limits = c(0.00001,10),
+                      breaks = c(2,4,6,8,10),
+                      )
+LowShippingTraffic_03plot
+```
+
+Medium traffic
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+MediumShippingTraffic_04plot<-ShippingTraffic_02plot+
+  
+    scale_fill_gradientn(name='Medium Vessel density \n Dec 2023',
+                      na.value = "transparent", 
+                      colours = palette_green<-c("#d8f3dc","#b7e4c7","#95d5b2","#74c69d","#52b788","#40916c","#2d6a4f","#1b4332","#081c15"),
+                      limits = c(5,100),
+                      breaks = c(5,20,40,60,80,100),
+                      )
+MediumShippingTraffic_04plot  
+```
+
+High traffic
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+HighShippingTraffic_06plot<-ShippingTraffic_02plot+
+  scale_fill_gradientn(name='High Vessel density \n Dec 2023 \n (hrs per km2)',
+                      na.value = "transparent", 
+                      colours = palette_red<-c("#e01e37","#da1e37","#c71f37","#bd1f36","#b21e35","#a71e34","#a11d33","#85182a","#6e1423","#641220"),
+                      limits = c(100,30000),
+                      breaks = c(0,1000,10000,20000,30000),
+                      )
+HighShippingTraffic_06plot
+```
+
+## Palette
+
+```{r, eval=TRUE}
+your_palette<-c("transparent", "#d8f3dc",
+                "#b7e4c7","#95d5b2","#74c69d","#52b788","#aacc00",
+                "#bfd200","#d4d700","#dddf00","#eeef20","#ffff3f", 
+                "#e01e37","#da1e37","#c71f37", "#bd1f36","#b21e35",
+                "#a71e34","#a11d33","#85182a","#6e1423","#641220")
+```
+
+Use **scale_fill_gradientn** and **rescale** to adjust the palette and the legend
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+ShippingTraffic_07plot<-ShippingTraffic_02plot+
+  
+  scale_fill_gradientn(name='Vessel density \n Dec 2023 \n hrs per km2',
+                      na.value = "transparent", 
+                      colours = your_palette,
+                      limits = c(0,30000),
+                      breaks = c(0.05,0.1,0.2,0.5,2,5,10,20,100,1000),
+                      values = scales::rescale(c(0,0.01,0.05,0.1,0.2,0.5,2,5,10,20,100,1000)), 
+                      guide = "legend"
+                      )
+ShippingTraffic_07plot
+```
+
+Use **labels** inside scale_fill_gradient to make the legend more legible
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+ShippingTraffic_08plot<-ShippingTraffic_02plot+
+  scale_fill_gradientn(name='Vessel density \n Dec 2023 \n hrs per km2',
+                      na.value = "transparent", 
+                      colours = your_palette,
+                      limits = c(0,30000),
+                      breaks = c(0.05,0.1,0.2,0.5,2,5,10,20,100,1000),
+                      values = scales::rescale(c(0,0.01,0.05,0.1,0.2,0.5,2,5,10,20,100,1000)), 
+                      guide = "legend",
+                      labels = c("0 - 0.05","> 0.1","> 0.2","> 0.5","> 2","> 5","> 10","> 20", "> 100","> 1,000") )
+ShippingTraffic_08plot
+```
+
+Include the legend inside the plot and change the theme, also change panel.background
+
+```{r, fig.height=5, fig.width=5, eval=TRUE}
+ShippingTraffic_09plot<-ShippingTraffic_08plot+
+  theme(legend.position = c(0.20,0.50),
+          legend.background = element_rect(colour = FALSE, fill = FALSE),
+          legend.title=element_text(color='black',size=16),
+          legend.text=element_text(color='black',size=12),
+          legend.key = element_rect(colour = 'transparent', fill = 'transparent'),
+          legend.key.height = unit(3, "mm"))
+ShippingTraffic_09plot
+```
+
+# Overall
+
+All steps together, and additionally adding protected areas.
+
+```{r, fig.height=10, fig.width=10, eval=TRUE}
+ggplot() +
+  geom_spatraster(data = ShippingTraffic) +
+  geom_sf(data = GermanNorthSea::German_EEZ, color='black',fill='transparent',alpha=0.1, size = 1, linewidth=1)+
+  geom_sf(data = GermanNorthSea::German_land, colour = 'black')+
+  
+  geom_sf(data = GermanNorthSea::German_SCA, colour = 'black', fill = "transparent", linewidth=1, linetype = "dashed")+
+  geom_sf(data = GermanNorthSea::German_natura, colour = 'black', fill = "transparent", linewidth=1, linetype = "dashed")+
+  
+  coord_sf(xlim = c(3820000,4250000), ylim = c(3370000,3660000),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))+
+  theme_void()+
+    theme(
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+  
+  scale_fill_gradientn(name="Vessel density \n Inside Germany's EEZ \n Dec 2023 \n hrs per km2",
+                      na.value = "transparent", 
+                      colours = your_palette,
+                      limits = c(0,30000),
+                      breaks = c(0.05,0.1,0.2,0.5,2,5,10,20,100,1000),
+                      values = scales::rescale(c(0,0.01,0.05,0.1,0.2,0.5,2,5,10,20,100,1000)), 
+                      guide = "legend",
+                      labels = c("0 - 0.05","> 0.1","> 0.2","> 0.5","> 2","> 5","> 10","> 20", "> 100","> 1,000"))+
+  
+  theme(legend.position = c(0.15,0.50),
+          legend.background = element_rect(colour = FALSE, fill = FALSE),
+          legend.title=element_text(color='black',size=16),
+          legend.text=element_text(color='black',size=14),
+          legend.key = element_rect(colour = 'transparent', fill = 'transparent'),
+          legend.key.height = unit(8, "mm"))+
+  
+  annotate("segment", x = 3812000, xend = 3833000,y = 3400000, yend = 3400000, 
+           colour = "black", size=0.8, linetype = "solid")+
+  annotate("text", x = 3835000, y = 3400000, colour = "black", label = "Economic Exclusive Zone (EEZ)", size=6, hjust=0)+
+
+  annotate("segment", x = 3812000, xend = 3833000,y = 3380000, yend = 3380000, 
+           colour = "black", size=0.8, linetype = "dashed")+
+  annotate("text", x = 3835000, y = 3380000, colour = "black", label = "Protected Areas", size=6, hjust=0)+
+  NULL
+```
+
+```{r, echo=FALSE, eval=TRUE}
+your_folder<-paste0(here::here(),"/Blog/2025/2025-06-02-shippingtraffic")
+ggsave(ggplot() +
+  geom_spatraster(data = ShippingTraffic) +
+  geom_sf(data = GermanNorthSea::German_EEZ, color='black',fill='transparent',alpha=0.1, size = 1, linewidth=1)+
+  geom_sf(data = GermanNorthSea::German_land, colour = 'black')+
+  
+  geom_sf(data = GermanNorthSea::German_SCA, colour = 'black', fill = "transparent", linewidth=1, linetype = "dashed")+
+  geom_sf(data = GermanNorthSea::German_natura, colour = 'black', fill = "transparent", linewidth=1, linetype = "dashed")+
+  
+  coord_sf(xlim = c(3820000,4250000), ylim = c(3370000,3660000),
+                    label_axes = list(top = "E", left = "N", bottom = 'E', right='N'))+
+  theme_void()+
+    theme(
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1.5))+
+  
+  scale_fill_gradientn(name="Vessel density \n Inside Germany's EEZ \n Dec 2023 \n hrs per km2",
+                      na.value = "transparent", 
+                      colours = your_palette,
+                      limits = c(0,30000),
+                      breaks = c(0.05,0.1,0.2,0.5,2,5,10,20,100,1000),
+                      values = scales::rescale(c(0,0.01,0.05,0.1,0.2,0.5,2,5,10,20,100,1000)), 
+                      guide = "legend",
+                      labels = c("0 - 0.05","> 0.1","> 0.2","> 0.5","> 2","> 5","> 10","> 20", "> 100","> 1,000"))+
+  
+  theme(legend.position = c(0.15,0.50),
+          legend.background = element_rect(colour = FALSE, fill = FALSE),
+          legend.title=element_text(color='black',size=16),
+          legend.text=element_text(color='black',size=14),
+          legend.key = element_rect(colour = 'transparent', fill = 'transparent'),
+          legend.key.height = unit(8, "mm"))+
+  
+  annotate("segment", x = 3812000, xend = 3833000,y = 3400000, yend = 3400000, 
+           colour = "black", size=0.8, linetype = "solid")+
+  annotate("text", x = 3835000, y = 3400000, colour = "black", label = "Economic Exclusive Zone (EEZ)", size=6, hjust=0)+
+
+  annotate("segment", x = 3812000, xend = 3833000,y = 3380000, yend = 3380000, 
+           colour = "black", size=0.8, linetype = "dashed")+
+  annotate("text", x = 3835000, y = 3380000, colour = "black", label = "Protected Areas", size=6, hjust=0)+
+  NULL,
+       filename = paste0(your_folder,"/VesselDensity_GermanNorthSea.jpg"),
+       width = 10, 
+       height =10, 
+       units = "in",
+       dpi = 300)
+```
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-06-02-shippingtraffic/shipping_export.jpg"))
+```
+
+# Further reading
+
+Another potential way to evaluate shipping traffic is to obtain information from vessel traffic density such as in [Womersley 2022](https://www.pnas.org/doi/10.1073/pnas.2117440119). In this paper, gridded products were **purchased** from Exact Earth (<https://www.exactearth.com>) for the years of 2011 to 2014 at 0.25° × 0.25° grid cell resolution.
+
+[Spire maritime](https://spire.com/maritime/?utm_campaign=maritime_2022_exactearth_redirect&utm_source=exactearth&utm_medium=website&utm_content=homepage) also provides this information if [purchased](https://spire.com/maritime/use-cases/environmental-protection/).
+
+[Marine traffic](marinetraffic.com) is also an interesting page to visit.
+
+For the legend inspiration comes from [Global Marine Traffic](https://globalmaritimetraffic.org/gmtds.html).
+
+
+# ~~~~~~~~~~~
+# 7. July: OWF
+# Intro
+
+An Offshore Wind Farm (OWF) is defined as a group of wind turbines placed in the ocean to generate electricity using the power of the wind.\
+- Wind turbines are installed on foundations anchored to the seabed (or floating, in deeper waters).\
+- Blades spin when the wind blows, turning a generator.\
+- The electricity generated is sent back to land through underwater power cables.\
+- Offshore wind farms have high upfront costs and engineering complexity, produce visual and noise problems, and might have an impact on marine ecosystems and birds.
+
+<html>
+
+<body><left> <img src="https://github.com/MiriamLL/data_supporting_webpage/blob/main/Blog/2025/OWF/Alpha_Ventus_Windmills_wikipedia.JPG?raw=true" style="width:450px"/></a> </left></body>
+
+</html>
+
+Alpha Ventus Windmills\
+Source: Wikipedia
+
+# Data
+
+**EMODnet** is a European initiative that provides free, open-access data on the marine environment of Europe. It’s designed to support marine research, policy-making, and sustainable ocean development by making reliable marine data easily available.
+
+To download the original data go to [EMODnet](https://www.emodnet-humanactivities.eu/view-data.php). Select [human activities](https://www.emodnet-humanactivities.eu/search-results.php?dataname=Wind+Farms+%28Polygons%29).
+
+# Packages
+
+To visualize the data we first need to load some packages.
+
+```{r, eval=TRUE}
+library(ggplot2)
+library(tidyverse)
+```
+
+In the package GermanNorthSea, the information provided by EMODnet and GeoSeaPortal is included for easy access. If you don't have the package you can install it by using devtools::install_github("MiriamLL/GermanNorthSea").
+
+```{r, eval=TRUE}
+library(GermanNorthSea)
+```
+
+# Visualize
+
+### Wind farms
+
+Load the data from the package or from your file.
+
+```{r, eval=TRUE}
+OWF_EMODnet<-GermanNorthSea::OWF_EMODnet
+```
+
+Use ggplot to visualize the OWF.
+
+```{r, eval=TRUE}
+ggplot(OWF_EMODnet)+  
+  geom_sf(data = OWF_EMODnet,  colour = NA,fill= "black",alpha=1, size=1,linetype="dashed")
+```
+
+Add other layers to have a reference. The additional shapes are also part of the package GermanNorthSea.
+
+```{r, eval=TRUE}
+ggplot(OWF_EMODnet) + # Gives CRS
+  
+  # Fill colors
+  geom_sf(data = GermanNorthSea::German_EEZ, colour = "black", fill= '#56C1D5', lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_natura, colour = 'transparent', fill= '#84a98c', alpha=0.5,lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_SCA, colour = 'transparent', fill= '#84a98c', alpha=0.5,lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_land, colour = '#9a8c98', fill = '#9a8c98')+
+ 
+  # Line colors
+  geom_sf(data = GermanNorthSea::German_EEZ, colour = "black", fill= NA, lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_coast, colour = "black", fill= NA,alpha=0.9, lwd = 0.5,linetype="dashed")+
+  geom_sf(data = GermanNorthSea::German_land, colour = '#9a8c98', fill = '#9a8c98')+
+  
+  # OWF
+  geom_sf(data = OWF_EMODnet,  colour = NA,fill= "#bb3e03",alpha=0.9, size=1,linetype="dashed")+  
+  coord_sf(xlim = c(3900000,4250000), ylim = c(3350000,3680000),
+                    label_axes = list(left = "N", bottom = 'E'))
+```
+
+## Status
+
+In the context of Offshore Wind Farms (OWF), the terms “Production”, “Approved”, and “Planned” refer to the development status or stage of a wind farm project.\
+- Production is when the wind farm is fully built and actively generating electricity;\
+- Approved is when the wind farm project has received all the necessary legal and environmental permits from authorities but construction has not yet started; and\
+- Planned is when the wind farm is in the early stages of development, often proposed or under review, but not yet approved.
+
+```{r, eval=TRUE}
+unique(OWF_EMODnet$STATUS)
+```
+
+To only use active OWF the best is to filter using the status and selecting Production.
+
+```{r, eval=TRUE}
+OWF_Production<-OWF_EMODnet%>%
+  filter(STATUS == 'Production')
+```
+
+We can also filter the information by using year. Here, we can see that data includes OWF from 2009 to 2020.
+
+```{r, eval=TRUE}
+unique(OWF_Production$YEAR)
+```
+
+Here, lets separate those OWF before 2016 from the ones after.
+
+```{r, eval=TRUE}
+OWF_Before2016<-OWF_Production %>%
+  filter(YEAR <= 2016)
+```
+
+```{r, eval=TRUE}
+OWF_After2016<-OWF_Production %>%
+  filter(YEAR > 2016)
+```
+
+Plot using different colors for OWF before 2016 and after 2016.
+
+```{r, fig.height=8, fig.width=8, eval=TRUE}
+OWF_1plot<-ggplot(OWF_EMODnet) + # Gives CRS
+  
+  # Fill colors
+  geom_sf(data = GermanNorthSea::German_EEZ, colour = "black", fill= '#56C1D5', lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_natura, colour = 'transparent', fill= '#84a98c', alpha=0.5,lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_SCA, colour = 'transparent', fill= '#84a98c', alpha=0.5,lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_land, colour = '#9a8c98', fill = '#9a8c98')+
+ 
+  # Line colors
+  geom_sf(data = GermanNorthSea::German_EEZ, colour = "black", fill= NA, lwd = 0.5)+
+  geom_sf(data = GermanNorthSea::German_coast, colour = "black", fill= NA,alpha=0.9, lwd = 0.5,linetype="dashed")+
+  geom_sf(data = GermanNorthSea::German_land, colour = '#9a8c98', fill = '#9a8c98')+
+
+  ## OWF
+  geom_sf(data = OWF_After2016,  colour = NA,fill= "#bb3e03",alpha=0.9, size=1,linetype="dashed")+  
+  geom_sf(data = OWF_Before2016,  colour = "#ffb703",fill= "#ffb703",alpha=0.9, size=1)+ 
+  
+  
+  coord_sf(xlim = c(3900000,4250000), ylim = c(3350000,3680000),
+                    label_axes = list(left = "N", bottom = 'E'))
+OWF_1plot
+```
+
+## Names
+
+There is an option using [ggrepel](https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html), but here I manually include names of the OWF using **annotation**.
+
+First, create a data frame with the coordinates and the segment.
+
+```{r, eval=TRUE}
+Labels<-data.frame(text_x=c(4010000,4010000,4141000,4179000,4211000,4211000,4211000,4010000,4010000,4010000,4010000),
+           text_y= c(3479000,3494000,3605000,3585000,3494000,3486000,3478000,3449000,3439000,3429000,3405000),
+           text_label=c("BARD","GTI","DT","BT","AMW","NSO","MSO","TRI","AV","BR","RG"),
+           segment_xstart=c(4020000,4018000,4141000,4179000,4178000,4177000,4178000,4020000,4020000,4020000,4020000),
+           segment_xend=c(4055000,4081000,4141000,4179000,4201000,4201000,4201000,4083000,4097000,4089000,4085000),
+           segment_ystart=c(3479000,3494000,3578000,3558000,3492000,3486000,3479000,3444000,3439000,3435000,3405000),
+           segment_yend=c(3479000,3494000,3594000,3574000,3492000,3486000,3479000,3444000,3439000,3435000,3405000)
+)
+```
+
+Then add it one by one to the plot. You can skip this step if you dont need the names.
+
+```{r, fig.height=6, fig.width=8, eval=TRUE}
+OWF_2plot<-OWF_1plot + 
+  #BARD
+  annotate("text", x = Labels$text_x[1], y = Labels$text_y[1], label = Labels$text_label[1],size=3)+
+  annotate("segment", x = Labels$segment_xstart[1], xend = Labels$segment_xend[1],
+           y = Labels$segment_ystart[1], yend = Labels$segment_yend[1],colour = "black")+
+  #GTI
+  annotate("text", x = Labels$text_x[2], y = Labels$text_y[2], label = Labels$text_label[2],size=3)+
+  annotate("segment", x = Labels$segment_xstart[2], xend = Labels$segment_xend[2],
+           y = Labels$segment_ystart[2], yend = Labels$segment_yend[2],colour = "black")+
+  #Dan Tysk
+  annotate("text", x = Labels$text_x[3], y = Labels$text_y[3], label = Labels$text_label[3],size=3)+
+  annotate("segment", x = Labels$segment_xstart[3], xend = Labels$segment_xend[3],
+           y = Labels$segment_ystart[3], yend = Labels$segment_yend[3],colour = "black")+
+  #Butendiek
+  annotate("text", x = Labels$text_x[4], y = Labels$text_y[4], label = Labels$text_label[4],size=3)+
+  annotate("segment", x = Labels$segment_xstart[4], xend = Labels$segment_xend[4],
+           y = Labels$segment_ystart[4], yend = Labels$segment_yend[4],colour = "black")+
+  #Amrum bank west
+  annotate("text", x = Labels$text_x[5], y = Labels$text_y[5], label = Labels$text_label[5],size=3)+
+  annotate("segment", x = Labels$segment_xstart[5], xend = Labels$segment_xend[5],
+           y = Labels$segment_ystart[5], yend = Labels$segment_yend[5],colour = "black")+
+  # NSO
+  annotate("text", x = Labels$text_x[6], y = Labels$text_y[6], label = Labels$text_label[6],size=3)+
+  annotate("segment", x = Labels$segment_xstart[6], xend = Labels$segment_xend[6],
+           y = Labels$segment_ystart[6], yend = Labels$segment_yend[6],colour = "black")+
+  # MSO
+  annotate("text", x = Labels$text_x[7], y = Labels$text_y[7], label = Labels$text_label[7],size=3)+
+  annotate("segment", x = Labels$segment_xstart[7], xend = Labels$segment_xend[7],
+           y = Labels$segment_ystart[7], yend = Labels$segment_yend[7],colour = "black")+
+  # TRI
+  annotate("text", x = Labels$text_x[8], y = Labels$text_y[8], label = Labels$text_label[8],size=3)+
+  annotate("segment", x = Labels$segment_xstart[8], xend = Labels$segment_xend[8],
+           y = Labels$segment_ystart[8], yend = Labels$segment_yend[8],colour = "black")+
+  # AV
+  annotate("text", x = Labels$text_x[9], y = Labels$text_y[9], label = Labels$text_label[9],size=3)+
+  annotate("segment", x = Labels$segment_xstart[9], xend = Labels$segment_xend[9],
+           y = Labels$segment_ystart[9], yend = Labels$segment_yend[9],colour = "black")+
+  # BR
+  annotate("text", x = Labels$text_x[10], y = Labels$text_y[10], label = Labels$text_label[10],size=3)+
+  annotate("segment", x = Labels$segment_xstart[10], xend = Labels$segment_xend[10],
+           y = Labels$segment_ystart[10], yend = Labels$segment_yend[10],colour = "black")+
+  # RG
+  annotate("text", x = Labels$text_x[11], y = Labels$text_y[11], label = Labels$text_label[11],size=3)+
+  annotate("segment", x = Labels$segment_xstart[11], xend = Labels$segment_xend[11],
+           y = Labels$segment_ystart[11], yend = Labels$segment_yend[11],colour = "black")+
+  NULL
+OWF_2plot
+```
+
+## Theme
+
+To reduce noise from the grid, the background colors and the labels, give elements in the theme().
+
+```{r, fig.height=6, fig.width=8, eval=TRUE}
+OWF_3plot<-OWF_2plot + 
+  scale_x_continuous(breaks = c(4,6,8),labels = function(x) paste0(x, '\u00B0')) +
+  scale_y_continuous(breaks = c(53.5,54.5,55.5),labels = function(x) paste0(x, '\u00B0'))  +
+  
+  theme(
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(fill = '#AFDEE8'),
+  panel.border = element_rect(colour = "black", fill=NA, size=1.5),
+  
+  axis.text.x = element_text(size=10,vjust = 12,color='#3d5a80'),
+  axis.text.y = element_text(color='#3d5a80',size=10,margin = margin(0,-1.30,0,1, unit = 'cm')),
+  axis.title = element_blank(),
+  axis.ticks.length=unit(-0.20, "cm"),
+  
+  legend.position='none',
+  legend.spacing.y = unit(0.05, 'cm'),
+  legend.text=element_text(size=10),
+  legend.background = element_rect(fill='transparent',colour ="transparent"),
+  legend.box.background = element_rect(fill='transparent',colour ="transparent"),
+  legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  
+  NULL
+OWF_3plot
+```
+
+## Title
+
+Using the package ggtext, we can add a text with different colors.
+
+```{r, eval=TRUE}
+library(ggtext)
+```
+
+```{r, fig.height=6, fig.width=8, eval=TRUE}
+OWF_3plot +
+  geom_richtext(aes(x =  3895000, y = 3669000,
+  label = "Offshore Wind farms in production
+  <span style='color:#ffb400'>from 2009 to 2016</span>
+  and
+  <span style='color:#bb3e03'>from 2017 to 2020</span>"), 
+  size=4, 
+  fill = NA, 
+  label.color = NA, # remove background and outline
+  hjust = 0,
+  vjust= 0,
+  inherit.aes = TRUE
+  )+
+  NULL
+```
+
+```{r, echo=FALSE, eval=TRUE}
+# Export
+library(here)
+here()
+My_directory<-paste0(here(),"/Blog/2025/2025-07-15-owf")
+ggsave(OWF_3plot +
+  geom_richtext(aes(x =  3895000, y = 3669000,
+  label = "Offshore Wind farms in production
+  <span style='color:#ffb400'>from 2009 to 2016</span>
+  and
+  <span style='color:#bb3e03'>from 2017 to 2020</span>"), 
+  size=4, 
+  fill = NA, 
+  label.color = NA, # remove background and outline
+  hjust = 0,
+  vjust= 0,
+  inherit.aes = TRUE
+  )+
+  NULL,filename = paste0(My_directory,"/OWF.jpeg"),
+       width = 8, 
+       height = 6)
+```
+
+```{r, echo=FALSE, out.width = "100%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-07-01-owf/owf_export.jpeg"))
+```
+
+# Some calculations
+
+Globally, human activities at sea are becoming more intense and diverse, and the German North Sea is no exception (Emeis et al., 2015). Offshore wind farms are an emerging concern, known to have various negative impacts on marine mammals (Dähne et al., 2013; Kastelein et al., 2016; Brandt et al., 2018) as well as on birds (Drewitt and Langston, 2006; Dierschke et al., 2016; Garthe et al., 2023).
+
+Before 2016, from 2009 to 2016 there was a total area covered of: 368.6957
+
+```{r, eval=TRUE}
+sum(OWF_Before2016$AREA_SQKM)
+```
+
+After 2016, from 2017 to 2020, the area covered was: 374.8699
+
+```{r, eval=TRUE}
+sum(OWF_After2016$AREA_SQKM)
+```
+
+In just four years, more area was developed for offshore wind farms than in the whole seven years before.
+
+```{r, eval=TRUE}
+(sum(OWF_After2016$AREA_SQKM)*100)/
+  (sum(OWF_Before2016$AREA_SQKM,OWF_After2016$AREA_SQKM))
+```
+
+
+# Additional information
+
+**Alternative data sources** <br>
+
+**GeoSeaPortal** is a platform that gives people access to maps and data about Germany’s seas and coasts. It brings together information from different sources into one system, making it easier to find, view, and use the data. To download the original data go to [GeoSeaPortal](https://gdi.bsh.de/mapapps/resources/apps/meeresnutzung/index.html?lang=de). The zip contains several shapefiles including ‘OffshoreWindEnergy’
+
+**OSPAR** also makes shapefiles [easily accesible](https://odims.ospar.org/en/submissions/ospar_offshore_installations_2021_02/)
+
+**References**:
+
+-   [Maritime spatial planning](https://www.bsh.de/EN/TOPICS/Offshore/Maritime_spatial_planning/maritime_spatial_planning_node.html)
+-   [4C Offshore](https://map.4coffshore.com/offshorewind/)
+-   [Wikimedia](https://upload.wikimedia.org/wikipedia/commons/a/a1/Map_of_the_offshore_wind_power_farms_in_the_German_Bight.png)
+
+**Publications**:
+
+Brandt, M. J., Dragon, A. C., Diederichs, A., Bellmann, M. A., Wahl, V., Piper, W., Nabe-Nielsen, J. and Nehls, G. 2018. Disturbance of harbour porpoises during construction of the first seven offshore wind farms in Germany. – Mar. Ecol. Prog. Ser. 596: 213–232. [Link](https://doi.org/10.3354/meps12560)
+
+Dähne, M., Gilles, A., Lucke, K., Peschko, V., Adler, S., Krügel, K., Sundermeyer, J. and Siebert, U. 2013. Effects of pile-driving on harbour porpoises (Phocoena phocoena) at the first offshore wind farm in Germany. – Environ. Res. Lett. [Link](https://doi.org/10.1088/1748-9326/8/2/025002).
+
+Dierschke, V., Furness, R. W. and Garthe, S. 2016. Seabirds and offshore wind farms in European waters: Avoidance and attraction. – Biol. Conserv. 202: 59–68. [Link](http://dx.doi.org/10.1016/j.biocon.2016.08.016)
+
+Drewitt, A. L. and Langston, R. H. W. 2006. Assessing the impacts of wind farms on birds. – Ibis 148: 29–42. [Link](10.1111/j.1474-919X.2006.00516.x)
+
+Emeis, K. C., van Beusekom, J., Callies, U., Ebinghaus, R., Kannen, A., Kraus, G., Kröncke, I., Lenhart, H., Lorkowski, I., Matthias, V., Möllmann, C., Pätsch, J., Scharfe, M., Thomas, H., Weisse, R. and Zorita, E. 2015. The North Sea - A shelf sea in the Anthropocene. – J. Mar. Syst. 141: 18–33. [Link](http://dx.doi.org/10.1016/j.jmarsys.2014.03.012)
+
+Garthe, S., Schwemmer, H., Peschko, V., Markones, N., Müller, S., Schwemmer, P. and Mercker, M. 2023. Large-scale effects of offshore wind farms on seabirds of high conservation concern. – Sci. Rep. 13: 4779. [Link](https://doi.org/10.1038/s41598-023-31601-z)
+
+Kastelein, R. A., Helder-Hoek, L., Covi, J. and Gransier, R. 2016. Pile driving playback sounds and temporary threshold shift in harbor porpoises (Phocoena phocoena): Effect of exposure duration . – J. Acoust. Soc. Am. 139: 2842–2851. [Link](http://dx.doi.org/10.1121/1.4948571)
+
+
+# ~~~~~~~~~~~
+# 8. August: Oil
+
+# Intro
+
+In this month’s blog post, I dive into the world of oil and gas infrastructure in the German North Sea. Using openly available geospatial data from EMODnet, I downloaded and analyzed datasets related to offshore installations and pipelines. Step by step, I walk through the process of transforming raw data into a map. Creating this visualization not only helped me better understand the spatial layout of these industrial structures, but also shed light on why a particular proposed site has drawn criticism. The proximity to ecologically sensitive areas like Borkum Reef raises important questions, questions that are best understood when we can actually see the data.
+
+# Data
+
+The dataset on offshore installations for Oil and Gas exploitation and exploration activities was created in 2015 by Cogea for the European Marine Observation and Data Network (EMODnet). <br> It is the result of the aggregation and harmonization of datasets provided by several EU and non-EU sources. It is updated every year, and is available for viewing and download on EMODnet Human Activities web portal (<https://emodnet.ec.europa.eu/en/human-activities>). <br> It contains points representing offshore installations and where available each point has the following attributes: ID, name, country, location block, operator, production start year, primary production, current status, category and function of the installation, sub-structure and topside weights (tonnes), water depth (metres), distance to coast (metres) and notes. <br>
+
+To download test gas and oil data in shp format [click here](https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/Oil/EMODnet_HA_OG_Offshore_Installations_20240216.shp).
+
+To download pipelines data in shp format [click here](https://github.com/MiriamLL/data_supporting_webpage/raw/refs/heads/main/Blog/2025/Oil/EMODnet_HA_Pipelines_20230705.shp).
+
+# Oil and gas installations
+
+Once you have download the data, select the directory and file.
+
+```{r,eval=TRUE, echo=TRUE}
+library(here)
+This_directory<-here()
+```
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE, eval=TRUE}
+This_directory<-"C:/Users/lerma/OneDrive/Documents/03Academico/02Proyectos-Postdoc/2025/1Programming/1Quarto/data_supporting_webpage/Blog/2025/Oil/"
+list.files(This_directory)
+```
+
+```{r, message=FALSE, warning=FALSE, eval=TRUE}
+This_file<-paste0(This_directory,"/EMODnet_HA_OG_Offshore_Installations_20240216.shp")
+```
+
+Use the function st_read from the package sf to read shapefiles in R.
+
+```{r, eval=TRUE}
+library(sf)
+```
+
+```{r, message=FALSE, echo=FALSE, eval=TRUE}
+suppressMessages(Oil_shapefile<-st_read(This_file, quiet = TRUE))
+```
+
+```{r, message=FALSE, eval=TRUE}
+Oil_shapefile<-st_read(This_file)
+```
+
+## Map
+
+Use ggplot to visualize the information where this infrastructures occur.
+
+```{r, eval=TRUE}
+library(ggplot2)
+```
+
+```{r, eval=TRUE}
+ggplot() +
+  geom_sf(data = Oil_shapefile)
+```
+
+## Filter
+
+The OSPAR commission source covers data for Germany, Ireland, Spain (Atlantic Sea), while for Italy data have been collected and harmonized from the Italian Ministry of Economic Development, for Denmark from the Danish Energy Agency, for the Netherlands from the TNO - Geological Survey of the Netherlands, for Croatia from the Croatian Hydrocarbon Agency, for Norway from the Norwegian Petroleum Directorate, for the UK from the Oil and Gas Authority (surface infrastructures), for Polish and Russian installations in the Baltic Sea from Marine Traffic and Helcom, finally from Marine Traffic come the data for Bulgarian, Russian and Ukrainian installations in the Black Sea and for Lybian and Spanish installations in the Mediterranean Sea.<br>
+
+```{r, echo=TRUE, eval=TRUE}
+unique(Oil_shapefile$COUNTRY)
+```
+
+Load tidyverse to make a filter.
+
+```{r, message=FALSE, echo=TRUE, eval=TRUE}
+library(tidyverse)
+```
+
+Keep only Germany data.
+
+```{r, message=FALSE, echo=TRUE, eval=TRUE}
+Oil_germany<-Oil_shapefile %>%
+  filter(COUNTRY == 'Germany')
+```
+
+Use **geom_sf** to visualize the points. There are 3 data points for Germany.
+
+```{r, eval=TRUE}
+ggplot() +
+  geom_sf(data = Oil_germany)
+```
+
+## Places
+
+Create a base map using shapefiles from the package GermanNorthSea.
+
+```{r, eval=TRUE}
+library(GermanNorthSea)
+```
+
+Add the attributes and the theme to your base map.
+
+```{r, eval=TRUE}
+Oil_germany<-st_transform(Oil_germany,4326)
+German_EEZ<-st_transform(German_EEZ,4326)
+German_land<-st_transform(German_land,4326)
+German_SCA<-st_transform(German_SCA,4326)
+German_natura<-st_transform(German_natura,4326)
+```
+
+```{r, fig.height=6, fig.width=8, eval=TRUE}
+Base_map<-ggplot() +
+  geom_sf(data = Oil_germany)+ 
+  # Fill colors
+  geom_sf(data = German_EEZ, color='#43585E',fill='transparent',alpha=0.1, linewidth = 1)+
+  geom_sf(data = German_land, colour = '#43585E', fill = '#43585E')+
+  
+  geom_sf(data = German_SCA, colour = '#43585E', fill = '#40916c', 
+          linewidth=0.1, linetype = "dashed",alpha=0.3)+
+  geom_sf(data = German_natura, colour = '#43585E', fill = '#40916c', 
+          linewidth=0.1, linetype = "dashed",alpha=0.3)+
+  
+  scale_x_continuous(breaks = c(4,6,8),labels = function(x) paste0(x, '\u00B0')) +
+  scale_y_continuous(breaks = c(53.5,54.5,55.5),labels = function(x) paste0(x, '\u00B0'))  +
+  
+  theme(
+  axis.text.x = element_text(size=10,vjust = 12,color='black'),
+  axis.text.y = element_text(color='black',size=10,margin = margin(0,-1.30,0,1, unit = 'cm')),
+  axis.title = element_blank(),
+  axis.ticks.length=unit(-0.20, "cm"),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(fill = '#F2F2F2'))+
+  
+  xlab('Longitude')+ylab('Latitude')+
+  
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth = 1.5))+
+  coord_sf(ylim = c(53,56), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))
+```
+
+Using annotate, add the names of the platforms.
+
+```{r, fig.height=6, fig.width=8, eval=TRUE}
+Oil_1plot<-Base_map+
+  annotate("text", 
+           x = 3.98639-0.95, y = 55.82222, label = "A6-A",size=5,colour ="#bb3e03")+
+  annotate("segment", 
+           x = 3.98639, xend = 3.98639-0.7,
+           y =  55.82222-0.02, yend = 55.82222-0.02,colour = 'black', linewidth=1)+
+  annotate("text", 
+           x = 8.73111-1, y = 54.02583, label ="Mittelplate A",size=5,color="#ffb400")+
+  annotate("segment", 
+           x =  8.73111, xend = 8.73111-0.4,
+           y = 54.02583, yend =  54.02583, color= 'black', linewidth=1)+
+  NULL
+```
+
+**Mittleplate A**
+
+Mittelplate is Germany’s largest oil field, located 7 km (4.3 mi) offshore in the ecologically sensitive tidal flats of the Schleswig-Holstein Wadden Sea National Park. The field was developed by a joint venture between RWE Dea and Wintershall. By the 20th anniversary of production, the field had yielded approximately 20 million tonnes (22 million tons), or about 146 million barrels, of crude oil. Mittelplate contains nearly 65% of Germany’s total crude oil reserves. Source: [Wikipedia](https://en.wikipedia.org/wiki/Mittelplate)
+
+<html>
+
+<body><left> <a href="https://upload.wikimedia.org/wikipedia/commons/4/40/11-09-04-mittelplate-by-RalfR-12.jpg"><img src="https://upload.wikimedia.org/wikipedia/commons/4/40/11-09-04-mittelplate-by-RalfR-12.jpg" style="width:450px"/></a> </left></body>
+
+</html>
+
+Image showing Mittleplate A oil field.
+
+**A6-A**
+
+A6/B4 is Germany’s only operational offshore gas field, located about 300 km off the coast in the North Sea, within Germany’s exclusive economic zone. Discovered in 1974 and producing since 2000, it supplies around 5% of Germany’s natural gas. By the end of 2006, it had produced 6.7 billion cubic meters. Operated by the German North Sea Consortium, with Wintershall Noordzee B.V. managing production, the platform sits in 48 meters of water and typically hosts ten workers. Gas and condensate are piped to a Dutch platform, where the condensate is shipped and the gas sent to the mainland via the NOGAT pipeline. Source: [Wikipedia](https://de.wikipedia.org/wiki/A6/B4)
+
+<html>
+
+<body><left> <a href="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Erdgasfoerderplattform_A6-A_%28Nordsee%29.jpg/500px-Erdgasfoerderplattform_A6-A_%28Nordsee%29.jpg?20180920185945"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Erdgasfoerderplattform_A6-A_%28Nordsee%29.jpg/500px-Erdgasfoerderplattform_A6-A_%28Nordsee%29.jpg?20180920185945" style="width:400px"/></a> </left></body>
+
+</html>
+
+Image showing A6-A Offshore gas field.
+
+# Pipelines
+
+Pipeline gas refer to natural gas that is transported through a network of high-pressure pipelines from production or processing facilities to end users, such as power plants, industries, or residential areas.
+
+To load the data:
+
+```{r, message=FALSE, warning=FALSE, eval=TRUE}
+This_file<-paste0(This_directory,"/EMODnet_HA_Pipelines_20230705.shp")
+Pipelines_shapefile<-st_read(This_file, quiet = TRUE)
+```
+
+## Filter
+
+The pipelines data set from EMODnet contains different types.
+
+```{r, message=FALSE, eval=TRUE}
+unique(Pipelines_shapefile$MEDIUM)
+```
+
+For this exercise select only those containing gas.
+
+```{r, eval=TRUE}
+Pipelines_gas<-Pipelines_shapefile %>%
+  filter(MEDIUM %in% c("Gas", "Gas, Water, Air","Gas, Water","Oil","Gas, Oil"))
+```
+
+The data set also contains data from different countries.
+
+```{r, message=FALSE, eval=TRUE}
+unique(Pipelines_gas$COUNTRY)
+```
+
+For this exercise, select Germany and surrounding countries.
+
+```{r, eval=TRUE}
+Pipelines_crossing_germany<-Pipelines_gas %>%
+  filter(COUNTRY %in% c("Germany, Russia", "Germany",
+                        "Netherlands","United Kingdom"))
+```
+
+## Map
+
+Add a geom_sf in the previous plot to visualize the gas pipelines.
+
+```{r, fig.height=6, fig.width=8, message=FALSE, eval=TRUE}
+Oil_2plot<-Oil_1plot +
+  geom_sf(data = Pipelines_gas, alpha=0.08, colour ="#bb3e03")+
+  coord_sf(ylim = c(53,56), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))
+```
+
+## Text
+
+The package ggtext allows to add colors into labels.
+
+```{r, eval=TRUE}
+library(ggtext)
+```
+
+Add the title on the map.
+
+```{r, fig.height=6, fig.width=8, eval=TRUE}
+Oil_3plot<-Oil_2plot +
+  geom_richtext(aes(x =  4.5, y = 55.5,
+  label = "Offshore installations for exploration, <br> 
+  exploitation or transportation of<br>
+  <span style='color:#ffb400'>Oil</span>
+  and
+  <span style='color:#bb3e03'>Gas (including pipelines) </span> <br>
+  in the German North Sea"), 
+  size = 5, 
+  fill = NA, 
+  label.color = NA, # remove background and outline
+  hjust = 0,
+  vjust= 0,
+  inherit.aes = TRUE
+  )+
+  NULL
+```
+
+# Considerations
+
+Offshore oil and gas operations activities can have environmental impacts throughout their entire lifecycle, including exploration, production, and decommissioning. Potential impacts include the discharge of produced water, oil, chemicals, drilling muds, and cuttings; physical disturbances from the installation of infrastructure and pipelines; noise generated by seismic surveys and drilling; light pollution from installations; and atmospheric emissions. Source: [OSPAR](https://oap.ospar.org/en/ospar-assessments/quality-status-reports/qsr-2023/other-assessments/impacts-offshore-oil-and-gas-industry/)
+
+<html>
+
+<body><left> <a href="https://oap-cloudfront.ospar.org/media/filer_public_thumbnails/filer_public/e3/03/e3031938-97b7-4f57-85a7-e2c5c5fb2ea6/figure_1.png__1170x0_subsampling-2_upscale.png"><img src="https://oap-cloudfront.ospar.org/media/filer_public_thumbnails/filer_public/e3/03/e3031938-97b7-4f57-85a7-e2c5c5fb2ea6/figure_1.png__1170x0_subsampling-2_upscale.png" style="width:450px"/></a> </left></body>
+
+</html>
+
+## Borkum + N05-A
+
+On July 2, 2025, the German federal cabinet approved a treaty that permits Dutch-led natural gas extraction extending into German territorial waters near Borkum. The initiative is intended to enhance energy security and meet commitments outlined in the governing coalition’s energy strategy. However, environmental organizations have raised concerns, warning that the project poses risks to the Wadden Sea, undermines climate objectives, and lacks adequate public scrutiny and legal oversight. The agreement still requires legislative ratification and is subject to ongoing judicial review. Source: [Tagesschau](https://www.tagesschau.de/inland/innenpolitik/bundeskabinett-gasfoerderung-borkum-100.html).
+
+The N05-A platform is situated in Dutch waters, approximately 1.5 kilometers from the German maritime border. By autumn 2024, the first well is expected to be drilled, enabling natural gas extraction from the Dutch sector of the North Sea. Source: [Project GEMS](https://www.gemsnorthsea.co.uk/), [Spiegel](https://www.spiegel.de/panorama/borkum-luisa-neubauer-demonstriert-mit-tausenden-gegen-erdgasleitungen-a-c6362a4c-a5bb-4d4e-a110-15e7a0a675b3).
+
+The proposed gas field is located in close proximity to the [Borkum Reef Ground NCA](https://www.bfn.de/en/borkum-reef-ground-nca). This area is the smallest of three designated nature conservation areas within Germany’s Exclusive Economic Zone (EEZ) in the North Sea. It has been recognized as a Special Area of Conservation (SAC) under the EU Habitats Directive, and was officially designated a German NCA in 2017. Sources: [Borkum Reef Ground NCA](https://www.bfn.de/en/borkum-reef-ground-nca), [Oceana](https://europe.oceana.org/wp-content/uploads/sites/26/d_files/borkum_report_web.pdf).
+
+```{r, fig.height=6, fig.width=8, eval=TRUE}
+Oil_4plot<-Oil_3plot+
+  geom_point(aes(x = 6.3620, y = 53.67800), color = 'orange',size=4,shape=17)+
+    annotate("text", 
+           x = 6.3620-0.5, y = 53.678, label = "N05-A",size=4,colour ='orange')+
+    annotate("segment", 
+           x = 6.3620, xend = 6.3620-0.2,
+           y =  53.678, yend = 53.678,colour = 'orange', linewidth=1)+
+  
+  annotate("text", 
+           x = 6.70-1.6, y = 53.89, label = "Borkum Reef Ground",size=4,colour ='#2d6a4f')+
+  annotate("segment", 
+           x = 6.70-0.4, xend = 6.70-0.8,
+           y =  53.89, yend = 53.89,colour = '#2d6a4f', linewidth=1)
+Oil_4plot
+```
+
+```{r, echo=FALSE, eval=TRUE}
+# Export
+library(here)
+here()
+My_directory<-paste0(here(),"/Blog/2025/2025-08-04-oil")
+ggsave(Oil_4plot,filename = paste0(My_directory,"/oil_export.jpeg"),
+       width = 8, 
+       height = 6)
+```
+
+```{r, echo=FALSE, out.width = "100%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-08-04-oil/oil_export.jpeg"))
+```
+
+# ~~~~~~~~~~~
+# 9. September: Cables
+# Intro
+
+In this month’s blog post, I take a closer look at the network of underwater cables stretching across the German North Sea. Using openly available geospatial data from EMODnet, I downloaded and worked with datasets covering both telecommunication and power cables. With R as my main analysis tool, I walk you through the process of exploring, cleaning, and visualizing the data. Building this map deepened my understanding of how these often-invisible infrastructures are distributed across the seafloor.
+
+## Cables
+
+Underwater (submarine, or undersea) cables include cables use for telecommunication and for power. Although limited impacts have been found, the disturbance of the seabed during installation can disrupt benthic communities. Power cables additionally emit electromagnetic fields (EMFs) which might affect sensitive species such as migratory animals. Furthermore, these cables can warm the water surrounding them, but their effects by this are poorly known (see compilation of effects of cables in: Lloret et al. 2022, Hale et al. 2024)
+
+<html>
+
+<body><left> <a href="https://ychef.files.bbci.co.uk/1600x900/p0jxm9xs.webp" style="width:450px"></a> <img src="https://www.sa-world.com/images/econa-article-images/260/full/Untitled%20design(72).jpg" style="width:450px"/></a> </left></body>
+
+</html>
+
+Image from a underwater cable from [BBC](https://www.bbc.co.uk/future/article/20241014-the-deep-sea-emergency-service-that-keeps-the-internet-running)
+
+While it's difficult to pinpoint an exact annual number, estimates suggest that hundreds of kilometers of new submarine cables are installed each year to meet the growing global demand for internet and telecommunications. However, the number of new cables installed varies significantly each year, with the total number of operational and planned cables exceeding 600 in early 2025.
+
+<html>
+
+<body><left> <a href="https://energyindustryreview.com/wp-content/uploads/2022/03/submarin-cable-layout.jpg"><img src="https://energyindustryreview.com/wp-content/uploads/2022/03/submarin-cable-layout.jpg" style="width:450px"/></a> </left></body>
+
+</html>
+
+Image from the installation of undersea cable in waters from the Hiddensee island at Germany Mecklenburg-Western Pomerania Baltic Sea from [Energy Industry Review](https://energyindustryreview.com/wp-content/uploads/2022/03/submarin-cable-layout.jpg)
+
+# Source
+
+There are two main installations: telecommunications (which for example provide internet access) and power (transporting energy, for example from wind farms to land).
+
+The information from subsea telecommunication and power cables is available at the European Marine Observation and Data Network (EMODnet)<br> This dataset is updated every year, to download on the EMODnet web portal\>[Human Activities](https://emodnet.ec.europa.eu/en/human-activities).
+
+```{r, echo=FALSE,fig.width=5, fig.height=4}
+knitr::include_graphics('cables_instruction.png')
+```
+
+The relevant files for the telecommunication lines in the German North Sea are in the files from German, France and Netherlands telecommunications.
+
+The relevant files for the power lines in the German North Sea are in the files from German, Netherlands and Norway cables.
+
+To have easier access to the files, it is recommended to save them in the same directory.
+
+Data test also available to download at [github](https://github.com/MiriamLL/data_supporting_webpage/tree/main/Blog/2025/Cables).
+
+# Telecommunications
+
+There are around 1.4 million kilometers (870,000 miles) of telecommunication cables lining the seafloor, connecting every ocean across the globe. Laid end to end, they could stretch across the diameter of the Sun, and they carry an astounding 99% of the world’s digital data. Yet for something so vital, these cables are surprisingly slim, often just 2 cm thick, roughly the width of a garden hose. Source: [BBC](https://www.bbc.co.uk/future/article/20241014-the-deep-sea-emergency-service-that-keeps-the-internet-running)
+
+### Visualization
+
+To visualize the telecommunications data, load your data and call the package ggplot.
+
+```{r, warning=FALSE, message=FALSE, eval=TRUE}
+library(here)
+library(tidyverse)
+library(sf)
+```
+
+```{r, echo=TRUE, eval=TRUE}
+This_directory<-here()
+```
+
+```{r,echo=FALSE, include=FALSE, eval=TRUE}
+This_directory<-"C:/Users/lerma/OneDrive/Documents/03Academico/02Proyectos-Postdoc/2025/1Programming/1Quarto/data_supporting_webpage\\Blog//2025//Cables\\"
+list.files(This_directory)
+Germany_telecommunications<-st_read(paste0(This_directory,"/DE_BSH_CONTIS_Data_CablesLine.shp"))
+France_telecommunications<-st_read(paste0(This_directory,"/FR_SIGCables_Submarine_Cables_Routes.shp"))
+Netherlands_telecommunications<-st_read(paste0(This_directory,"/NL_Rijkswaterstaat_Telecom_kabels_noordzee.shp"))
+Germany_voltage<-st_read(paste0(This_directory,"/DE_BSH_CONTIS_High_Voltage_CablesLine.shp"))
+Netherlands_voltage<-st_read(paste0(This_directory,"/NL_Rijkswaterstaat_Electra_kabels_noordzee.shp"))
+Norway_voltage<-st_read(paste0(This_directory,"/NO_NVE_Sjokabel.shp"))
+```
+
+```{r, echo=TRUE, eval=TRUE}
+Germany_telecommunications<-st_read(paste0(This_directory,"/DE_BSH_CONTIS_Data_CablesLine.shp"))
+France_telecommunications<-st_read(paste0(This_directory,"/FR_SIGCables_Submarine_Cables_Routes.shp"))
+Netherlands_telecommunications<-st_read(paste0(This_directory,"/NL_Rijkswaterstaat_Telecom_kabels_noordzee.shp"))
+```
+
+```{r, eval=TRUE}
+library(ggplot2)
+```
+
+To have reference points, load base shapefiles from the package GermanNorthSea for this exercise.
+
+```{r, eval=TRUE}
+library(GermanNorthSea)
+```
+
+```{r, eval=TRUE}
+German_EEZ<-st_transform(German_EEZ,4326)
+German_land<-st_transform(German_land,4326)
+```
+
+Add the attributes and the theme to your base map.
+
+```{r, fig.height=3, fig.width=4, eval=TRUE}
+Base_map<-ggplot() + 
+  # Fill colors
+  geom_sf(data = German_EEZ, color='#212529',fill=NA,alpha=0.1, linewidth = 1)+
+  geom_sf(data = German_land, colour = 'black', fill = 'black')+
+  
+  scale_x_continuous(breaks = c(4,6,8),labels = function(x) paste0(x, '\u00B0')) +
+  scale_y_continuous(breaks = c(53.5,54.5,55.5),labels = function(x) paste0(x, '\u00B0'))  +
+  
+  theme(
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.title = element_blank(),
+  axis.ticks.length=unit(-0.20, "cm"),
+  axis.ticks = element_line(color="black"),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(fill = '#495057'))+
+  
+  xlab('Longitude')+ylab('Latitude')+
+  
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth = 1.5))+
+  coord_sf(ylim = c(53,56), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))
+```
+
+### Text
+
+Fonts from goggle can be use in ggplot. In the example, I will be using ["Share Tech Mono"](https://fonts.google.com/specimen/Share+Tech+Mono).
+
+```{r, warning=FALSE, message=FALSE, eval=TRUE}
+library(showtext)
+showtext_auto()
+font_add_google("Share Tech Mono", "Share Tech Mono")
+```
+
+Add text and colors for the label.
+
+```{r, warning=FALSE, message=FALSE, eval=TRUE}
+library(ggtext)
+```
+
+```{r, fig.height=3, fig.width=4, warning=FALSE, message=FALSE, eval=TRUE}
+Telecom_cables<-Base_map +
+  geom_sf(data = Netherlands_telecommunications,color='#8ac926',linewidth=0.8)+
+  geom_sf(data = France_telecommunications,color='#c86bfa',linewidth=0.8)+
+  geom_sf(data = Germany_telecommunications, color='#ffd60a',linewidth=0.8)+
+  
+  geom_richtext(aes(x =  2.9, y = 56.1,
+  label = "<span style='color:#adb5bd'>Underwater Telecommunication Cables crossing the German North Sea.\n
+  <span style='color:#adb5bd'>Data source from: 
+  <span style='color:#8ac926'>Netherlands</span>, 
+  <span style='color:#c86bfa'>France</span> and 
+  <span style='color:#ffd60a'>Germany</span> (EMODnet).</span>"),
+  size = 8,fill ="black",label.color = NA,  hjust = 0,  vjust= 0,  inherit.aes = TRUE, family = "Share Tech Mono"
+  )+
+  coord_sf(ylim = c(53,56.4), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))
+Telecom_cables
+```
+
+### Filter
+
+To visualize a specific cable, use filter functions. For the exercise, lets focus on SEA-ME-WE 3 (South-East Asia – Middle East – Western Europe 3), the world’s longest optical submarine telecommunications cable, linking Asia, the Middle East, and Europe. Source: [Wikipedia](https://en.wikipedia.org/wiki/SEA-ME-WE_3)
+
+```{r, eval=TRUE}
+unique(France_telecommunications$NAME)
+```
+
+```{r, fig.height=4, fig.width=6, warning=FALSE, message=FALSE, eval=TRUE}
+Base_map +
+  geom_sf(data = France_telecommunications %>% filter(NAME %in% c('SEA ME WE3-S10.4','SEA ME WE3-S10.3',
+                                                                  'SEA ME WE3-S10.2','SEA ME WE3-S10.1')),
+          color='#c86bfa',linewidth=0.8)+
+  geom_sf(data = Germany_telecommunications %>% filter(name_=='SeaMeWe 3'), 
+            color='#ffd60a',linewidth=0.8)+
+  geom_sf(data = Netherlands_telecommunications %>% filter(NAAM %in% c('SEA-ME-WE 3 Segment 10.1',
+                                                                       'SEA-ME-WE 3 Segment 10.2 + 10.3')), 
+          color='#8ac926',linewidth=0.8)+
+  
+   geom_label(aes(x =  2.9, y = 56.3,
+                 label = "Underwater Telecommunication Cable: SEA-ME-WE3   "),
+                 size=7,color='#adb5bd', hjust=0,fill='black',label.size = 0,
+                 family = "Share Tech Mono")+
+  
+  coord_sf(ylim = c(53,56.4), xlim = c(3,9),
+                  label_axes = list(left = "N", bottom = 'E'))
+```
+
+# Power Cables
+
+The relevant files for the power lines in the German North Sea are in the files from German, Netherlands and Norway cables.
+
+```{r, echo=TRUE, eval=TRUE}
+Germany_voltage<-st_read(paste0(This_directory,"/DE_BSH_CONTIS_High_Voltage_CablesLine.shp"))
+Netherlands_voltage<-st_read(paste0(This_directory,"/NL_Rijkswaterstaat_Electra_kabels_noordzee.shp"))
+Norway_voltage<-st_read(paste0(This_directory,"/NO_NVE_Sjokabel.shp"))
+```
+
+### Filter
+
+The data contains "in use" and "planned" cables, keep only those that are "inUse".
+
+```{r, eval=TRUE}
+Germany_voltage<-Germany_voltage %>%
+  filter(status=='inUse')
+```
+
+### Visualization
+
+Add them in your base map.
+
+```{r, warning=FALSE,fig.height=3, fig.width=4, eval=TRUE}
+Power_cables<-Base_map +
+  geom_sf(data = Netherlands_voltage,color='#ff595e',linetype = "dashed", linewidth= 0.8)+
+  geom_sf(data = Norway_voltage,color='#ff924c',linetype = "dashed", linewidth= 0.8)+
+  geom_sf(data = Germany_voltage, color='#ffca3a',linetype = "dashed", linewidth= 0.8)+
+  coord_sf(ylim = c(53,56.4), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))+
+
+  geom_richtext(aes(x =  2.9, y = 56.1,
+  label = "<span style='color:#adb5bd'>Underwater Power Cables crossing the German North Sea.\n
+  <span style='color:#adb5bd'>Data source from: 
+  <span style='color:#ff595e'>Netherlands</span>, 
+  <span style='color:#ff924c'>Norway</span> and 
+  <span style='color:#ffca3a'>Germany</span>.</span>"),
+  size = 8,fill ="black",label.color = NA,  hjust = 0,  vjust= 0,  inherit.aes = TRUE, family = "Share Tech Mono"
+  )
+```
+
+Note than in Germany, many of the power cables are connected to Offshore Wind Farms
+
+```{r, eval=TRUE}
+German_OWF<-st_transform(GermanNorthSea::OWF_EMODnet,4326)
+```
+
+```{r, warning=FALSE,fig.height=3, fig.width=4,eval=TRUE}
+Power_cables<-Power_cables+
+  geom_sf(data = German_OWF, color='#850a0a',fill='#850a0a', alpha=0.5)+
+  coord_sf(ylim = c(53,56.4), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))
+```
+
+### Examples
+
+NorNed is a high-voltage direct current (HVDC) submarine power cable connecting Norway and the Netherlands. Spanning approximately 580 kilometers under the North Sea, it is one of the longest subsea power interconnectors in the world.
+
+```{r, ,fig.height=6, fig.width=8, eval=TRUE}
+Base_map +
+  geom_sf(data = Norway_voltage %>% filter(navn=='NorNed'), 
+            color='#ff924c',linewidth=0.8)+
+  geom_sf(data = Germany_voltage %>% filter(name_=='NorNed'), 
+            color='#ffca3a',linewidth=0.8)+
+  geom_label(aes(x =  2.9, y = 56.3,
+                 label = "Underwater Power Cables: NorNed   "),
+                 size=7,color='#adb5bd', hjust=0,fill='black',label.size = 0,
+                 family = "Share Tech Mono")+
+  
+  coord_sf(ylim = c(53,56.4), xlim = c(3,9),
+                  label_axes = list(left = "N", bottom = 'E'))
+```
+
+# Both
+
+Combine the spatial data of telecommunication and power cables into one comprehensive map to enable clear visualization and analysis of the widespread cable infrastructure.
+
+```{r, eval=TRUE}
+library(ggtext)
+```
+
+```{r,fig.height=3, fig.width=4, eval=TRUE}
+Cables<-Base_map +
+  geom_sf(data = Netherlands_telecommunications,color='#8ac926',linewidth=0.8)+
+  geom_sf(data = France_telecommunications,color='#c86bfa',linewidth=0.8)+
+  geom_sf(data = Germany_telecommunications, color='#ffd60a',linewidth=0.8)+
+  
+  geom_sf(data = Netherlands_voltage,color='#ff595e',linetype = "dashed", linewidth= 0.8)+
+  geom_sf(data = Norway_voltage,color='#ff924c',linetype = "dashed", linewidth= 0.8)+
+  geom_sf(data = Germany_voltage, color='#ffca3a',linetype = "dashed", linewidth= 0.8)
+```
+
+```{r cable types,fig.height=6, fig.width=8, eval=TRUE}
+Cables_wtext<-Cables+
+  
+  annotate("rect", fill = "black", ymin =  -Inf, ymax = 53.6,xmin = -Inf, xmax = Inf)+
+
+  geom_richtext(aes(x = 2.8, y = 53.4,
+                    label =  "<span style='color:#adb5bd'>  Undersea Cables crossing the German North Sea.</span>\n"),
+                    size = 11, fill = "black", label.color = "black", hjust = 0, vjust = 0,family = "Share Tech Mono"
+                    )+
+  geom_richtext(aes(x =  2.8, y = 53.0,
+  label = "<span style='color:#adb5bd'>Telecommunication Cables (in solid lines).\n
+  <span style='color:#adb5bd'>Data source from: 
+  <span style='color:#8ac926'>Netherlands</span>, 
+  <span style='color:#c86bfa'>France</span> and 
+  <span style='color:#ffd60a'>Germany</span> (EMODnet).</span>"),
+  size = 8,fill ="black",label.color = NA,  hjust = 0,  vjust= 0,  inherit.aes = TRUE, family = "Share Tech Mono"
+  )+
+
+  geom_richtext(aes(x =  2.8, y = 52.6,
+  label = "<span style='color:#adb5bd'>Power Cables (in dashed lines).\n
+  <span style='color:#adb5bd'>Data source from: 
+  <span style='color:#ff595e'>Netherlands</span>, 
+  <span style='color:#ff924c'>Norway</span> and 
+  <span style='color:#ffca3a'>Germany</span> (EMODnet).</span>"),
+  size = 8,fill ="black",label.color = NA,  hjust = 0,  vjust= 0,  inherit.aes = TRUE, family = "Share Tech Mono"
+  )+
+
+  coord_sf(ylim = c(52.7,56), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))
+Cables_wtext
+```
+
+# Export
+
+```{r,echo=FALSE, eval=TRUE}
+library(here)
+here()
+My_directory<-paste0(here(),"/Blog/2025/2025-09-15-cables")
+```
+
+```{r, eval=TRUE}
+Cables_export<-ggplot() + 
+  # Fill colors
+  geom_sf(data = German_EEZ, color='#212529',fill=NA,alpha=0.1, linewidth = 0.5)+
+  geom_sf(data = German_land, colour = 'black', fill = 'black')+
+  
+  scale_x_continuous(breaks = c(4,6,8),labels = function(x) paste0(x, '\u00B0')) +
+  scale_y_continuous(breaks = c(53.5,54.5,55.5),labels = function(x) paste0(x, '\u00B0'))  +
+  
+  theme(
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.title = element_blank(),
+  axis.ticks.length=unit(-0.20, "cm"),
+  axis.ticks = element_line(color="black"),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(fill = '#495057'))+
+  
+  xlab('Longitude')+ylab('Latitude')+
+  
+  theme(panel.border = element_rect(colour = "black", fill=NA, linewidth = 1.5))+
+  
+  geom_sf(data = Netherlands_telecommunications,color='#8ac926',linewidth=0.5)+
+  geom_sf(data = France_telecommunications,color='#c86bfa',linewidth=0.5)+
+  geom_sf(data = Germany_telecommunications, color='#ffd60a',linewidth=0.5)+
+  
+  geom_sf(data = Netherlands_voltage,color='#ff595e',linetype = "dashed", linewidth= 0.5)+
+  geom_sf(data = Norway_voltage,color='#ff924c',linetype = "dashed", linewidth= 0.5)+
+  geom_sf(data = Germany_voltage, color='#ffca3a',linetype = "dashed", linewidth= 0.5)+
+  
+  annotate("rect", fill = "black", ymin =  -Inf, ymax = 53.35,xmin = -Inf, xmax = Inf)+
+
+  geom_richtext(aes(x = 2.8, y = 53.15,
+                    label =  "<span style='color:#adb5bd'>  Undersea Cables crossing the German North Sea.\n</span>"),
+                    size = 20, fill = "black", label.color = "black", hjust = 0, vjust = 0,family = "Share Tech Mono"
+                    )+
+  geom_richtext(aes(x =  2.8, y = 53.0,
+  label = "<span style='color:#adb5bd'>\n
+  <span style='color:#adb5bd'>Telecommunications (solid lines) data source from: 
+  <span style='color:#8ac926'>Netherlands</span>, 
+  <span style='color:#c86bfa'>France</span> and 
+  <span style='color:#ffd60a'>Germany</span> (EMODnet).</span>"),
+  size = 10,fill ="black",label.color = NA,  hjust = 0,  vjust= 0,  inherit.aes = TRUE, family = "Share Tech Mono"
+  )+
+
+  geom_richtext(aes(x =  2.8, y = 52.9,
+  label = "<span style='color:#adb5bd'>Power Cables (dashed lines) data source from: 
+  <span style='color:#ff595e'>Netherlands</span>, 
+  <span style='color:#ff924c'>Norway</span> and 
+  <span style='color:#ffca3a'>Germany</span> (EMODnet).</span>"),
+  size = 10,fill ="black",label.color = NA,  hjust = 0,  vjust= 0,  inherit.aes = TRUE, family = "Share Tech Mono"
+  )+
+
+  coord_sf(ylim = c(53,56), xlim = c(3,9),
+                    label_axes = list(left = "N", bottom = 'E'))
+  
+# Export
+ggsave(Cables_export,
+       filename = paste0(My_directory,"/cables_export.jpeg"),
+       width = 8, 
+       height = 6)
+```
+
+```{r, echo=FALSE, out.width = "100%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-09-01-cables/cables_export.jpeg"))
+```
+
+# References
+
+## Effects
+
+-   [Viking Link 2017](https://www.commissiemer.nl/projectdocumenten/00002753.pdf?documenttitle=Appendix%20I%20-%20Cable%20Heating%20Effects%20Report.pdf)<br> 
+- [Farr et al. 2021](https://www.sciencedirect.com/science/article/pii/S096456912100096X#:~:text=We%20evaluated%20six%20categories%20of%20potential%20effects:,such%20as%20coastal%20residents%2C%20conservationists%2C%20and%20fisheries)<br> 
+- [Lloret et al. 2022](https://www.sciencedirect.com/science/article/pii/S0048969722008956)<br> 
+- [Middleton et al 2023](https://www.boem.gov/sites/default/files/documents/renewable-energy/studies/Transmission_Cable_Heat_WhitePaper.pdf#:~:text=This%20paper%20provides%20information%20about%20heat%20generated,from%20the%20heat%20generated%20from%20buried%20cables)<br> 
+- [Hale et al 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12054580/#:~:text=The%20near%2Dfield%20physical%20disturbances%20can%20also%20affect,by%20seabirds%20as%20resting%20and%20roosting%20platforms)<br> 
+- [Buck et al 2024](https://www.researchgate.net/publication/235938669_Extensive_open_ocean_aquaculture_development_within_wind_farms_in_Germany_The_prospect_of_offshore_co-management_and_legal_constraints)<br>
+
+## Telecommuncations
+
+-   [Ocean Cables Map](https://www.nytimes.com/interactive/2019/03/10/technology/internet-cables-oceans.html)<br> - [Submarine networks](https://www.submarinenetworks.com/en/systems/intra-europe/ioema/ioema-fibre-to-build-submarine-cable-connecting-five-northern-european-markets)<br> 
+- [IOEMA Fibre optic](https://www.submarinenetworks.com/en/systems/intra-europe/ioema/ioema-fibre-to-build-submarine-cable-connecting-five-northern-european-markets)
+
+## Power
+
+-   [Power cable installations connected to Offshore Wind farms](https://www.offshore-mag.com/renewable-energy/article/14305254/prysmian-supplying-cables-for-two-german-offshore-wind-farms)<br> 
+- [NordLink](https://www.kfw.de/stories/environment/renewable-energy/nordlink/)<br>
+
+## Both
+
+-   [Submarine cable map](https://www.submarinecablemap.com/)<br> - [How do the submarine cables get installed - Video](https://youtu.be/Gg1aFmsKQgk)<br> 
+- [Cable instalation](https://oceannews.com/news/subsea-cable/jan-de-nul-to-install-inter-array-cables-for-wind-farms-german-north-sea/)<br>
+
+# ~~~~~~~~~~~
+# 10. October
+# ~~~~~~~~~~~
+# 11. Novemeber
+# ~~~~~~~~~~~
+# 12. December
+

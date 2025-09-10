@@ -140,3 +140,54 @@ knitr::include_graphics("https://github.com/MiriamLL/data_supporting_webpage/blo
 
 ### Interactive
 Open [here](https://www.miriam-lerma.com/blog/2024-12-02-tmap/tmap).
+
+
+# 2025
+
+# Rasters
+
+## Bathymetry
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-01-15-bathymetry/bathymetry_export.jpg"))
+```
+
+## Light pollution
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-05-05-lightpollution/radiance_export.jpg"))
+```
+
+## SST
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-04-15-copernicus-sst/sst_export.jpg"))
+```
+
+## Shipping traffic
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-06-02-shippingtraffic/shipping_export.jpg"))
+```
+
+# Vectors (shapefiles)
+
+## Points
+
+## Fishing data
+
+```{r, echo=FALSE, out.width = "80%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-03-03-fishingdata/fishingwatch_export.jpg"))
+```
+
+
+### Oil
+```{r, echo=FALSE, out.width = "100%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-08-04-oil/oil_export.jpeg"))
+```
+
+## Polygons
+### OWF
+```{r, echo=FALSE, out.width = "100%"}
+knitr::include_graphics(paste0(here::here(),"/blog/2025-07-01-owf/owf_export.jpeg"))
+```
+
